@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 12 PRINCIPLES</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   ROOT
+══════════════════════════════════════ */
+:root {
+  --acid:   #CCFF00;
+  --black:  #000000;
+  --white:  #FFFFFF;
+  --grey:   #D9D9D9;
+  --mid:    #AAAAAA;
+  --dark:   #111111;
+  --mono:   'IBM Plex Mono', monospace;
+  --disp:   'Barlow Condensed', sans-serif;
+  --jp:     'Noto Sans JP', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:var(--black); }
+
+body {
+  font-family: var(--disp);
+  cursor: crosshair;
+  color: var(--white);
+}
+
+/* halftone grain */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.2) 1px, transparent 1px);
+  background-size: 5px 5px;
+  pointer-events:none;
+  z-index:9999;
+  opacity:0.5;
+}
+
+/* ══════════════════════════════════════
+   HUD CORNERS — always visible
+══════════════════════════════════════ */
+.hud {
+  position: fixed;
+  z-index: 500;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(204,255,0,0.5);
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  line-height: 1.7;
+}
+.hud.tl { top:14px; left:16px; }
+.hud.tr { top:14px; right:16px; text-align:right; }
+.hud.bl { bottom:14px; left:16px; }
+.hud.br { bottom:14px; right:16px; text-align:right; }
+
+/* corner marks */
+.corner { position:fixed; width:20px; height:20px; z-index:500; pointer-events:none; }
+.corner::before,.corner::after { content:''; position:absolute; background:var(--acid); }
+.corner::before { width:100%; height:1px; }
+.corner::after  { width:1px; height:100%; }
+.corner.tl { top:8px; left:8px; }
+.corner.tr { top:8px; right:8px; transform:scaleX(-1); }
+.corner.bl { bottom:8px; left:8px; transform:scaleY(-1); }
+.corner.br { bottom:8px; right:8px; transform:scale(-1); }
+
+/* ══════════════════════════════════════
+   INDEX — COVER PAGE
+══════════════════════════════════════ */
+#cover {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* grid overlay */
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(204,255,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204,255,0,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* giant number bg */
+.cover-num {
+  position: absolute;
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(260px, 40vw, 500px);
+  color: rgba(255,255,255,0.03);
+  line-height: 1;
+  top: -60px;
+  left: -20px;
+  pointer-events: none;
+  letter-spacing: -0.05em;
+}
+
+/* header bar */
+.cover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(204,255,0,0.2);
+  position: relative;
+  z-index: 10;
+}
+.cover-header .sys {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(204,255,0,0.6);
+  letter-spacing: 0.3em;
+}
+
+/* main content */
+.cover-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  z-index: 10;
+}
+
+.cover-left {
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(204,255,0,0.15);
+}
+.cover-lecture {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--acid);
+  letter-spacing: 0.5em;
+  margin-bottom: 16px;
+}
+.cover-title {
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(52px, 7vw, 96px);
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+.cover-title .acid { color: var(--acid); }
+.cover-sub {
+  font-family: var(--jp);
+  font-size: 13px;
+  color: var(--mid);
+  margin-top: 20px;
+  line-height: 1.8;
+}
+
+.cover-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  line-height: 2;
+  border-top: 1px solid rgba(204,255,0,0.1);
+  padding-top: 16px;
+}
+
+/* principle list */
+.cover-right {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+}
+.cover-right::-webkit-scrollbar { width:3px; }
+.cover-right::-webkit-scrollbar-thumb { background:var(--acid); }
+
+.principle-item {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.principle-item::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:0;
+  background: var(--acid);
+  transition: width 0.25s ease;
+}
+.principle-item:hover::before { width:3px; }
+.principle-item:hover { background: rgba(204,255,0,0.04); }
+
+.p-num {
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 32px;
+  color: rgba(204,255,0,0.25);
+  line-height: 1;
+}
+.p-names { padding-left:8px; }
+.p-en {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: clamp(14px,1.8vw,20px);
+  color: var(--white);
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+.p-jp {
+  font-family: var(--jp);
+  font-size: 10px;
+  color: var(--mid);
+  margin-top: 3px;
+}
+.p-arrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--acid);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.principle-item:hover .p-arrow { opacity:1; }
+
+/* ══════════════════════════════════════
+   PRINCIPLE PAGE
+══════════════════════════════════════ */
+#principle-page {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  overflow: hidden;
+}
+
+/* 3 parallax layers */
+.p-layer {
+  position: absolute;
+  inset: -15%;
+  will-change: transform;
+}
+
+/* layer 0: far bg */
+.p-layer-far {
+  z-index: 1;
+}
+.far-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(204,255,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204,255,0,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.far-bignum {
+  position: absolute;
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(300px, 55vw, 700px);
+  color: rgba(255,255,255,0.025);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.far-checker {
+  position: absolute;
+  right: 8%; top: 8%;
+  width: 160px; height: 160px;
+  background-image:
+    repeating-conic-gradient(rgba(204,255,0,0.08) 0% 25%, transparent 0% 50%);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+.far-checker2 {
+  position: absolute;
+  left: 5%; bottom: 10%;
+  width: 120px; height: 120px;
+  background-image:
+    repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%);
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+/* layer 1: mid */
+.p-layer-mid { z-index: 2; }
+.mid-hstripe {
+  position: absolute;
+  left: 15%; right: 15%;
+  height: 3px;
+  background: rgba(204,255,0,0.15);
+}
+
+/* layer 2: near */
+.p-layer-near { z-index: 3; }
+
+/* page layout — fixed over layers */
+.page-layout {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: 48px 1fr 60px;
+  pointer-events: none;
+}
+.page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(204,255,0,0.15);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(204,255,0,0.5);
+  letter-spacing: 0.25em;
+  pointer-events: auto;
+}
+.back-btn {
+  cursor: pointer;
+  color: var(--acid);
+  transition: opacity 0.2s;
+  pointer-events: auto;
+}
+.back-btn:hover { opacity: 0.6; }
+
+.page-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  pointer-events: auto;
+}
+
+.page-left {
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid rgba(204,255,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ANIMATION CANVAS — where the principle lives */
+.anim-canvas {
+  flex: 1;
+  min-height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.page-right {
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.p-page-num {
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(80px, 12vw, 140px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--acid);
+  margin-bottom: -8px;
+}
+.p-page-en {
+  font-family: var(--disp);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(28px, 4.5vw, 60px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--white);
+}
+.p-page-jp {
+  font-family: var(--jp);
+  font-size: 14px;
+  color: var(--mid);
+  margin-top: 10px;
+  font-weight: 400;
+}
+.p-page-desc {
+  margin-top: 32px;
+  border-left: 3px solid var(--acid);
+  padding-left: 20px;
+}
+.p-page-desc p {
+  font-family: var(--jp);
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.9;
+  margin-bottom: 10px;
+}
+.p-page-meta {
+  margin-top: 28px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(204,255,0,0.4);
+  letter-spacing: 0.15em;
+  line-height: 2;
+  border-top: 1px solid rgba(204,255,0,0.1);
+  padding-top: 12px;
+}
+
+/* hazard stripes */
+.hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--acid), var(--acid) 6px,
+    var(--black) 6px, var(--black) 18px
+  );
+  height: 8px;
+  opacity: 0.6;
+}
+
+.page-bottombar {
+  border-top: 1px solid rgba(204,255,0,0.15);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: rgba(204,255,0,0.3);
+  letter-spacing: 0.2em;
+  pointer-events: auto;
+}
+.nav-arrows {
+  display: flex;
+  gap: 20px;
+  pointer-events: auto;
+}
+.nav-arrow {
+  cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  transition: color 0.2s;
+  font-family: var(--mono);
+}
+.nav-arrow:hover { color: var(--acid); }
+
+/* ══════════════════════════════════════
+   ANIMATION SHAPES — shared
+══════════════════════════════════════ */
+.shape-box {
+  position: absolute;
+  background: var(--white);
+}
+.shape-circle {
+  position: absolute;
+  background: var(--acid);
+  border-radius: 50%;
+}
+.shape-outline {
+  position: absolute;
+  border: 3px solid var(--acid);
+}
+
+/* ── 01 SQUASH & STRETCH ── */
+@keyframes squashStretch {
+  0%   { transform: scaleX(1)   scaleY(1)   translateY(0); }
+  30%  { transform: scaleX(1.5) scaleY(0.6) translateY(30px); }
+  50%  { transform: scaleX(0.7) scaleY(1.6) translateY(-40px); }
+  70%  { transform: scaleX(1.5) scaleY(0.6) translateY(30px); }
+  100% { transform: scaleX(1)   scaleY(1)   translateY(0); }
+}
+.anim-squash-ball {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--acid);
+  animation: squashStretch 2s cubic-bezier(0.36,0.07,0.19,0.97) infinite;
+}
+.anim-squash-shadow {
+  width: 80px; height: 12px;
+  border-radius: 50%;
+  background: rgba(204,255,0,0.2);
+  position: absolute;
+  bottom: 20px;
+  animation: shadowPulse 2s cubic-bezier(0.36,0.07,0.19,0.97) infinite;
+}
+@keyframes shadowPulse {
+  0%   { transform: scaleX(1);   opacity:0.3; }
+  30%  { transform: scaleX(1.6); opacity:0.5; }
+  50%  { transform: scaleX(0.6); opacity:0.1; }
+  70%  { transform: scaleX(1.6); opacity:0.5; }
+  100% { transform: scaleX(1);   opacity:0.3; }
+}
+
+/* ── 02 ANTICIPATION ── */
+@keyframes anticipate {
+  0%   { transform: rotate(0deg) translateY(0); }
+  20%  { transform: rotate(15deg) translateY(10px); }  /* wind-up */
+  21%  { transform: rotate(15deg) translateY(10px); }
+  40%  { transform: rotate(-80deg) translateY(-60px); } /* release */
+  60%  { transform: rotate(-70deg) translateY(-55px); } /* follow through */
+  80%  { transform: rotate(-5deg) translateY(-5px); }   /* settle */
+  100% { transform: rotate(0deg) translateY(0); }
+}
+.anim-anticipate-arm {
+  width: 6px; height: 80px;
+  background: var(--white);
+  transform-origin: bottom center;
+  position: absolute;
+  bottom: 50%;
+  animation: anticipate 3s ease-in-out infinite;
+}
+.anim-anticipate-ball {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--acid);
+  position: absolute;
+  top: 0;
+  left: 50%; transform: translateX(-50%);
+}
+
+/* ── 03 STAGING ── */
+@keyframes stagingSpot {
+  0%,100% { transform: scale(0.95); opacity:0.8; }
+  50%     { transform: scale(1.05); opacity:1; }
+}
+@keyframes stagingBg {
+  0%,100% { opacity:0.15; }
+  50%     { opacity:0.06; }
+}
+.anim-staging-hero {
+  width: 70px; height: 70px;
+  background: var(--acid);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation: stagingSpot 2s ease-in-out infinite;
+  position: absolute;
+}
+.anim-staging-bg1,.anim-staging-bg2 {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,0.15);
+  position: absolute;
+  animation: stagingBg 2s ease-in-out infinite;
+}
+.anim-staging-bg1 { left:15%; top:30%; border-radius:50%; }
+.anim-staging-bg2 { right:15%; bottom:25%; }
+.anim-staging-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  border: 1px solid rgba(204,255,0,0.3);
+  position: absolute;
+  animation: stagingSpot 2s ease-in-out infinite;
+}
+
+/* ── 04 STRAIGHT LINES vs ARCS ── */
+@keyframes arcMove {
+  0%   { offset-distance: 0%;   transform: rotate(0deg); }
+  100% { offset-distance: 100%; transform: rotate(360deg); }
+}
+.anim-arc-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--acid);
+  position: absolute;
+  offset-path: ellipse(100px 50px at 50% 50%);
+  animation: arcMove 2s linear infinite;
+}
+.anim-arc-path {
+  position: absolute;
+  width: 200px; height: 100px;
+  border: 1px dashed rgba(204,255,0,0.3);
+  border-radius: 50%;
+}
+.anim-line-dot {
+  width: 14px; height: 14px;
+  background: rgba(255,255,255,0.4);
+  position: absolute;
+  top: 30%;
+  animation: linearMove 1s linear infinite alternate;
+}
+@keyframes linearMove {
+  from { left: 20%; }
+  to   { left: 75%; }
+}
+
+/* ── 05 FOLLOW THROUGH ── */
+@keyframes followLead {
+  0%,100%{ transform:translateX(0); }
+  40%    { transform:translateX(120px); }
+  60%    { transform:translateX(130px); } /* overshoot */
+  80%    { transform:translateX(118px); } /* settle */
+}
+@keyframes followTrail {
+  0%,100%{ transform:translateX(0); }
+  55%    { transform:translateX(120px); }
+  70%    { transform:translateX(135px); } /* more overshoot */
+  90%    { transform:translateX(118px); }
+}
+.anim-follow-head {
+  width: 28px; height: 28px;
+  border-radius:50%;
+  background: var(--acid);
+  position: absolute;
+  top: 45%;
+  left: 10%;
+  animation: followLead 2.5s cubic-bezier(0.68,-0.55,0.27,1.55) infinite;
+}
+.anim-follow-tail {
+  width: 18px; height: 18px;
+  border-radius:50%;
+  background: rgba(204,255,0,0.4);
+  position: absolute;
+  top: calc(45% + 5px);
+  left: calc(10% - 14px);
+  animation: followTrail 2.5s cubic-bezier(0.68,-0.55,0.27,1.55) infinite;
+}
+.anim-follow-tail2 {
+  width: 12px; height: 12px;
+  border-radius:50%;
+  background: rgba(204,255,0,0.2);
+  position: absolute;
+  top: calc(45% + 8px);
+  left: calc(10% - 24px);
+  animation: followTrail 2.5s 0.08s cubic-bezier(0.68,-0.55,0.27,1.55) infinite;
+}
+
+/* ── 06 SLOW IN/OUT (EASING) ── */
+@keyframes easeMove {
+  0%   { left: 8%;  transform: scaleX(0.8) scaleY(1.2); }
+  50%  { left: 75%; transform: scaleX(1.3) scaleY(0.7); }
+  100% { left: 8%;  transform: scaleX(0.8) scaleY(1.2); }
+}
+@keyframes linearComp {
+  0%   { left: 8%; }
+  50%  { left: 75%; }
+  100% { left: 8%; }
+}
+.anim-ease-ball {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--acid);
+  position: absolute;
+  top: 35%;
+  animation: easeMove 2.5s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+.anim-linear-ball {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: 1px dashed rgba(255,255,255,0.4);
+  position: absolute;
+  top: 60%;
+  animation: linearComp 2.5s linear infinite;
+}
+.anim-ease-label {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: rgba(204,255,0,0.5);
+  letter-spacing: 0.2em;
+}
+
+/* ── 07 SECONDARY ACTION ── */
+@keyframes secMain {
+  0%,100% { transform: translateX(0) rotate(0deg); }
+  50%     { transform: translateX(60px) rotate(5deg); }
+}
+@keyframes secSub1 {
+  0%,100% { transform: rotate(-10deg); }
+  50%     { transform: rotate(20deg); }
+}
+@keyframes secSub2 {
+  0%,100% { transform: translateY(0); }
+  30%     { transform: translateY(-8px); }
+  60%     { transform: translateY(5px); }
+}
+.anim-sec-body {
+  width: 60px; height: 80px;
+  background: var(--white);
+  position: absolute;
+  animation: secMain 2s ease-in-out infinite;
+  display: flex; align-items:center; justify-content:center;
+}
+.anim-sec-arm {
+  width: 8px; height: 40px;
+  background: var(--acid);
+  position: absolute;
+  right: -10px; top: 15px;
+  transform-origin: top center;
+  animation: secSub1 2s ease-in-out infinite;
+}
+.anim-sec-head {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--acid);
+  position: absolute;
+  top: -20px;
+  animation: secSub2 2s ease-in-out infinite;
+}
+
+/* ── 08 TIMING ── */
+@keyframes fastBall {
+  0%,100%{ left:5%; }
+  50%    { left:85%; }
+}
+@keyframes slowBall {
+  0%,100%{ left:5%; }
+  50%    { left:85%; }
+}
+.anim-timing-fast {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--acid);
+  position: absolute;
+  top: 30%;
+  animation: fastBall 0.6s ease-in-out infinite;
+}
+.anim-timing-slow {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  position: absolute;
+  top: 60%;
+  animation: slowBall 2.4s ease-in-out infinite;
+}
+.anim-timing-trail {
+  position: absolute;
+  top: 30%; left: 5%;
+  height: 32px;
+  background: rgba(204,255,0,0.08);
+  border-radius: 0 50% 50% 0;
+  animation: trailFast 0.6s ease-in-out infinite;
+}
+@keyframes trailFast {
+  0%,100%{ width:10px; }
+  40%    { width:80px; }
+  50%    { width:60px; }
+}
+
+/* ── 09 EXAGGERATION ── */
+@keyframes exagg {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(0.3) rotate(-15deg); }  /* squish down */
+  50%  { transform: scale(2.2) rotate(5deg); }    /* EXPLODE */
+  75%  { transform: scale(0.8) rotate(-3deg); }   /* bounce */
+  100% { transform: scale(1) rotate(0deg); }
+}
+.anim-exagg-star {
+  width: 60px; height: 60px;
+  background: var(--acid);
+  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  position: absolute;
+  animation: exagg 1.8s cubic-bezier(0.68,-0.55,0.27,1.55) infinite;
+}
+@keyframes exaggRing {
+  0%   { transform:scale(0.5); opacity:0.6; }
+  50%  { transform:scale(2);   opacity:0; }
+  100% { transform:scale(0.5); opacity:0; }
+}
+.anim-exagg-ring {
+  width: 80px; height: 80px;
+  border: 2px solid var(--acid);
+  border-radius: 50%;
+  position: absolute;
+  animation: exaggRing 1.8s cubic-bezier(0.68,-0.55,0.27,1.55) infinite;
+}
+
+/* ── 10 APPEAL ── */
+@keyframes appealFloat {
+  0%,100%{ transform: translateY(0) rotate(-2deg); }
+  50%    { transform: translateY(-16px) rotate(2deg); }
+}
+.anim-appeal-char {
+  width: 64px; height: 84px;
+  background: var(--acid);
+  border-radius: 32px 32px 20px 20px;
+  position: absolute;
+  animation: appealFloat 2.5s ease-in-out infinite;
+  display: flex; align-items: center; justify-content: center;
+}
+.anim-appeal-eye {
+  width: 12px; height: 16px;
+  background: var(--black);
+  border-radius: 50%;
+  margin: 0 6px;
+  position: relative;
+}
+.anim-appeal-eyes {
+  display: flex;
+  position: absolute;
+  top: 28%;
+}
+@keyframes blink {
+  0%,90%,100%{ transform:scaleY(1); }
+  95%{ transform:scaleY(0.1); }
+}
+.anim-appeal-eye { animation: blink 3s ease-in-out infinite; }
+.anim-appeal-eye:nth-child(2) { animation-delay: 0.05s; }
+
+/* ── 11 SOLID DRAWING ── */
+.anim-solid-box {
+  width: 70px; height: 70px;
+  background: transparent;
+  border: 3px solid var(--acid);
+  position: absolute;
+  transform: perspective(400px) rotateX(20deg) rotateY(30deg);
+  animation: solidRotate 4s linear infinite;
+}
+@keyframes solidRotate {
+  from { transform: perspective(400px) rotateX(20deg) rotateY(0deg); }
+  to   { transform: perspective(400px) rotateX(20deg) rotateY(360deg); }
+}
+.anim-solid-face {
+  width: 70px; height: 70px;
+  background: rgba(204,255,0,0.1);
+  border: 3px solid rgba(204,255,0,0.4);
+  position: absolute;
+  transform: perspective(400px) rotateX(20deg) rotateY(30deg) translateZ(35px);
+  animation: solidRotate 4s linear infinite;
+}
+
+/* ── 12 POSE TO POSE ── */
+@keyframes poseA {
+  0%,100%{ clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background:var(--acid); }
+  33%    { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); background:var(--white); }
+  66%    { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background:rgba(204,255,0,0.6); }
+}
+.anim-pose-shape {
+  width: 80px; height: 80px;
+  position: absolute;
+  animation: poseA 3s steps(1) infinite;
+}
+.anim-pose-ghost {
+  width: 80px; height: 80px;
+  border: 2px dashed rgba(204,255,0,0.2);
+  position: absolute;
+  left: 55%;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+.anim-pose-ghost2 {
+  width: 80px; height: 80px;
+  border: 2px dashed rgba(204,255,0,0.1);
+  position: absolute;
+  right: 10%;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+/* ══════════════════════════════════════
+   PAGE TRANSITION
+══════════════════════════════════════ */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity:0; }
+  to   { transform: translateX(0); opacity:1; }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity:1; }
+  to   { transform: translateX(-100%); opacity:0; }
+}
+.page-enter { animation: slideInRight 0.35s cubic-bezier(0.25,1,0.5,1) forwards; }
+.page-exit  { animation: slideOutLeft 0.35s cubic-bezier(0.5,0,0.75,0) forwards; }
+
+/* ══════════════════════════════════════
+   SCROLLBAR HIDE
+══════════════════════════════════════ */
+::-webkit-scrollbar { width:2px; }
+::-webkit-scrollbar-thumb { background: var(--acid); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HUD ═══ -->
+<div class="hud tl">SYS_ID: 08 // T-GRID: A1B2.XY<br>DATA: 55.667°N 126.978°E</div>
+<div class="hud tr">REV.03 // LOAD: 99.9%<br>STATUS: [ACTIVE]</div>
+<div class="hud bl" id="hud-bl">PROTOCOL: KINETIC_GEOMETRY</div>
+<div class="hud br" id="hud-br">XY_COORD: 0.00</div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- ═══ COVER ═══ -->
+<div id="cover">
+  <div class="grid-bg"></div>
+  <div class="cover-num">08</div>
+
+  <div class="cover-header">
+    <div class="sys">LECTURE_08 // KINETIC_GEOMETRY // SYSTEM_INITIALIZATION</div>
+    <div class="sys" id="clock">00:00:00</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-left">
+      <div>
+        <div class="cover-lecture">GIVING LIFE TO GEOMETRY</div>
+        <div class="cover-title">THE<br><span class="acid">12</span><br>PRINCIPLES</div>
+        <div class="cover-sub">形態の覚醒：アニメーション12の原則<br>クリックして各原則を体験する</div>
+      </div>
+      <div class="cover-desc">
+        VECTOR_LIFE_SUPPORT: ENGAGED<br>
+        COLOR_ACCENT: #CCFF00 // FIXED_MONO<br>
+        JUMP_RATE: ULTRA-HIGH<br>
+        AUTH: LEVEL_5 // RELEASE: GLOBAL
+      </div>
+    </div>
+
+    <div class="cover-right" id="principleList"></div>
+  </div>
+</div>
+
+<!-- ═══ PRINCIPLE PAGE ═══ -->
+<div id="principle-page">
+  <!-- 3 parallax layers -->
+  <div class="p-layer p-layer-far" data-speed="0.06">
+    <div class="far-grid"></div>
+    <div class="far-bignum" id="far-num">01</div>
+    <div class="far-checker"></div>
+    <div class="far-checker2"></div>
+  </div>
+  <div class="p-layer p-layer-mid" data-speed="0.22">
+    <div class="mid-hstripe" style="top:38%;"></div>
+    <div class="mid-hstripe" style="top:62%;"></div>
+    <div class="mid-hstripe" style="bottom:20%; width:30%; right:10%; left:auto;"></div>
+  </div>
+  <div class="p-layer p-layer-near" data-speed="0.55">
+    <!-- near accent elements injected per page -->
+  </div>
+
+  <!-- Fixed UI over layers -->
+  <div class="page-layout">
+    <div class="page-topbar">
+      <div class="back-btn" id="backBtn">← INDEX</div>
+      <div id="page-id">PRINCIPLE_01 // SQUASH_AND_STRETCH</div>
+      <div>SYS_LOAD: 99%</div>
+    </div>
+
+    <div class="page-content">
+      <!-- LEFT: Animation -->
+      <div class="page-left">
+        <div class="anim-canvas" id="animCanvas"></div>
+        <div class="hazard"></div>
+      </div>
+
+      <!-- RIGHT: Info -->
+      <div class="page-right">
+        <div class="p-page-num" id="pageNum">01</div>
+        <div class="p-page-en" id="pageEn">SQUASH &amp; STRETCH</div>
+        <div class="p-page-jp" id="pageJp">潰しと伸ばし</div>
+        <div class="p-page-desc" id="pageDesc"></div>
+        <div class="p-page-meta" id="pageMeta"></div>
+      </div>
+    </div>
+
+    <div class="page-bottombar">
+      <div id="page-status">STATUS: [ACTIVE] // PROTOCOL: KINETIC_INJECTION</div>
+      <div class="nav-arrows">
+        <div class="nav-arrow" id="navPrev">← PREV</div>
+        <div class="nav-arrow" id="navNext">NEXT →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const principles = [
+  {
+    num:'01', en:'SQUASH & STRETCH', jp:'潰しと伸ばし',
+    desc: ['グラフィック要素の「重量」「体積」「柔軟性」を定義する。', 'UIコンポーネントが持つ弾力性の視覚化。質量保存の法則に基づく変形。'],
+    meta: 'MASS_CONSERVATION: TRUE // DEFORMATION_INDEX: 0.85\nID: SENTIENT-BP-2026-01',
+    anim: 'squashStretch',
+    bgColor: '#000',
+  },
+  {
+    num:'02', en:'ANTICIPATION', jp:'予備動作',
+    desc: ['動き出す前の「エネルギーの蓄積（Wind-up）」。', '視聴者の視線を次のアクションへ心理的に誘導する技術。'],
+    meta: 'WIND_UP_INDEX: +1.5s // PROTOCOL: LOAD_AND_RELEASE\nID: SENTIENT-BP-2026-02',
+    anim: 'anticipation',
+    bgColor: '#000',
+  },
+  {
+    num:'03', en:'STAGING', jp:'演出',
+    desc: ['視聴者の視線を、意図したメイン要素へと強制的に誘導する技術。', 'ノイズを排除し、視覚的インパクトを最大化する（tDR的アプローチ）。'],
+    meta: 'FOCUS_LOCK: TRUE // PSYCHOLOGICAL_ANCHOR: DEPLOYED\nID: SENTIENT-BP-2026-03',
+    anim: 'staging',
+    bgColor: '#111',
+  },
+  {
+    num:'04', en:'THE ARC', jp:'運動の弧',
+    desc: ['自然界において、完全に直線的な動きは存在しない。', '厳格なグリッドシステム上に、優雅な曲線の軌道をマッピングする。'],
+    meta: 'TRAJECTORY_CALC: ORGANIC // X_Y_DELTA: 0.045\nID: SENTIENT-BP-2026-04',
+    anim: 'arc',
+    bgColor: '#000',
+  },
+  {
+    num:'05', en:'FOLLOW THROUGH', jp:'フォロースルー',
+    desc: ['停止後の「慣性の法則」による行き過ぎと定着（Overshoot & Settling）。', 'リードとトレイルの時間差が「重さ」の知覚を生む。'],
+    meta: 'SETTLING_FACTOR: -0.3s // INERTIA: ENGAGED\nID: SENTIENT-BP-2026-05',
+    anim: 'followThrough',
+    bgColor: '#000',
+  },
+  {
+    num:'06', en:'SLOW IN / SLOW OUT', jp:'イージング：動きの魂',
+    desc: ['リニア（直線的）vs イーズイン／イーズアウト。', 'ベジェ曲線を用いて自然界の重力と摩擦をシミュレートする。機械と生命体を分ける究極の境界線。'],
+    meta: 'BEZIER: CUBIC // VELOCITY: VARIABLE\nID: SENTIENT-BP-2026-06',
+    anim: 'easing',
+    bgColor: '#000',
+  },
+  {
+    num:'07', en:'SECONDARY ACTION', jp:'セカンダリーアクション',
+    desc: ['主動作を補強し、シーンに奥行きとリアリティを与える付随的な動き。', 'マクロが注意を引き、ミクロが世界観を構築する。'],
+    meta: 'DATA_PACKET: 0.0034 // X:1293 Y:8742\nID: SENTIENT-BP-2026-07',
+    anim: 'secondary',
+    bgColor: '#0a0a0a',
+  },
+  {
+    num:'08', en:'TIMING', jp:'タイミング',
+    desc: ['アクション全体の速度（フレーム数）。', '同じ距離を移動する物体でも、フレーム数の差が「重さ」と「速度感」の全てを決定する。'],
+    meta: 'FRAME_RATE: VARIABLE // MASS_FACTOR: ACTIVE\nID: SENTIENT-BP-2026-08',
+    anim: 'timing',
+    bgColor: '#000',
+  },
+  {
+    num:'09', en:'EXAGGERATION', jp:'誇張表現',
+    desc: ['感情的なパンチ力を生むため、現実の物理法則を超越する。', '現実そのままの動きは退屈である。キネティックなスケール感でメッセージを「叫ばせる」。'],
+    meta: 'SYSTEM_GAIN: [110%] // OVERDRIVE: ACTIVE\nID: SENTIENT-BP-2026-09',
+    anim: 'exaggeration',
+    bgColor: '#000',
+  },
+  {
+    num:'10', en:'APPEAL', jp:'魅力',
+    desc: ['視聴者が感情的に共鳴できる「魅力的なデザイン言語」の構築。', 'カリスマ性、可読性、ユニークな視覚的アイデンティティの融合。'],
+    meta: 'CHARISMA_INDEX: MAX // IDENTITY: UNIQUE\nID: SENTIENT-BP-2026-10',
+    anim: 'appeal',
+    bgColor: '#000',
+  },
+  {
+    num:'11', en:'SOLID DRAWING', jp:'立体感のある作画',
+    desc: ['2Dベクター空間に「重量」「深さ」「奥行き」の感覚を与える技術。', '3D空間の質量を2Dベクターアニメーションへ変換する。'],
+    meta: 'DIMENSION: 3D→2D // DEPTH_MAP: ACTIVE\nID: SENTIENT-BP-2026-11',
+    anim: 'solidDrawing',
+    bgColor: '#000',
+  },
+  {
+    num:'12', en:'POSE TO POSE', jp:'ポーズ・トゥ・ポーズ',
+    desc: ['キーポーズ（Key Poses）を先に決定し、後からInbetweenを埋める計画的手法。', 'ピークフレームの先行決定による、意図的なビジュアルコミュニケーション。'],
+    meta: 'KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED\nID: SENTIENT-BP-2026-12',
+    anim: 'poseToPose',
+    bgColor: '#000',
+  },
+];
+
+/* ══════════════════════════════════════
+   BUILD LIST
+══════════════════════════════════════ */
+const list = document.getElementById('principleList');
+principles.forEach((p,i) => {
+  const item = document.createElement('div');
+  item.className = 'principle-item';
+  item.innerHTML = `
+    <div class="p-num">${p.num}</div>
+    <div class="p-names">
+      <div class="p-en">${p.en}</div>
+      <div class="p-jp">${p.jp}</div>
+    </div>
+    <div class="p-arrow">→</div>
+  `;
+  item.addEventListener('click', () => openPrinciple(i));
+  list.appendChild(item);
+});
+
+/* ══════════════════════════════════════
+   ANIMATION BUILDERS
+══════════════════════════════════════ */
+const animBuilders = {
+  squashStretch: (canvas) => {
+    canvas.style.background = 'transparent';
+    canvas.innerHTML = `
+      <div class="anim-squash-shadow"></div>
+      <div class="anim-squash-ball"></div>
+      <span class="anim-ease-label" style="top:8%;left:8%;color:rgba(204,255,0,0.4);">MASS: CONSTANT</span>
+      <span class="anim-ease-label" style="bottom:10%;right:8%;color:rgba(204,255,0,0.3);">VOLUME: PRESERVED</span>
+    `;
+  },
+  anticipation: (canvas) => {
+    canvas.innerHTML = `
+      <div style="position:relative;width:80px;height:120px;display:flex;align-items:flex-end;justify-content:center;">
+        <div class="anim-anticipate-arm">
+          <div class="anim-anticipate-ball"></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:rgba(204,255,0,0.2);border-radius:2px;"></div>
+      <span class="anim-ease-label" style="top:10%;left:10%;">WIND-UP ↓</span>
+      <span class="anim-ease-label" style="bottom:15%;right:10%;">RELEASE ↑</span>
+    `;
+  },
+  staging: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-staging-ring"></div>
+      <div class="anim-staging-bg1"></div>
+      <div class="anim-staging-bg2"></div>
+      <div class="anim-staging-hero"></div>
+      <span class="anim-ease-label" style="bottom:10%;left:50%;transform:translateX(-50%);color:rgba(204,255,0,0.5);">FOCUS_LOCK: TRUE</span>
+    `;
+  },
+  arc: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-arc-path"></div>
+      <div class="anim-arc-dot"></div>
+      <div class="anim-line-dot" style="border-radius:0;background:rgba(255,255,255,0.3);width:14px;height:14px;"></div>
+      <span class="anim-ease-label" style="top:12%;left:10%;">CURVED [ORGANIC]</span>
+      <span class="anim-ease-label" style="bottom:22%;left:10%;color:rgba(255,255,255,0.3);">LINEAR [MECHANICAL]</span>
+    `;
+  },
+  followThrough: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-follow-tail2"></div>
+      <div class="anim-follow-tail"></div>
+      <div class="anim-follow-head"></div>
+      <div style="position:absolute;top:43%;left:8%;right:8%;height:1px;background:rgba(255,255,255,0.08);"></div>
+      <span class="anim-ease-label" style="bottom:12%;left:50%;transform:translateX(-50%);">OVERSHOOT + SETTLE</span>
+    `;
+  },
+  easing: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-ease-ball"></div>
+      <div class="anim-linear-ball"></div>
+      <div style="position:absolute;top:30%;left:5%;right:5%;height:1px;background:rgba(204,255,0,0.1);"></div>
+      <div style="position:absolute;top:57%;left:5%;right:5%;height:1px;border-top:1px dashed rgba(255,255,255,0.1);"></div>
+      <span class="anim-ease-label" style="top:20%;left:6%;color:rgba(204,255,0,0.5);">EASE: CUBIC [ORGANIC]</span>
+      <span class="anim-ease-label" style="bottom:18%;left:6%;color:rgba(255,255,255,0.3);">LINEAR [MECHANICAL]</span>
+    `;
+  },
+  secondary: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-sec-body">
+        <div class="anim-sec-head"></div>
+        <div class="anim-sec-arm"></div>
+      </div>
+      <span class="anim-ease-label" style="top:10%;left:10%;">PRIMARY →</span>
+      <span class="anim-ease-label" style="top:10%;right:10%;color:rgba(204,255,0,0.4);">SECONDARY ↻</span>
+    `;
+  },
+  timing: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-timing-trail"></div>
+      <div class="anim-timing-fast"></div>
+      <div class="anim-timing-slow"></div>
+      <div style="position:absolute;top:28%;left:4%;right:4%;height:36px;border:1px solid rgba(204,255,0,0.08);"></div>
+      <div style="position:absolute;top:58%;left:4%;right:4%;height:36px;border:1px solid rgba(255,255,255,0.05);"></div>
+      <span class="anim-ease-label" style="top:14%;right:6%;color:rgba(204,255,0,0.5);">+29 FRAMES FAST</span>
+      <span class="anim-ease-label" style="bottom:12%;right:6%;color:rgba(255,255,255,0.3);">177 FRAMES SLOW</span>
+    `;
+  },
+  exaggeration: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-exagg-ring"></div>
+      <div class="anim-exagg-star"></div>
+      <span class="anim-ease-label" style="top:10%;left:50%;transform:translateX(-50%);">SYSTEM_GAIN: 110%</span>
+      <span class="anim-ease-label" style="bottom:12%;left:50%;transform:translateX(-50%);">OVERDRIVE_ACTIVE</span>
+    `;
+  },
+  appeal: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-appeal-char">
+        <div class="anim-appeal-eyes">
+          <div class="anim-appeal-eye"></div>
+          <div class="anim-appeal-eye"></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:16px;width:80px;height:8px;background:rgba(204,255,0,0.15);border-radius:50%;"></div>
+      <span class="anim-ease-label" style="bottom:8%;left:50%;transform:translateX(-50%);">CHARISMA_INDEX: MAX</span>
+    `;
+  },
+  solidDrawing: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-solid-face"></div>
+      <div class="anim-solid-box"></div>
+      <span class="anim-ease-label" style="top:10%;left:50%;transform:translateX(-50%);">3D → 2D VECTOR</span>
+      <span class="anim-ease-label" style="bottom:10%;left:50%;transform:translateX(-50%);">DEPTH_MAP: ACTIVE</span>
+    `;
+  },
+  poseToPose: (canvas) => {
+    canvas.innerHTML = `
+      <div class="anim-pose-ghost2"></div>
+      <div class="anim-pose-ghost"></div>
+      <div class="anim-pose-shape"></div>
+      <span class="anim-ease-label" style="top:10%;left:10%;">KEY POSE A</span>
+      <span class="anim-ease-label" style="top:10%;left:55%;color:rgba(204,255,0,0.3);">KEY POSE B</span>
+      <span class="anim-ease-label" style="top:10%;right:8%;color:rgba(204,255,0,0.15);">KEY POSE C</span>
+      <span class="anim-ease-label" style="bottom:10%;left:50%;transform:translateX(-50%);">IN_BETWEEN: CALCULATED</span>
+    `;
+  },
+};
+
+/* ══════════════════════════════════════
+   NAV STATE
+══════════════════════════════════════ */
+let currentIdx = 0;
+
+function openPrinciple(idx) {
+  currentIdx = idx;
+  const p = principles[idx];
+  const page = document.getElementById('principle-page');
+
+  // set bg
+  page.style.background = p.bgColor || '#000';
+
+  // update far layer
+  document.getElementById('far-num').textContent = p.num;
+
+  // update HUD
+  document.getElementById('page-id').textContent =
+    `PRINCIPLE_${p.num} // ${p.en.replace(/[^A-Z0-9]/gi,'_').toUpperCase()}`;
+  document.getElementById('hud-bl').textContent =
+    `MODULE: ${p.num}/12 // ${p.en.toUpperCase()}`;
+
+  // update content
+  document.getElementById('pageNum').textContent = p.num;
+  document.getElementById('pageEn').innerHTML = p.en;
+  document.getElementById('pageJp').textContent = p.jp;
+
+  const descEl = document.getElementById('pageDesc');
+  descEl.innerHTML = p.desc.map(d=>`<p>${d}</p>`).join('');
+
+  document.getElementById('pageMeta').textContent = p.meta;
+
+  // build animation
+  const canvas = document.getElementById('animCanvas');
+  canvas.innerHTML = '';
+  if (animBuilders[p.anim]) animBuilders[p.anim](canvas);
+
+  // show
+  page.style.display = 'block';
+  page.className = 'page-enter';
+  setTimeout(() => page.className = '', 400);
+
+  // cover out
+  document.getElementById('cover').style.opacity = '0';
+  document.getElementById('cover').style.pointerEvents = 'none';
+}
+
+function closePrinciple() {
+  const page = document.getElementById('principle-page');
+  page.style.opacity = '0';
+  setTimeout(() => {
+    page.style.display = 'none';
+    page.style.opacity = '1';
+    document.getElementById('cover').style.opacity = '1';
+    document.getElementById('cover').style.pointerEvents = 'auto';
+  }, 300);
+}
+
+document.getElementById('backBtn').addEventListener('click', closePrinciple);
+
+document.getElementById('navNext').addEventListener('click', () => {
+  openPrinciple((currentIdx+1) % principles.length);
+});
+document.getElementById('navPrev').addEventListener('click', () => {
+  openPrinciple((currentIdx-1+principles.length) % principles.length);
+});
+
+/* ══════════════════════════════════════
+   PARALLAX — scroll + mouse
+══════════════════════════════════════ */
+let scrollY=0, targetSY=0;
+let mouseX=0, mouseY=0, targetMX=0, targetMY=0;
+
+window.addEventListener('wheel', e => {
+  targetSY = Math.max(-400, Math.min(400, targetSY + e.deltaY * 0.9));
+}, {passive:true});
+
+window.addEventListener('mousemove', e => {
+  targetMX = (e.clientX / window.innerWidth  - 0.5) * 2;
+  targetMY = (e.clientY / window.innerHeight - 0.5) * 2;
+  // update hud
+  document.getElementById('hud-br').textContent =
+    `XY_COORD: ${(e.clientX/10).toFixed(2)}`;
+});
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+function tick() {
+  scrollY = lerp(scrollY, targetSY, 0.06);
+  mouseX  = lerp(mouseX,  targetMX, 0.05);
+  mouseY  = lerp(mouseY,  targetMY, 0.05);
+
+  document.querySelectorAll('.p-layer').forEach(el => {
+    const sp = parseFloat(el.dataset.speed||0);
+    const px = -mouseX * window.innerWidth  * sp * 0.8;
+    const py = -mouseY * window.innerHeight * sp * 0.8 + (-scrollY * sp);
+    el.style.transform = `translate3d(${px}px,${py}px,0)`;
+  });
+
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ══════════════════════════════════════
+   CLOCK
+══════════════════════════════════════ */
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* keyboard nav */
+document.addEventListener('keydown', e => {
+  const page = document.getElementById('principle-page');
+  if (page.style.display === 'block') {
+    if (e.key === 'ArrowRight') openPrinciple((currentIdx+1)%principles.length);
+    if (e.key === 'ArrowLeft')  openPrinciple((currentIdx-1+principles.length)%principles.length);
+    if (e.key === 'Escape')     closePrinciple();
+  }
+});
+</script>
+</body>
+</html>

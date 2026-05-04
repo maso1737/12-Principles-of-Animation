@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 06 SLOW IN / SLOW OUT</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --acid:      #36FF00;   /* EASE：緑 */
+  --neon:      #F9FF47;   /* CUSTOM：黄緑 */
+  --grey-ball: #888;      /* LINEAR：グレー */
+  --black:  #000;
+  --white:  #fff;
+  --mid:    #888;
+  --panel:  #0E0E0E;
+  --border: rgba(54,255,0,0.15);
+  --mono:   'IBM Plex Mono', monospace;
+  --disp:   'Barlow Condensed', sans-serif;
+  --jp:     'Noto Sans JP', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+/* user-select:none を外してテキスト選択を許可。操作が必要な要素のみ無効化 */
+html,body { width:100%; height:100%; background:var(--black); color:var(--white); font-family:var(--mono); overflow:hidden; }
+body::after { content:''; position:fixed; inset:0; background-image:radial-gradient(rgba(0,0,0,0.25) 1px,transparent 1px); background-size:4px 4px; pointer-events:none; z-index:9999; opacity:0.5; }
+
+/* ── LAYOUT ── */
+#app { display:grid; grid-template-rows:44px 1fr 44px; grid-template-columns:1fr 320px; height:100vh; }
+
+#topbar { grid-column:1/-1; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 16px; font-size:10px; color:rgba(54,255,0,0.5); letter-spacing:0.25em; }
+
+#main-stage { position:relative; overflow:hidden; background:var(--black); border-right:1px solid var(--border); }
+
+.stage-grid { position:absolute; inset:0; background-image: linear-gradient(rgba(54,255,0,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(54,255,0,0.03) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; }
+.stage-bignum { position:absolute; font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(200px,35vw,460px); color:rgba(255,255,255,0.025); top:-60px; left:-20px; letter-spacing:-0.05em; line-height:1; pointer-events:none; }
+.checker { position:absolute; background-image:repeating-conic-gradient(rgba(54,255,0,0.06) 0% 25%,transparent 0% 50%); background-size:18px 18px; pointer-events:none; }
+
+.corner { position:absolute; width:16px; height:16px; pointer-events:none; }
+.corner::before,.corner::after { content:''; position:absolute; background:var(--acid); }
+.corner::before { width:100%; height:1px; }
+.corner::after  { width:1px;  height:100%; }
+.corner.tl { top:10px; left:10px; }
+.corner.tr { top:10px; right:10px; transform:scaleX(-1); }
+.corner.bl { bottom:10px; left:10px; transform:scaleY(-1); }
+.corner.br { bottom:10px; right:10px; transform:scale(-1); }
+
+.principle-overlay { position:absolute; top:12px; right:14px; text-align:right; pointer-events:none; }
+.po-num { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(40px,6vw,80px); color:var(--acid); line-height:1; letter-spacing:-0.03em; }
+.po-en  { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(14px,2vw,22px); color:var(--white); line-height:1; }
+.po-jp  { font-family:var(--jp); font-size:10px; color:var(--mid); margin-top:3px; }
+
+/* ── DEMO AREA — 3レーン ── */
+#demo-area {
+  position:absolute; inset:52px 16px 72px 16px;
+  display:grid; grid-template-rows:1fr 1fr 1fr; gap:2px;
+}
+.lane {
+  position:relative; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.05);
+  display:flex; align-items:center;
+}
+.lane.ease-in-out { border-color:rgba(54,255,0,0.2); }
+.lane.linear-lane { border-color:rgba(160,160,160,0.2); }  /* グレー */
+.lane.user-lane   { border-color:rgba(249,255,71,0.25); }   /* 蛍光黄緑 */
+
+.lane-label {
+  position:absolute; top:6px; left:10px;
+  font-size:9px; letter-spacing:0.35em; pointer-events:none; user-select:none;
+}
+.lane-label.good   { color:var(--acid); }
+.lane-label.bad    { color:rgba(160,160,160,0.8); }          /* グレー */
+.lane-label.user   { color:var(--neon); }
+
+/* フレーム番号 */
+.frame-num {
+  position:absolute; top:22px; left:10px;
+  font-size:9px; color:rgba(54,255,0,0.3); letter-spacing:0.2em;
+  pointer-events:none; display:none;
+}
+.frame-num.show { display:block; }
+
+/* ドット軌跡（スペーシング可視化） */
+.trail-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
+/* ボール */
+.lane-ball {
+  position:absolute;
+  width:28px; height:28px; border-radius:50%;
+  top:50%; transform:translateY(-50%);
+  pointer-events:none; user-select:none;
+}
+.lane-ball.b-ease   { background:var(--acid);      box-shadow:0 0 12px rgba(54,255,0,0.45); }
+.lane-ball.b-linear { background:var(--grey-ball); box-shadow:0 0 6px rgba(136,136,136,0.2); }
+.lane-ball.b-user   { background:var(--neon);      box-shadow:0 0 14px rgba(249,255,71,0.6);  }
+
+/* 速度インジケーター — ボール左に伸びる尾引き
+   速度が高いほど長く伸びる。ボールのtop:50%に合わせる */
+.vel-indicator {
+  position:absolute;
+  height:4px; border-radius:2px;
+  top:50%; transform:translateY(-50%);
+  pointer-events:none; user-select:none;
+  transform-origin:right center;
+}
+.vel-ease   { background: linear-gradient(to left, rgba(54,255,0,0.8), rgba(54,255,0,0)); }
+.vel-linear { background: linear-gradient(to left, rgba(136,136,136,0.6), rgba(136,136,136,0)); }
+.vel-user   { background: linear-gradient(to left, rgba(249,255,71,0.8), rgba(249,255,71,0)); }
+
+/* 速度ラベル */
+.vel-label {
+  position:absolute; top:6px; right:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8px; letter-spacing:0.15em;
+  pointer-events:none; user-select:none;
+}
+
+/* hazard */
+.hazard-bar { position:absolute; bottom:0; left:0; right:0; height:5px; background:repeating-linear-gradient(-45deg,var(--acid),var(--acid) 5px,var(--black) 5px,var(--black) 14px); opacity:0.4; }
+
+/* ── ベジェカーブビュー ── */
+#curve-view {
+  position:absolute; bottom:72px; right:16px;
+  width:180px; height:140px;
+  border:1px solid rgba(54,255,0,0.15);
+  background:rgba(0,0,0,0.6);
+  pointer-events:none;
+}
+#curve-view-label {
+  position:absolute; bottom:72px; right:16px;
+  transform:translateY(-142px);
+  font-size:8px; color:rgba(54,255,0,0.4); letter-spacing:0.3em;
+  pointer-events:none;
+}
+
+/* ── PLAYBAR ── */
+#playbar { position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; z-index:50; }
+.play-btn { width:28px; height:28px; border:1px solid rgba(54,255,0,0.4); background:rgba(0,0,0,0.6); color:var(--acid); font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.play-btn:hover { background:rgba(54,255,0,0.15); border-color:var(--acid); }
+.play-btn.active { background:rgba(54,255,0,0.2); }
+.scrub-wrap { width:160px; display:flex; align-items:center; gap:6px; }
+.scrub-label { font-size:9px; color:rgba(54,255,0,0.4); letter-spacing:0.2em; white-space:nowrap; }
+input[type=range] { -webkit-appearance:none; width:100%; height:2px; background:rgba(255,255,255,0.1); outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--acid); cursor:pointer; }
+
+/* ── SIDE PANEL ── */
+#side-panel { display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; background:var(--panel); }
+#side-panel::-webkit-scrollbar { width:2px; }
+#side-panel::-webkit-scrollbar-thumb { background:var(--acid); }
+
+.sp-section { border-bottom:1px solid rgba(255,255,255,0.06); padding:14px 16px; flex-shrink:0; }
+.sp-label { font-size:9px; letter-spacing:0.4em; color:rgba(54,255,0,0.4); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.sp-label .ltr { font-size:11px; font-weight:700; color:var(--acid); background:rgba(54,255,0,0.1); width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; letter-spacing:0; flex-shrink:0; }
+
+.demo-status { display:flex; gap:6px; flex-wrap:wrap; }
+.status-pill { font-size:9px; letter-spacing:0.15em; padding:3px 8px; border:1px solid; cursor:pointer; transition:all 0.15s; user-select:none; }
+.status-pill.active-pill { background:var(--acid); border-color:var(--acid); color:var(--black); }
+.status-pill.inactive    { border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); }
+.status-pill:hover       { border-color:var(--acid); color:var(--acid); }
+/* LINEAR ピル — グレー */
+.status-pill.grey-pill.active-pill { background:var(--grey-ball); border-color:var(--grey-ball); color:var(--black); }
+.status-pill.grey-pill:hover       { border-color:var(--grey-ball); color:var(--grey-ball); }
+/* CUSTOM ピル — 蛍光黄緑 */
+.status-pill.neon-pill.active-pill { background:var(--neon); border-color:var(--neon); color:var(--black); }
+.status-pill.neon-pill:hover       { border-color:var(--neon); color:var(--neon); }
+
+.toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:10px; letter-spacing:0.1em; color:rgba(255,255,255,0.6); }
+.toggle-switch { width:36px; height:18px; background:rgba(255,255,255,0.1); border-radius:9px; position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+.toggle-switch.on { background:var(--acid); }
+.toggle-switch::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:var(--white); top:2px; left:2px; transition:left 0.2s; }
+.toggle-switch.on::after { left:20px; background:var(--black); }
+
+.slider-row { margin-bottom:12px; }
+.slider-header { display:flex; justify-content:space-between; margin-bottom:5px; font-size:10px; }
+.slider-name { color:rgba(255,255,255,0.6); letter-spacing:0.1em; }
+.slider-val  { color:var(--acid); font-weight:700; }
+.slider-val.user-col { color:var(--blue); }
+
+.def-block { background:rgba(54,255,0,0.05); border-left:3px solid var(--acid); padding:10px 12px; margin-bottom:8px; }
+.def-en { font-family:var(--disp); font-weight:700; font-style:italic; font-size:16px; color:var(--white); line-height:1.2; }
+.def-jp { font-family:var(--jp); font-size:11px; color:var(--mid); margin-top:4px; line-height:1.6; }
+.def-core { margin-top:8px; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; line-height:1.8; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; }
+
+/* ベジェハンドルエディタ */
+#bezier-editor {
+  width:100%; aspect-ratio:1;
+  position:relative;
+  background:rgba(54,255,0,0.03);
+  border:1px solid rgba(54,255,0,0.12);
+  cursor:crosshair;
+  margin-top:8px;
+}
+#bezier-editor svg { width:100%; height:100%; display:block; }
+
+.handle-dot {
+  position:absolute;
+  width:12px; height:12px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  cursor:grab;
+  z-index:10; user-select:none;
+}
+.handle-dot:active { cursor:grabbing; }
+/* P1・P2 どちらも蛍光黄緑ベースで、P2は明るめグレーに */
+.handle-p1 { background:var(--neon);  border:2px solid var(--black); }
+.handle-p2 { background:#C8C8C8;      border:2px solid var(--black); }
+
+/* break */
+.break-btn { width:100%; padding:10px; background:rgba(255,59,59,0.08); border:1px solid rgba(255,59,59,0.3); color:var(--red); font-family:var(--mono); font-size:10px; letter-spacing:0.3em; cursor:pointer; transition:all 0.15s; text-align:left; }
+.break-btn:hover { background:rgba(255,59,59,0.15); }
+.break-btn.active-break { background:rgba(255,59,59,0.2); color:var(--white); }
+.break-warning { font-size:9px; color:rgba(255,59,59,0.5); margin-top:6px; letter-spacing:0.1em; line-height:1.6; }
+
+/* apply demos */
+.apply-track {
+  height:36px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+  position:relative; margin-bottom:8px; overflow:hidden; cursor:pointer;
+}
+.apply-track-ball {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:20px; height:20px; border-radius:50%; left:0%;
+}
+
+#bottombar { grid-column:1/-1; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 16px; font-size:9px; color:rgba(54,255,0,0.3); letter-spacing:0.2em; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div style="display:flex;gap:32px;">
+      <span>KINETIC_GEOMETRY // LEC_08</span>
+      <span>PRINCIPLE_06 // SLOW_IN_SLOW_OUT</span>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <span>SYS_ID:08 // BEZIER_SOUL</span>
+      <span id="clock">00:00:00</span>
+    </div>
+  </div>
+
+  <!-- MAIN STAGE -->
+  <div id="main-stage">
+    <div class="stage-grid"></div>
+    <div class="stage-bignum">06</div>
+    <div class="checker" style="right:4%;top:6%;width:100px;height:100px;"></div>
+    <div class="checker" style="left:3%;bottom:10%;width:80px;height:80px;opacity:0.4;"></div>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+
+    <div class="principle-overlay">
+      <div class="po-num">06</div>
+      <div class="po-en">SLOW IN / SLOW OUT</div>
+      <div class="po-jp">イージング：動きの魂</div>
+    </div>
+
+    <!-- 3レーン -->
+    <div id="demo-area">
+
+      <!-- EASE IN-OUT -->
+      <div class="lane ease-in-out" id="lane-ease">
+        <div class="lane-label good">// EASE IN-OUT [ORGANIC]</div>
+        <div class="frame-num" id="fnum-ease"></div>
+        <div class="vel-label" style="color:rgba(54,255,0,0.5);"></div>
+        <svg class="trail-svg" id="trail-ease"></svg>
+        <div class="vel-indicator vel-ease" id="vel-ease"></div>
+        <div class="lane-ball b-ease" id="ball-ease"></div>
+        <div class="hazard-bar"></div>
+      </div>
+
+      <!-- LINEAR -->
+      <div class="lane linear-lane" id="lane-linear">
+        <div class="lane-label bad">// LINEAR [MECHANICAL]</div>
+        <div class="frame-num" id="fnum-linear"></div>
+        <div class="vel-label" style="color:rgba(136,136,136,0.5);"></div>
+        <svg class="trail-svg" id="trail-linear"></svg>
+        <div class="vel-indicator vel-linear" id="vel-linear"></div>
+        <div class="lane-ball b-linear" id="ball-linear"></div>
+        <div class="hazard-bar"></div>
+      </div>
+
+      <!-- USER (カスタムイージング) -->
+      <div class="lane user-lane" id="lane-user">
+        <div class="lane-label user">// CUSTOM [USER-DEFINED]</div>
+        <div class="frame-num" id="fnum-user"></div>
+        <div class="vel-label" style="color:rgba(249,255,71,0.5);"></div>
+        <svg class="trail-svg" id="trail-user"></svg>
+        <div class="vel-indicator vel-user" id="vel-user"></div>
+        <div class="lane-ball b-user" id="ball-user"></div>
+        <div class="hazard-bar"></div>
+      </div>
+
+    </div>
+
+    <!-- ベジェカーブ小窓 -->
+    <div id="curve-view-label">BEZIER_CURVE</div>
+    <div id="curve-view">
+      <svg id="curve-svg" width="180" height="140" viewBox="0 0 180 140"></svg>
+    </div>
+
+    <!-- PLAYBAR -->
+    <div id="playbar">
+      <div class="play-btn active" id="btn-play" onclick="togglePlay()">▶</div>
+      <div class="play-btn" onclick="stepFrame(-1)">|◁</div>
+      <div class="play-btn" onclick="stepFrame(1)">▷|</div>
+      <div class="scrub-wrap">
+        <span class="scrub-label">SCR</span>
+        <input type="range" id="scrubber" min="0" max="119" value="0" oninput="scrubTo(this.value)">
+      </div>
+      <div class="play-btn" onclick="resetPlay()">↺</div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div id="side-panel">
+
+    <!-- A DEMO -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">A</span>DEMO — 比較表示</div>
+      <div class="demo-status">
+        <div class="status-pill active-pill" id="pill-ease"   onclick="toggleLane('ease')">EASE</div>
+        <div class="status-pill grey-pill active-pill" id="pill-linear" onclick="toggleLane('linear')">LINEAR</div>
+        <div class="status-pill neon-pill active-pill" id="pill-user" onclick="toggleLane('user')">CUSTOM</div>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;margin-bottom:8px;line-height:1.7;">
+        各ボタンで表示/非表示を切替
+      </div>
+    </div>
+
+    <!-- B TOGGLE -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">B</span>TOGGLE — 差分ON/OFF</div>
+      <div class="toggle-row"><span>スペーシングドット</span><div class="toggle-switch on" id="tog-trail" onclick="toggleFeature('trail')"></div></div>
+      <div class="toggle-row"><span>速度インジケーター</span><div class="toggle-switch on" id="tog-vel" onclick="toggleFeature('vel')"></div></div>
+      <div class="toggle-row"><span>ベジェカーブ表示</span><div class="toggle-switch on" id="tog-curve" onclick="toggleFeature('curve')"></div></div>
+      <div class="toggle-row"><span>フレーム番号</span><div class="toggle-switch" id="tog-frame" onclick="toggleFeature('frame')"></div></div>
+    </div>
+
+    <!-- C DEBUG -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">C</span>DEBUG — ベジェ曲線エディタ</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;margin-bottom:8px;line-height:1.7;">
+        ハンドルをドラッグ → CUSTOMレーンに即反映<br>
+        <span style="color:var(--neon);">●</span> P1（スタート側）&nbsp;
+        <span style="color:#C8C8C8;">●</span> P2（ゴール側）
+      </div>
+      <div id="bezier-editor">
+        <svg id="editor-svg" width="100%" height="100%" viewBox="0 0 200 200"></svg>
+        <div class="handle-dot handle-p1" id="h-p1"></div>
+        <div class="handle-dot handle-p2" id="h-p2"></div>
+      </div>
+      <div style="margin-top:8px;font-family:var(--mono);font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.1em;" id="bezier-readout">
+        cubic-bezier(0.42, 0.00, 0.58, 1.00)
+      </div>
+    </div>
+
+    <!-- D CONTROLS -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">D</span>CONTROLS — パラメータ</div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">EASE POWER</span><span class="slider-val" id="val-power">2.0</span></div>
+        <input type="range" id="sl-power" min="10" max="60" value="20" oninput="updateParam('power',this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">TRAVEL DISTANCE</span><span class="slider-val" id="val-dist">80%</span></div>
+        <input type="range" id="sl-dist" min="40" max="95" value="80" oninput="updateParam('dist',this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">SPEED</span><span class="slider-val" id="val-speed">1.0x</span></div>
+        <input type="range" id="sl-speed" min="25" max="300" value="100" oninput="updateParam('speed',this.value)">
+      </div>
+    </div>
+
+    <!-- E BREAK -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">E</span>BREAK — 破綻体験</div>
+      <button class="break-btn" id="break-btn" onclick="toggleBreak()">⚠ EASE EXTREMES</button>
+      <div class="break-warning" id="break-warning" style="display:none;">
+        EASE_POWER: 8.0 // 極端すぎる加減速。<br><br>
+        「強いEasing = 良い」ではない。<br>
+        コンテキストに合った強度を選ぶことが重要。<br>
+        UIには緩やかに、キャラには豊かに。
+      </div>
+    </div>
+
+    <!-- F TEXT -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">F</span>TEXT — 言語化</div>
+      <div class="def-block">
+        <div class="def-en">Begin slow.<br>End slow.<br>The middle is alive.</div>
+        <div class="def-jp">ゆっくり始まり、ゆっくり終わる。<br>中間が生きている。</div>
+        <div class="def-core">
+          リニアな動きは機械的に見える。<br>
+          自然界のすべての動きには<br>
+          加速と減速がある。<br>
+          このカーブこそが「生命感」の正体。
+        </div>
+      </div>
+    </div>
+
+    <!-- G APPLY -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">G</span>APPLY — 応用例（クリックで比較）</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;margin-bottom:8px;">各トラックをクリック → アニメ発動</div>
+
+      <div style="font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.25em;margin-bottom:4px;">MODAL OPEN</div>
+      <div style="position:relative;height:48px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="applyDemo('modal')">
+        <div id="apply-modal-ease"
+          style="width:60px;height:32px;background:rgba(54,255,0,0.15);border:1px solid var(--acid);
+                 font-size:8px;letter-spacing:0.2em;color:var(--acid);display:flex;align-items:center;
+                 justify-content:center;transform:scaleY(0);transform-origin:top;">
+          EASE
+        </div>
+        <div id="apply-modal-linear"
+          style="width:60px;height:32px;background:rgba(255,59,59,0.1);border:1px solid var(--red);
+                 font-size:8px;letter-spacing:0.2em;color:var(--red);display:flex;align-items:center;
+                 justify-content:center;margin-left:8px;transform:scaleY(0);transform-origin:top;">
+          LINEAR
+        </div>
+      </div>
+
+      <div style="font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.25em;margin-bottom:4px;">PAGE TRANSITION</div>
+      <div style="position:relative;height:48px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:4px;overflow:hidden;cursor:pointer;" onclick="applyDemo('transition')">
+        <div id="apply-trans-ease"
+          style="position:absolute;inset:0;background:rgba(54,255,0,0.08);border-right:2px solid var(--acid);
+                 font-size:8px;letter-spacing:0.2em;color:var(--acid);display:flex;align-items:center;
+                 justify-content:center;left:-100%;">
+          EASE ↦
+        </div>
+        <div id="apply-trans-linear"
+          style="position:absolute;inset:0;background:rgba(255,59,59,0.05);border-right:2px solid var(--red);
+                 font-size:8px;letter-spacing:0.2em;color:var(--red);display:flex;align-items:center;
+                 justify-content:center;left:-100%;margin-top:24px;height:50%;">
+          LINEAR ↦
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="bottombar">
+    <span>BEZIER_SOUL: ACTIVE // VELOCITY: VARIABLE // PROTOCOL: KINETIC_SOUL</span>
+    <span id="bottom-frame">FRAME: 000 / 120</span>
+    <span>ID: SENTIENT-BP-2026-VLS.06</span>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════
+   CONFIG
+══════════════════════════ */
+const TOTAL = 120;
+const TRAIL_EVERY = 4;   // 何フレームおきにドットを打つか
+const TRAIL_MAX   = 30;  // ドット最大数
+
+/* ══════════════════════════
+   STATE
+══════════════════════════ */
+const state = {
+  playing: true,
+  frame: 0,
+  speed: 1.0,
+  breakMode: false,
+  lanes: { ease:true, linear:true, user:true },
+  features: { trail:true, vel:true, curve:true, frame:false },
+  params: { power:2.0, dist:0.80 },
+  bezier: { x1:0.42, y1:0.00, x2:0.58, y2:1.00 },  // cubic-bezier コントロールポイント
+};
+
+// 軌跡記録（フレームごとのX位置）
+const trails = { ease:[], linear:[], user:[] };
+
+/* ══════════════════════════
+   EASING FUNCTIONS
+══════════════════════════ */
+
+// ease-in-out（べき乗）
+function easeInOut(t, power) {
+  if (t < 0.5) return 0.5 * Math.pow(2*t, power);
+  else         return 1 - 0.5 * Math.pow(2*(1-t), power);
+}
+
+// linear
+function linear(t) { return t; }
+
+// cubic bezier（CSS準拠の近似実装）
+function cubicBezier(x1, y1, x2, y2) {
+  // Newton法でtを求めてyを返す関数を返す
+  return function(t) {
+    if (t === 0 || t === 1) return t;
+    let tGuess = t;
+    for (let i = 0; i < 8; i++) {
+      const bt  = bezierCoord(tGuess, x1, x2) - t;
+      const dbt = bezierDeriv(tGuess, x1, x2);
+      if (Math.abs(bt) < 1e-5) break;
+      tGuess -= bt / dbt;
+    }
+    return bezierCoord(tGuess, y1, y2);
+  };
+}
+function bezierCoord(t, p1, p2) {
+  return 3*(1-t)*(1-t)*t*p1 + 3*(1-t)*t*t*p2 + t*t*t;
+}
+function bezierDeriv(t, p1, p2) {
+  return 3*(1-t)*(1-t)*p1 + 6*(1-t)*t*(p2-p1) + 3*t*t*(1-p2);
+}
+
+/* ── 各タイプのイージング関数 ── */
+function getEaseFn(type) {
+  if (type === 'ease') {
+    const power = state.breakMode ? 8.0 : state.params.power;
+    return t => easeInOut(t, power);
+  }
+  if (type === 'linear') return linear;
+  if (type === 'user')   return cubicBezier(state.bezier.x1, state.bezier.y1, state.bezier.x2, state.bezier.y2);
+}
+
+/* ══════════════════════════
+   LANE GEOMETRY
+══════════════════════════ */
+function getLaneW(laneId) {
+  const el = document.getElementById(`lane-${laneId}`);
+  return el ? el.offsetWidth : 600;
+}
+function getLaneH(laneId) {
+  const el = document.getElementById(`lane-${laneId}`);
+  return el ? el.offsetHeight : 80;
+}
+
+// t(0-1) → X座標（往復: 0→1→0）
+function getX(t, type) {
+  const fn = getEaseFn(type);
+  // 0→0.5: 行き、0.5→1: 帰り
+  const cycle = t < 0.5 ? t * 2 : (1 - t) * 2;
+  const eased = fn(cycle);
+  const lw = getLaneW(type);
+  const pad = 24;
+  return pad + eased * (lw - pad*2 - 28) * state.params.dist;
+}
+
+// 速度（X差分の絶対値、px/frame）
+function getVel(t, type) {
+  const dt = 1 / TOTAL;
+  const x0 = getX(Math.max(0, t - dt), type);
+  const x1 = getX(Math.min(1 - dt, t + dt), type);
+  return Math.abs(x1 - x0) / (2 * dt);
+}
+
+/* ══════════════════════════
+   RENDER
+══════════════════════════ */
+['ease','linear','user'].forEach(type => {
+  // 軌跡初期化
+  for (let i=0; i<TOTAL; i++) trails[type][i] = null;
+});
+
+function renderAll() {
+  const t = state.frame / TOTAL;
+
+  ['ease','linear','user'].forEach(type => {
+    const laneEl = document.getElementById(`lane-${type}`);
+    if (!laneEl) return;
+    const visible = state.lanes[type];
+    laneEl.style.display = visible ? '' : 'none';
+    if (!visible) return;
+
+    const lh = getLaneH(type);
+    const cy = lh / 2;
+    const ballEl  = document.getElementById(`ball-${type}`);
+    const velEl   = document.getElementById(`vel-${type}`);
+    const trailEl = document.getElementById(`trail-${type}`);
+    const fnumEl  = document.getElementById(`fnum-${type}`);
+
+    // ボール位置
+    const bx = getX(t, type);
+    ballEl.style.left = `${bx}px`;
+
+    // 速度インジケーター — ボール左に伸びる尾引き
+    const vel    = getVel(t, type);
+    const MAX_VEL = getVel(0.5, 'ease');   // ease中央≒最大速度を基準
+    const safeMV  = Math.max(MAX_VEL, 1);
+    // LINEARは常時固定長、EASE/CUSTOMは速度比例
+    const tailLen = type === 'linear'
+      ? 52
+      : Math.max(4, Math.min((vel / safeMV) * 110, 130));
+
+    const velLabelEl = laneEl.querySelector('.vel-label');
+    if (state.features.vel) {
+      velEl.style.display = '';
+      // ボール左端から左方向へtailLen伸ばす
+      velEl.style.left   = `${bx - tailLen}px`;
+      velEl.style.width  = `${tailLen}px`;
+      velEl.style.top    = '50%';
+      velEl.style.transform = 'translateY(-50%)';
+      if (velLabelEl) {
+        velLabelEl.textContent = type === 'linear'
+          ? 'SPD: CONST'
+          : `SPD: ${(vel / safeMV).toFixed(2)}x`;
+        const cols = { ease:'rgba(54,255,0,0.55)', linear:'rgba(136,136,136,0.45)', user:'rgba(249,255,71,0.55)' };
+        velLabelEl.style.color = cols[type];
+      }
+    } else {
+      velEl.style.display = 'none';
+      if (velLabelEl) velLabelEl.textContent = '';
+    }
+
+    // 軌跡ドット記録
+    if (state.playing && state.frame % TRAIL_EVERY === 0) {
+      trails[type][state.frame] = bx;
+    }
+
+    // 軌跡描画
+    if (state.features.trail) {
+      let dots = '';
+      // 新色に合わせたdotColor
+      const dotColor = type === 'ease'   ? 'rgba(54,255,0,'   :
+                       type === 'linear' ? 'rgba(136,136,136,' :
+                                           'rgba(249,255,71,';
+      for (let f=0; f<TOTAL; f++) {
+        if (trails[type][f] === null) continue;
+        const age = (state.frame - f + TOTAL) % TOTAL;
+        const op  = Math.max(0, 0.6 - age/TOTAL * 0.8);
+        const r   = 3.5;
+        dots += `<circle cx="${trails[type][f]}" cy="${cy}" r="${r}" fill="${dotColor}${op.toFixed(2)})"/>`;
+      }
+      trailEl.innerHTML = dots;
+    } else {
+      trailEl.innerHTML = '';
+    }
+
+    // フレーム番号
+    if (state.features.frame) {
+      fnumEl.classList.add('show');
+      fnumEl.textContent = `F:${String(state.frame).padStart(3,'0')}`;
+    } else {
+      fnumEl.classList.remove('show');
+    }
+  });
+
+  // ベジェカーブ小窓
+  renderCurveView();
+
+  // フレーム表示
+  document.getElementById('bottom-frame').textContent = `FRAME: ${String(state.frame).padStart(3,'0')} / ${TOTAL}`;
+  document.getElementById('scrubber').value = state.frame;
+}
+
+/* ベジェカーブ小窓 */
+function renderCurveView() {
+  const cvw = document.getElementById('curve-view');
+  const svg = document.getElementById('curve-svg');
+  if (!state.features.curve) { cvw.style.display='none'; return; }
+  cvw.style.display='block';
+
+  const W=180, H=140, pad=20;
+  const iw = W-pad*2, ih = H-pad*2;
+  const t  = state.frame / TOTAL;
+
+  // グリッド
+  let s = '';
+  for (let i=0; i<=4; i++) {
+    const x = pad + i*(iw/4);
+    const y = pad + i*(ih/4);
+    s += `<line x1="${x}" y1="${pad}" x2="${x}" y2="${H-pad}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    s += `<line x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+  }
+
+  // 対角線（linear参照）
+  s += `<line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${pad}" stroke="rgba(255,59,59,0.3)" stroke-width="1" stroke-dasharray="4 3"/>`;
+
+  // 各カーブ描画
+  const curves = [
+    { type:'ease', color:'rgba(54,255,0,0.8)', w:2 },
+    { type:'user', color:'rgba(249,255,71,0.75)', w:1.5 },
+  ];
+  curves.forEach(({type, color, w}) => {
+    if (!state.lanes[type]) return;
+    let path = '';
+    for (let i=0; i<=60; i++) {
+      const tx = i/60;
+      const fn = getEaseFn(type);
+      const ty = fn(tx);
+      const cx = pad + tx * iw;
+      const cy = H - pad - ty * ih;
+      path += i===0 ? `M${cx.toFixed(1)},${cy.toFixed(1)}` : `L${cx.toFixed(1)},${cy.toFixed(1)}`;
+    }
+    s += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${w}"/>`;
+  });
+
+  // 現在位置のプロット（ease）
+  if (state.lanes.ease) {
+    const fn = getEaseFn('ease');
+    const ty = fn(t);
+    const cx = pad + t * iw;
+    const cy = H - pad - ty * ih;
+    s += `<circle cx="${pad + t*iw}" cy="${H-pad}" r="3" fill="rgba(54,255,0,0.5)"/>`;  // X軸
+    s += `<circle cx="${pad}" cy="${cy}" r="3" fill="rgba(54,255,0,0.5)"/>`;              // Y軸
+    s += `<circle cx="${cx}" cy="${cy}" r="5" fill="rgba(54,255,0,0.9)"/>`;
+    s += `<line x1="${pad+t*iw}" y1="${H-pad}" x2="${cx}" y2="${cy}" stroke="rgba(54,255,0,0.2)" stroke-width="1" stroke-dasharray="2 2"/>`;
+    s += `<line x1="${pad}" y1="${cy}" x2="${cx}" y2="${cy}" stroke="rgba(54,255,0,0.2)" stroke-width="1" stroke-dasharray="2 2"/>`;
+  }
+
+  // cubic bezierのコントロールハンドル（userカーブ）
+  if (state.lanes.user) {
+    const bx1 = pad + state.bezier.x1*iw, by1 = H-pad - state.bezier.y1*ih;
+    const bx2 = pad + state.bezier.x2*iw, by2 = H-pad - state.bezier.y2*ih;
+    s += `<line x1="${pad}" y1="${H-pad}" x2="${bx1}" y2="${by1}" stroke="rgba(249,255,71,0.3)" stroke-width="1"/>`;
+    s += `<line x1="${W-pad}" y1="${pad}" x2="${bx2}" y2="${by2}" stroke="rgba(200,200,200,0.2)" stroke-width="1"/>`;
+    s += `<circle cx="${bx1}" cy="${by1}" r="4" fill="#F9FF47"/>`;
+    s += `<circle cx="${bx2}" cy="${by2}" r="4" fill="#C8C8C8"/>`;
+  }
+
+  // 軸ラベル
+  s += `<text x="${pad}" y="${H-4}" font-family="IBM Plex Mono,monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">TIME →</text>`;
+  s += `<text x="2" y="${pad+4}" font-family="IBM Plex Mono,monospace" font-size="7" fill="rgba(255,255,255,0.25)">POS</text>`;
+
+  svg.innerHTML = s;
+}
+
+/* ══════════════════════════
+   BEZIER EDITOR
+══════════════════════════ */
+function initBezierEditor() {
+  const editor = document.getElementById('bezier-editor');
+  const edSvg  = document.getElementById('editor-svg');
+  const hp1    = document.getElementById('h-p1');
+  const hp2    = document.getElementById('h-p2');
+
+  function updateHandlePos() {
+    const w = editor.offsetWidth, h = editor.offsetHeight;
+    // P1: x1,y1 → 左下スタート
+    hp1.style.left = `${state.bezier.x1 * w}px`;
+    hp1.style.top  = `${(1-state.bezier.y1) * h}px`;
+    // P2: x2,y2 → 右上ゴール
+    hp2.style.left = `${state.bezier.x2 * w}px`;
+    hp2.style.top  = `${(1-state.bezier.y2) * h}px`;
+    updateEditorSVG();
+    updateBezierReadout();
+  }
+
+  function updateEditorSVG() {
+    const w=200, h=200;
+    const x1=state.bezier.x1*w, y1=(1-state.bezier.y1)*h;
+    const x2=state.bezier.x2*w, y2=(1-state.bezier.y2)*h;
+
+    // グリッド
+    let s = '';
+    for (let i=0; i<=4; i++) {
+      const v = i*50;
+      s += `<line x1="${v}" y1="0" x2="${v}" y2="200" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+      s += `<line x1="0" y1="${v}" x2="200" y2="${v}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    }
+    // 対角線
+    s += `<line x1="0" y1="200" x2="200" y2="0" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4 4"/>`;
+    // ハンドルライン
+    s += `<line x1="0" y1="200" x2="${x1}" y2="${y1}" stroke="rgba(249,255,71,0.35)" stroke-width="1"/>`;
+    s += `<line x1="200" y1="0" x2="${x2}" y2="${y2}" stroke="rgba(200,200,200,0.25)" stroke-width="1"/>`;
+    // カーブ
+    s += `<path d="M0,200 C${x1},${y1} ${x2},${y2} 200,0" fill="none" stroke="#F9FF47" stroke-width="2"/>`;
+    edSvg.innerHTML = s;
+  }
+
+  function updateBezierReadout() {
+    document.getElementById('bezier-readout').textContent =
+      `cubic-bezier(${state.bezier.x1.toFixed(2)}, ${state.bezier.y1.toFixed(2)}, ${state.bezier.x2.toFixed(2)}, ${state.bezier.y2.toFixed(2)})`;
+  }
+
+  function makeDraggable(handleEl, key) {
+    let dragging = false;
+    handleEl.addEventListener('mousedown', e => { dragging=true; e.preventDefault(); });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const rect = editor.getBoundingClientRect();
+      const rx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const ry = Math.max(-0.5, Math.min(1.5, 1 - (e.clientY - rect.top) / rect.height));
+      if (key==='p1') { state.bezier.x1=rx; state.bezier.y1=ry; }
+      if (key==='p2') { state.bezier.x2=rx; state.bezier.y2=ry; }
+      updateHandlePos();
+      // 軌跡リセット（カーブ変更時）
+      for (let i=0; i<TOTAL; i++) trails.user[i] = null;
+    });
+    window.addEventListener('mouseup', () => { dragging=false; });
+    // タッチ対応
+    handleEl.addEventListener('touchstart', e => { dragging=true; e.preventDefault(); }, {passive:false});
+    window.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      const touch = e.touches[0];
+      const rect = editor.getBoundingClientRect();
+      const rx = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+      const ry = Math.max(-0.5, Math.min(1.5, 1-(touch.clientY - rect.top) / rect.height));
+      if (key==='p1') { state.bezier.x1=rx; state.bezier.y1=ry; }
+      if (key==='p2') { state.bezier.x2=rx; state.bezier.y2=ry; }
+      updateHandlePos();
+      for (let i=0; i<TOTAL; i++) trails.user[i] = null;
+    }, {passive:false});
+    window.addEventListener('touchend', () => { dragging=false; });
+  }
+
+  makeDraggable(hp1, 'p1');
+  makeDraggable(hp2, 'p2');
+  updateHandlePos();
+}
+
+/* ══════════════════════════
+   LOOP
+══════════════════════════ */
+let lastTime=null, accumMs=0;
+
+function loop(now) {
+  if (state.playing) {
+    if (lastTime!==null) accumMs += (now-lastTime) * state.speed;
+    lastTime = now;
+    const mspf = 1000/60;
+    while (accumMs >= mspf) {
+      state.frame = (state.frame+1) % TOTAL;
+      accumMs -= mspf;
+    }
+  } else { lastTime=null; }
+
+  renderAll();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ══════════════════════════
+   CONTROLS
+══════════════════════════ */
+function togglePlay() {
+  state.playing = !state.playing;
+  const btn = document.getElementById('btn-play');
+  btn.textContent = state.playing ? '▶' : '⏸';
+  btn.classList.toggle('active', state.playing);
+}
+function stepFrame(n) {
+  state.playing = false;
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.remove('active');
+  state.frame = (state.frame+n+TOTAL)%TOTAL;
+}
+function resetPlay() {
+  state.frame=0; accumMs=0;
+  ['ease','linear','user'].forEach(t => { for(let i=0;i<TOTAL;i++) trails[t][i]=null; });
+}
+function scrubTo(v) { state.frame=parseInt(v); }
+
+function toggleLane(type) {
+  state.lanes[type] = !state.lanes[type];
+  const pill = document.getElementById(`pill-${type}`);
+  const isOn = state.lanes[type];
+  const baseClass = { ease:'', linear:'grey-pill', user:'neon-pill' }[type];
+  pill.className = `status-pill ${baseClass} ${isOn ? 'active-pill' : 'inactive'}`.trim();
+}
+
+function toggleFeature(key) {
+  state.features[key] = !state.features[key];
+  document.getElementById(`tog-${key}`).classList.toggle('on', state.features[key]);
+  if (!state.features[key] && key==='trail') {
+    ['ease','linear','user'].forEach(t => { document.getElementById(`trail-${t}`).innerHTML=''; });
+  }
+}
+
+function updateParam(key, val) {
+  const v = parseInt(val);
+  if (key==='power') {
+    state.params.power = v/10;
+    document.getElementById('val-power').textContent = (v/10).toFixed(1);
+    // 軌跡リセット
+    ['ease','linear','user'].forEach(t => { for(let i=0;i<TOTAL;i++) trails[t][i]=null; });
+  }
+  if (key==='dist') {
+    state.params.dist = v/100;
+    document.getElementById('val-dist').textContent = `${v}%`;
+    ['ease','linear','user'].forEach(t => { for(let i=0;i<TOTAL;i++) trails[t][i]=null; });
+  }
+  if (key==='speed') {
+    state.speed = v/100;
+    document.getElementById('val-speed').textContent = `${(v/100).toFixed(1)}x`;
+  }
+}
+
+function toggleBreak() {
+  state.breakMode = !state.breakMode;
+  const btn  = document.getElementById('break-btn');
+  const warn = document.getElementById('break-warning');
+  btn.classList.toggle('active-break', state.breakMode);
+  warn.style.display = state.breakMode ? 'block' : 'none';
+  btn.textContent = state.breakMode ? '✕ NORMAL MODE' : '⚠ EASE EXTREMES';
+  if (state.breakMode) {
+    document.getElementById('sl-power').value = 60;
+    updateParam('power',60);
+  } else {
+    document.getElementById('sl-power').value = 20;
+    updateParam('power',20);
+  }
+}
+
+/* G APPLY デモ */
+function applyDemo(type) {
+  if (type==='modal') {
+    ['ease','linear'].forEach((t,i) => {
+      const el = document.getElementById(`apply-modal-${t}`);
+      el.style.transition='none';
+      el.style.transform='scaleY(0)';
+      setTimeout(()=>{
+        const ease = t==='ease'
+          ? 'cubic-bezier(0.42,0,0.58,1) 0.4s'
+          : 'linear 0.4s';
+        el.style.transition=`transform ${ease}`;
+        el.style.transform='scaleY(1)';
+      }, 50+i*60);
+      setTimeout(()=>{
+        el.style.transition=`transform ${t==='ease'?'cubic-bezier(0.42,0,0.58,1)':'linear'} 0.3s`;
+        el.style.transform='scaleY(0)';
+      }, 2000);
+    });
+  }
+  if (type==='transition') {
+    ['ease','linear'].forEach((t,i) => {
+      const el = document.getElementById(`apply-trans-${t}`);
+      el.style.transition='none';
+      el.style.left='-100%';
+      setTimeout(()=>{
+        const curve = t==='ease' ? 'cubic-bezier(0.42,0,0.58,1)' : 'linear';
+        el.style.transition=`left ${curve} ${0.5+i*0.1}s`;
+        el.style.left='0%';
+        setTimeout(()=>{
+          el.style.transition=`left ${curve} ${0.4+i*0.1}s`;
+          el.style.left='100%';
+          setTimeout(()=>{ el.style.transition='none'; el.style.left='-100%'; },700);
+        },1200);
+      },50+i*40);
+    });
+  }
+}
+
+/* CLOCK */
+function tick(){
+  const d=new Date();
+  document.getElementById('clock').textContent=
+    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(tick,1000); tick();
+
+/* KEYBOARD */
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();togglePlay();}
+  if(e.code==='ArrowRight') stepFrame(1);
+  if(e.code==='ArrowLeft')  stepFrame(-1);
+  if(e.code==='KeyR')       resetPlay();
+});
+
+/* INIT */
+window.addEventListener('load', () => {
+  initBezierEditor();
+});
+</script>
+</body>
+</html>

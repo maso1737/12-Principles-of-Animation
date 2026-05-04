@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 02 ANTICIPATION</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --acid:#36FF00;--neon:#F9FF47;--grey:#888;
+  --black:#000;--white:#fff;--panel:#0C0C0C;
+  --border:rgba(54,255,0,0.15);
+  --mono:'IBM Plex Mono',monospace;
+  --disp:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(0,0,0,0.3) 1px,transparent 1px);background-size:4px 4px;pointer-events:none;z-index:9998;opacity:0.6;}
+
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 300px;height:100vh;}
+#topbar{grid-column:1/-1;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:10px;color:rgba(54,255,0,0.5);letter-spacing:0.25em;}
+#main{position:relative;overflow:hidden;background:var(--black);border-right:1px solid var(--border);}
+.stage-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(54,255,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(54,255,0,0.03) 1px,transparent 1px);background-size:40px 40px;}
+.stage-bignum{position:absolute;bottom:-40px;left:-10px;font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(180px,28vw,380px);color:rgba(255,255,255,0.07);letter-spacing:-0.05em;line-height:1;pointer-events:none;}
+.checker{position:absolute;background-image:repeating-conic-gradient(rgba(54,255,0,0.05) 0% 25%,transparent 0% 50%);background-size:16px 16px;pointer-events:none;}
+.corner{position:absolute;width:14px;height:14px;pointer-events:none;}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid);}
+.corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
+.corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
+.corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
+.po{position:absolute;top:12px;right:14px;text-align:right;pointer-events:none;}
+.po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
+/* EDITモード中はグレーに */
+#main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
+#main.editing-mode .stage-bignum{color:rgba(136,136,136,0.05);}
+#main.editing-mode .po-en,
+#main.editing-mode .po-jp{display:none;}
+.po-en{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(12px,2vw,20px);color:var(--white);line-height:1;}
+.po-jp{font-family:var(--jp);font-size:10px;color:var(--grey);margin-top:3px;}
+
+#strip-area{position:absolute;top:52px;bottom:68px;left:16px;right:16px;display:flex;flex-direction:column;gap:8px;}
+#anim-view{flex:0 0 auto;height:56%;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid rgba(54,255,0,0.1);background:rgba(255,255,255,0.01);overflow:hidden;}
+
+/* ライン・オブ・アクション表示 */
+#loa-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;z-index:5;overflow:visible;}
+#loa-svg.show{display:block;}
+
+#phase-label{position:absolute;top:10px;left:14px;font-size:9px;letter-spacing:0.4em;pointer-events:none;}
+#frame-label{position:absolute;top:28px;left:14px;font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;pointer-events:none;}
+#ground-line{position:absolute;bottom:24px;left:6%;right:6%;height:1px;background:rgba(54,255,0,0.25);pointer-events:none;display:none;}
+#ground-line.show{display:block;}
+/* 重心線 */
+#cog-line{position:absolute;bottom:24px;width:2px;background:rgba(249,255,71,0.6);pointer-events:none;display:none;transition:left 0.1s;}
+#cog-line.show{display:block;}
+
+#windup-arrow{position:absolute;pointer-events:none;display:none;font-family:var(--disp);font-weight:900;font-style:italic;color:rgba(249,255,71,0.9);text-shadow:0 0 16px rgba(249,255,71,0.5);}
+#windup-arrow.show{display:block;}
+
+/* ACTION方向アロー */
+#action-arrow{position:absolute;pointer-events:none;display:none;font-family:var(--disp);font-weight:900;font-style:italic;color:rgba(54,255,0,0.85);text-shadow:0 0 16px rgba(54,255,0,0.4);}
+#action-arrow.show{display:block;}
+
+/* シルエットチェックオーバーレイ */
+#silhouette-overlay{position:absolute;inset:0;pointer-events:none;display:none;mix-blend-mode:multiply;}
+#silhouette-overlay.show{display:block;}
+
+#vel-bar-wrap{position:absolute;bottom:32px;left:8%;right:8%;display:none;pointer-events:none;}
+#vel-bar-wrap.show{display:block;}
+#vel-bar{height:3px;border-radius:2px;background:linear-gradient(to right,rgba(54,255,0,0),rgba(54,255,0,0.85));transition:width 0.08s;}
+#vel-lbl{font-size:8px;color:rgba(54,255,0,0.5);letter-spacing:0.2em;margin-top:3px;}
+#dot-svg-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+
+/* フェーズ注釈 */
+#phase-note{position:absolute;bottom:36px;right:10px;font-size:8px;letter-spacing:0.15em;line-height:1.8;text-align:right;pointer-events:none;opacity:0;transition:opacity 0.3s;}
+#phase-note.show{opacity:1;}
+
+#strip-wrapper{
+  flex:1; min-height:0;
+  position:relative;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+#frame-strip{
+  flex:1; min-height:0;
+  display:flex; align-items:center;
+  gap:3px;
+  overflow-x:scroll; overflow-y:visible;
+  padding:20px 4px 4px 4px;
+  scroll-behavior:auto;
+  /* ネイティブスクロールバーは非表示にしてカスタムに置き換え */
+  scrollbar-width:none;
+}
+#frame-strip::-webkit-scrollbar{display:none;}
+
+/* カスタムスクロールバー */
+#strip-scrollbar{
+  height:10px; background:rgba(255,255,255,0.04);
+  position:relative; flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,0.05);
+  cursor:default;
+}
+#strip-thumb{
+  position:absolute; top:2px; height:6px;
+  background:rgba(54,255,0,0.4); border-radius:3px;
+  cursor:grab; transition:background 0.15s;
+  min-width:24px;
+}
+#strip-thumb:hover{background:rgba(54,255,0,0.7);}
+#strip-thumb:active{cursor:grabbing;background:var(--acid);}
+/* 左右リサイズハンドル */
+#strip-thumb::before,#strip-thumb::after{
+  content:'';
+  position:absolute; top:0; bottom:0;
+  width:8px; cursor:ew-resize;
+  background:rgba(54,255,0,0.0);
+}
+#strip-thumb::before{left:-2px;}
+#strip-thumb::after{right:-2px;}
+.fc{flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,0.06);background:#050505;cursor:pointer;transition:border-color 0.15s;display:flex;flex-direction:column;align-items:center;overflow:hidden;}
+.fc:hover{border-color:rgba(54,255,0,0.3);}
+.fc.active{border-color:var(--acid);box-shadow:0 0 8px rgba(54,255,0,0.2);}
+.fc.ph-idle  {border-top:2px solid rgba(136,136,136,0.4);}
+.fc.ph-prep  {border-top:2px solid rgba(136,136,136,0.25);}
+.fc.ph-windup{border-top:2px solid rgba(249,255,71,0.7);}
+.fc.ph-action{border-top:2px solid rgba(54,255,0,0.9);}
+.fc.ph-settle{border-top:2px solid rgba(54,255,0,0.35);}
+.fc.star{box-shadow:0 0 12px rgba(249,255,71,0.4);border-color:var(--neon)!important;}
+.fc-num{font-size:7px;color:rgba(255,255,255,0.3);letter-spacing:0.2em;flex-shrink:0;position:absolute;bottom:3px;left:0;right:0;text-align:center;}
+.fc.active .fc-num{color:var(--acid);}
+.fc.star .fc-num{color:var(--neon);}
+
+/* 各セル外側上部のフェーズマーカー（枠の上） */
+.fc-marker{position:absolute;top:-16px;left:0;right:0;text-align:center;font-family:var(--mono);font-weight:400;font-style:normal;font-size:8px;letter-spacing:0.15em;pointer-events:none;white-space:nowrap;z-index:5;}
+.fc-marker.wu{color:rgba(249,255,71,0.85);}
+.fc-marker.ac{color:rgba(54,255,0,0.85);}
+.fc-marker.empty{visibility:hidden;}
+
+/* セル外マーカー分の上余白を確保 */
+#frame-strip{padding-top:20px;overflow-y:visible;}
+.fc{overflow:visible;}
+
+#playbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;z-index:50;}
+.pb{width:28px;height:28px;border:1px solid rgba(54,255,0,0.4);background:rgba(0,0,0,0.7);color:var(--acid);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;user-select:none;}
+.pb:hover{background:rgba(54,255,0,0.1);}
+.pb.active{background:rgba(54,255,0,0.15);border-color:var(--acid);}
+.sw{width:120px;display:flex;align-items:center;gap:6px;}
+.sl{font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.15em;white-space:nowrap;}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acid);cursor:pointer;}
+
+#side{display:flex;flex-direction:column;overflow-y:auto;background:var(--panel);}
+#side::-webkit-scrollbar{width:2px;}
+#side::-webkit-scrollbar-thumb{background:var(--acid);}
+.sp{border-bottom:1px solid rgba(255,255,255,0.05);padding:14px 16px;flex-shrink:0;}
+.spl{font-size:9px;letter-spacing:0.4em;color:rgba(54,255,0,0.4);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.spl .lt{font-size:11px;font-weight:700;color:var(--acid);background:rgba(54,255,0,0.1);width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0;flex-shrink:0;}
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:0.05em;}
+.tg{width:34px;height:17px;background:rgba(255,255,255,0.1);border-radius:9px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.tg.on{background:var(--acid);}
+.tg::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:var(--white);top:2px;left:2px;transition:left 0.2s;}
+.tg.on::after{left:19px;background:var(--black);}
+.fpr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.fp{font-size:9px;letter-spacing:0.15em;padding:3px 10px;border:1px solid;cursor:pointer;transition:all 0.15s;user-select:none;}
+.fp.on{background:var(--acid);border-color:var(--acid);color:var(--black);}
+.fp.off{border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);}
+.db{background:rgba(54,255,0,0.04);border-left:3px solid var(--acid);padding:10px 12px;margin-bottom:8px;}
+.de{font-family:var(--disp);font-weight:700;font-style:italic;font-size:15px;color:var(--white);line-height:1.2;}
+.dj{font-family:var(--jp);font-size:11px;color:var(--grey);margin-top:4px;line-height:1.6;}
+.dc{margin-top:8px;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.06em;line-height:1.8;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;}
+
+/* チェックリスト */
+.check-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:10px;letter-spacing:0.05em;cursor:pointer;color:rgba(255,255,255,0.6);transition:color 0.15s;}
+.check-item.checked{color:var(--acid);}
+.check-item.checked span{text-decoration:line-through;text-decoration-color:rgba(54,255,0,0.5);}
+.check-dot{width:10px;height:10px;border:1px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:2px;transition:all 0.15s;position:relative;}
+.check-item.checked .check-dot{background:var(--acid);border-color:var(--acid);}
+.check-item.checked .check-dot::after{content:'✓';position:absolute;top:-3px;left:1px;font-size:11px;color:var(--black);font-weight:700;line-height:1;}
+.check-progress{margin-top:8px;font-size:9px;color:var(--acid);letter-spacing:0.25em;font-weight:700;}
+.check-progress.complete{color:var(--neon);text-shadow:0 0 8px rgba(249,255,71,0.5);}
+
+#bottombar{grid-column:1/-1;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:9px;color:rgba(54,255,0,0.3);letter-spacing:0.18em;}
+
+/* ── ショートカットモーダル ── */
+#shortcut-modal{
+  display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,0.85);
+  align-items:center;justify-content:center;
+}
+#shortcut-modal.open{display:flex;}
+#shortcut-box{
+  background:#0C0C0C;border:1px solid var(--acid);
+  width:min(540px,92vw);max-height:80vh;overflow-y:auto;
+  padding:0;
+}
+#shortcut-box::-webkit-scrollbar{width:2px;}
+#shortcut-box::-webkit-scrollbar-thumb{background:var(--acid);}
+.sc-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-bottom:1px solid var(--border);
+  font-size:10px;letter-spacing:0.4em;color:var(--acid);
+}
+.sc-close{cursor:pointer;color:var(--grey);font-size:18px;line-height:1;padding:0 4px;}
+.sc-close:hover{color:var(--white);}
+.sc-section{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.sc-section-lbl{font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.4em;margin-bottom:10px;}
+.sc-row{
+  display:grid;grid-template-columns:1fr 1fr auto;
+  align-items:center;gap:8px;margin-bottom:8px;font-size:10px;
+}
+.sc-desc{color:rgba(255,255,255,0.6);letter-spacing:0.05em;}
+.sc-key-wrap{display:flex;align-items:center;gap:4px;}
+.sc-key{
+  background:#1a1a1a;border:1px solid rgba(255,255,255,0.2);
+  color:var(--white);font-family:var(--mono);font-size:9px;
+  padding:2px 7px;min-width:28px;text-align:center;letter-spacing:0.05em;
+  cursor:pointer;transition:border-color 0.15s;user-select:none;
+}
+.sc-key:hover{border-color:var(--acid);color:var(--acid);}
+.sc-key.recording{border-color:var(--neon);color:var(--neon);animation:blink 0.4s steps(1) infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.sc-edit-btn{
+  font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:0.15em;
+  cursor:pointer;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);
+  transition:all 0.15s;background:transparent;font-family:var(--mono);
+}
+.sc-edit-btn:hover{border-color:var(--acid);color:var(--acid);}
+.sc-edit-btn.active{border-color:var(--neon);color:var(--neon);}
+.sc-note{font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;margin-top:8px;line-height:1.7;}
+
+/* ショートカットを開くボタン（bottombar内） */
+#sc-open-btn{
+  cursor:pointer;color:rgba(54,255,0,0.4);font-size:9px;letter-spacing:0.2em;
+  padding:2px 8px;border:1px solid rgba(54,255,0,0.2);transition:all 0.15s;
+}
+#sc-open-btn:hover{color:var(--acid);border-color:var(--acid);}
+#edit-toggle.active{background:var(--acid);color:var(--black);font-weight:700;}
+.swatch{width:100%;aspect-ratio:1;cursor:pointer;border:2px solid rgba(255,255,255,0.1);transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:rgba(255,255,255,0.4);}
+.swatch:hover{border-color:rgba(54,255,0,0.5);transform:scale(1.05);}
+.swatch.active{border:2px solid var(--acid)!important;box-shadow:0 0 0 1px var(--acid),0 0 8px rgba(54,255,0,0.4);}
+.swatch-eraser{background:repeating-linear-gradient(45deg,#222,#222 4px,#444 4px,#444 8px);grid-column:span 1;}
+.swatch-eraser.active{background:repeating-linear-gradient(45deg,#333,#333 4px,#555 4px,#555 8px);}
+.sw-key{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,0.5);position:absolute;bottom:3px;right:4px;line-height:1;pointer-events:none;}
+.swatch{position:relative;}
+
+.ed-btn{background:transparent;border:1px solid rgba(54,255,0,0.3);color:var(--acid);font-family:var(--mono);font-size:9px;letter-spacing:0.15em;padding:7px 8px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.ed-btn:hover{background:rgba(54,255,0,0.1);border-color:var(--acid);}
+
+/* ── 原画/動画マーカー ── */
+.fc-key-marker{
+  position:absolute; top:0; left:0; right:0;
+  height:3px; pointer-events:none;
+  transition:background 0.15s;
+}
+.fc-key-marker.key-frame{background:var(--acid);}     /* 原画：緑 */
+.fc-key-marker.in-between{background:rgba(136,136,136,0.6);} /* 動画：グレー */
+
+/* マーカーセットボタン（EDIT時にセルに出る小さなドット） */
+.fc-mark-btn{
+  position:absolute; bottom:18px; right:3px;
+  width:8px; height:8px; border-radius:50%;
+  border:1px solid rgba(255,255,255,0.2);
+  background:transparent; cursor:pointer;
+  display:none; z-index:10;
+  transition:all 0.15s;
+}
+.fc-mark-btn:hover{border-color:var(--acid);background:rgba(54,255,0,0.2);}
+.fc.key-frame   > .fc-mark-btn{background:var(--acid);border-color:var(--acid);}
+.fc.in-between  > .fc-mark-btn{background:rgba(136,136,136,0.6);border-color:rgba(136,136,136,0.6);}
+#frame-strip.editing .fc-mark-btn{display:block;}
+
+/* ドラッグ並び替え */
+.fc.drag-over{border-color:var(--neon)!important;background:rgba(249,255,71,0.05);}
+.fc.dragging{opacity:0.4;cursor:grabbing;}
+#frame-strip.editing .fc{cursor:default;}  /* デフォルトはポインター（クリック選択） */
+
+/* コピーボタンのステート */
+.ed-btn.copy-active{
+  background:rgba(54,255,0,0.15);
+  border-color:var(--acid);
+  color:var(--acid);
+}
+
+/* EDIT中アロー非表示（CSSで制御） */
+#main.editing-mode .fc-marker{visibility:hidden;}
+#dot-svg .edit-grid{stroke:rgba(54,255,0,0.08);stroke-width:0.2;fill:none;}
+#dot-svg .edit-grid-cell{fill:transparent;stroke:rgba(255,255,255,0.04);stroke-width:0.15;cursor:crosshair;}
+#dot-svg .edit-grid-cell:hover{fill:rgba(54,255,0,0.15);}
+#dot-svg .edit-ground-line{stroke:rgba(54,255,0,0.3);stroke-width:0.4;stroke-dasharray:1.5 1;}
+
+/* 編集モード時のメインビュー */
+#anim-view.editing{border-color:var(--acid);box-shadow:inset 0 0 0 1px rgba(54,255,0,0.3);}
+#anim-view.editing #dot-svg{height:92%;}
+
+/* 編集モード時のフレームストリップを目立たせる */
+#frame-strip.editing .fc{cursor:pointer;}
+#frame-strip.editing .fc.active{box-shadow:0 0 0 1px var(--neon),0 0 12px rgba(249,255,71,0.4);border-color:var(--neon);}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="topbar">
+  <div style="display:flex;gap:28px;"><span>KINETIC_GEOMETRY // LEC_08</span><span>PRINCIPLE_02 // ANTICIPATION</span></div>
+  <div style="display:flex;gap:24px;"><span>WIND_UP_INDEX: +1.5s</span><span id="clock">00:00:00</span></div>
+</div>
+
+<div id="main">
+  <div class="stage-grid"></div>
+  <div class="stage-bignum">02</div>
+  <div class="checker" style="right:3%;top:6%;width:90px;height:90px;"></div>
+  <div class="checker" style="left:2%;bottom:16%;width:70px;height:70px;opacity:0.4;"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="po">
+    <div class="po-num">02</div>
+    <div class="po-en">ANTICIPATION</div>
+    <div class="po-jp">予備動作</div>
+  </div>
+
+  <div id="strip-area">
+    <div id="anim-view">
+      <svg id="loa-svg"></svg>
+      <div id="phase-label"></div>
+      <div id="frame-label"></div>
+      <div id="ground-line"></div>
+      <div id="cog-line" style="height:60px;"></div>
+      <div id="vel-bar-wrap"><div id="vel-bar" style="width:0%"></div><div id="vel-lbl">SPD: 0.0x</div></div>
+      <div id="phase-note"></div>
+      <div id="dot-svg-wrap">
+        <svg id="dot-svg" viewBox="0 0 256 100" style="height:88%;width:auto;image-rendering:pixelated;"></svg>
+      </div>
+    </div>
+    <div id="strip-wrapper">
+      <div id="frame-strip"></div>
+      <div id="strip-scrollbar">
+        <div id="strip-thumb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="playbar">
+    <div class="pb active" id="btn-play" onclick="togglePlay()">▶</div>
+    <div class="pb" onclick="stepFrame(-1)">|◁</div>
+    <div class="pb" onclick="stepFrame(1)">▷|</div>
+    <div class="sw"><span class="sl">SCR</span><input type="range" id="scrubber" min="0" max="11" value="0" oninput="scrubTo(this.value)"></div>
+    <div class="pb" onclick="resetPlay()">↺</div>
+  </div>
+</div>
+
+<div id="side">
+  <!-- モード切替 -->
+  <div class="sp" style="padding:10px 16px;">
+    <button id="edit-toggle" onclick="toggleEditMode()" style="width:100%;background:transparent;border:1px solid var(--acid);color:var(--acid);font-family:var(--mono);font-size:10px;letter-spacing:0.3em;padding:7px 10px;cursor:pointer;transition:all 0.15s;">
+      ✏ EDIT MODE
+    </button>
+  </div>
+
+  <!-- ═══════ 表示モード（A〜G） ═══════ -->
+  <div id="view-mode">
+  <div class="sp">
+    <div class="spl"><span class="lt">A</span>DEMO — FPS</div>
+    <div class="fpr">
+      <div class="fp on"  id="fps-6"  onclick="setFps(6)">6 FPS</div>
+      <div class="fp off" id="fps-12" onclick="setFps(12)">12 FPS</div>
+      <div class="fp off" id="fps-24" onclick="setFps(24)">24 FPS</div>
+    </div>
+    <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:6px;letter-spacing:0.1em;line-height:1.7;">6fps: タメと解放の差が見える<br>24fps: 実際の体感速度</div>
+  </div>
+
+  <div class="sp">
+    <div class="spl"><span class="lt">B</span>DEBUG — 表示切替</div>
+    <div class="tr"><span>地面 / 重心ライン</span><div class="tg on" id="tog-ground" onclick="togF('ground')"></div></div>
+    <div class="tr"><span>ライン・オブ・アクション</span><div class="tg" id="tog-loa" onclick="togF('loa')"></div></div>
+    <div class="tr"><span>Wind-up / Actionアロー</span><div class="tg on" id="tog-arrow" onclick="togF('arrow')"></div></div>
+    <div class="tr"><span>速度バー</span><div class="tg" id="tog-vel" onclick="togF('vel')"></div></div>
+    <div class="tr"><span>フェーズ注釈</span><div class="tg on" id="tog-note" onclick="togF('note')"></div></div>
+    <div class="tr"><span>コマ番号</span><div class="tg on" id="tog-fnum" onclick="togF('fnum')"></div></div>
+  </div>
+
+  <div class="sp">
+    <div class="spl"><span class="lt">C</span>PHASE — 構成</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:rgba(136,136,136,0.5);flex-shrink:0;"></div><span style="color:var(--grey);letter-spacing:0.1em;">F01–02</span>&nbsp;<span>NEUTRAL / 予兆</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:rgba(249,255,71,0.35);flex-shrink:0;"></div><span style="color:rgba(249,255,71,0.6);letter-spacing:0.1em;">F03–04</span>&nbsp;<span>逆方向へ / 圧縮開始</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:rgba(249,255,71,0.8);flex-shrink:0;"></div><span style="color:var(--neon);letter-spacing:0.1em;">F05 ●</span>&nbsp;<span style="font-weight:700;">最大タメ（最重要）</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:rgba(54,255,0,0.6);flex-shrink:0;"></div><span style="color:rgba(54,255,0,0.7);letter-spacing:0.1em;">F06</span>&nbsp;<span>爆発直前（1F）</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:var(--acid);flex-shrink:0;"></div><span style="color:var(--acid);letter-spacing:0.1em;">F07–09</span>&nbsp;<span>解放 → ピーク</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;"><div style="width:8px;height:8px;background:rgba(54,255,0,0.3);flex-shrink:0;"></div><span style="color:rgba(54,255,0,0.5);letter-spacing:0.1em;">F10–12</span>&nbsp;<span>着地 / Squash / 戻り</span></div>
+    </div>
+  </div>
+
+  <div class="sp">
+    <div class="spl"><span class="lt">D</span>チェックリスト</div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>一番変なポーズ（F05）があるか？</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>シルエットだけで読めるか？</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>タメと解放の差が極端か？</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>静止画で気持ちいいか？</span></div>
+    <div class="check-progress" id="check-progress">CHECK: 0 / 4</div>
+  </div>
+
+  <div class="sp">
+    <div class="spl"><span class="lt">F</span>TEXT</div>
+    <div class="db">
+      <div class="de">Before the action,<br>the opposite.</div>
+      <div class="dj">動く前に、逆方向へ引く。</div>
+      <div class="dc">
+        タメと解放のコントラスト差 ＝ 気持ちよさ。<br>
+        Anticipation = action_distance × 0.3〜0.6<br>
+        Exaggeration = realistic × 1.5〜2.5<br><br>
+        <span style="color:var(--neon);">「やりすぎてから戻す」</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sp">
+    <div class="spl"><span class="lt">G</span>APPLY</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.05em;line-height:2;">→ ボタン：押す前に膨らむ<br>→ ドア：開く前に一瞬引く<br>→ ジャンプ：膝を曲げる<br>→ 削除：消える前に小さくなる</div>
+  </div>
+  </div><!-- /view-mode -->
+
+  <!-- ═══════ 編集モード ═══════ -->
+  <div id="edit-mode" style="display:none;">
+
+    <div class="sp">
+      <div class="spl" style="justify-content:space-between;">
+        <span><span class="lt">P</span>PALETTE</span>
+        <span onclick="openShortcuts()" style="font-size:8px;color:rgba(54,255,0,0.5);letter-spacing:0.2em;padding:2px 8px;border:1px solid rgba(54,255,0,0.2);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--acid)';this.style.borderColor='var(--acid)'" onmouseout="this.style.color='rgba(54,255,0,0.5)';this.style.borderColor='rgba(54,255,0,0.2)'">⌨ SHORTCUTS</span>
+      </div>
+      <div id="palette-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div class="swatch active" data-color="K" onclick="selectColor(this)" style="background:#111;"><span class="sw-key" id="swk-K">A</span></div>
+        <div class="swatch" data-color="S" onclick="selectColor(this)" style="background:#444;"><span class="sw-key" id="swk-S">S</span></div>
+        <div class="swatch" data-color="L" onclick="selectColor(this)" style="background:#888;"><span class="sw-key" id="swk-L">D</span></div>
+        <div class="swatch" data-color="W" onclick="selectColor(this)" style="background:#DDD;"><span class="sw-key" id="swk-W" style="color:#444;">F</span></div>
+        <div class="swatch" data-color="A" onclick="selectColor(this)" style="background:#36FF00;"><span class="sw-key" id="swk-A" style="color:#000;">G</span></div>
+        <div class="swatch" data-color="Y" onclick="selectColor(this)" style="background:#F9FF47;"><span class="sw-key" id="swk-Y" style="color:#000;">H</span></div>
+        <div class="swatch swatch-eraser" data-color="_" onclick="selectColor(this)"><span class="sw-key" id="swk-_">X</span></div>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">B</span>BRUSH — 筆サイズ</div>
+      <div class="fpr">
+        <div class="fp on"  id="brush-1" onclick="setBrush(1)">1px</div>
+        <div class="fp off" id="brush-2" onclick="setBrush(2)">2px</div>
+        <div class="fp off" id="brush-3" onclick="setBrush(3)">3px</div>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">F</span>FRAME — 編集中</div>
+      <div id="edit-frame-info" style="font-size:14px;color:var(--acid);font-family:var(--disp);font-weight:900;font-style:italic;letter-spacing:0.05em;">F01</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;margin-top:4px;line-height:1.7;">
+        下のストリップで編集対象を切替
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="ed-btn" id="copy-btn" onclick="doCopy()" style="flex:1;">COPY<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">Ctrl+C</span></button>
+        <button class="ed-btn" id="paste-btn" onclick="doPaste()" style="flex:1;opacity:0.4;">PASTE<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">Ctrl+V</span></button>
+        <button class="ed-btn" onclick="clearFrameNoConfirm()" style="flex:1;color:#FF6B6B;border-color:rgba(255,107,107,0.4);">CLEAR<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">Backspace</span></button>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">G</span>GRID — 表示</div>
+      <div class="tr"><span>マス目グリッド</span><div class="tg on" id="tog-edgrid" onclick="togEditGrid()"></div></div>
+      <div class="tr"><span>地面ライン</span><div class="tg on" id="tog-edground" onclick="togEditGround()"></div></div>
+      <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
+      <div style="font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;margin-bottom:8px;">FRAME MARKER</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.08em;line-height:1.9;margin-bottom:8px;">
+        コマ右下の ● をクリックで<br>
+        原画 / 動画 / なし を切替
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;font-size:9px;">
+        <div style="width:24px;height:3px;background:var(--acid);border-radius:1px;"></div>
+        <span style="color:rgba(255,255,255,0.5);">原画（KEY）</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;font-size:9px;margin-top:4px;">
+        <div style="width:24px;height:3px;background:rgba(136,136,136,0.6);border-radius:1px;"></div>
+        <span style="color:rgba(255,255,255,0.5);">動画（IN-BETWEEN）</span>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">E</span>EXPORT — 出力</div>
+      <button class="ed-btn" onclick="exportJSON()" style="width:100%;margin-bottom:6px;">📋 JSON出力（コピペ用）<span style="float:right;opacity:0.4;font-size:8px;">Ctrl+S</span></button>
+      <button class="ed-btn" onclick="exportPNG()" style="width:100%;margin-bottom:6px;">🖼 現フレームPNG<span style="float:right;opacity:0.4;font-size:8px;">Ctrl+Shift+S</span></button>
+      <button class="ed-btn" onclick="exportAllPNG()" style="width:100%;">📦 全12コマPNG<span style="float:right;opacity:0.4;font-size:8px;">Ctrl+Shift+Alt+S</span></button>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">I</span>IMPORT — 読込</div>
+      <textarea id="json-paste" placeholder="ここにJSON貼付してから [APPLY] を押す..." style="width:100%;height:80px;background:#050505;border:1px solid rgba(54,255,0,0.2);color:var(--acid);font-family:var(--mono);font-size:9px;padding:6px;resize:vertical;letter-spacing:0.05em;"></textarea>
+      <button class="ed-btn" onclick="importJSON()" style="width:100%;margin-top:6px;color:var(--neon);border-color:rgba(249,255,71,0.4);">⤴ APPLY</button>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">U</span>UNDO</div>
+      <div style="display:flex;gap:6px;">
+        <button class="ed-btn" onclick="undo()" style="flex:1;">↶ UNDO</button>
+        <button class="ed-btn" onclick="redo()" style="flex:1;">↷ REDO</button>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.25);margin-top:6px;letter-spacing:0.1em;">Ctrl+Z / Ctrl+Shift+Z</div>
+    </div>
+
+  </div><!-- /edit-mode -->
+
+</div>
+
+<!-- ショートカットモーダル -->
+<div id="shortcut-modal">
+  <div id="shortcut-box">
+    <div class="sc-header">
+      ⌨ SHORTCUT KEYS
+      <span class="sc-close" onclick="closeShortcuts()">✕</span>
+    </div>
+
+    <div class="sc-section">
+      <div class="sc-section-lbl">// TOOL SELECTION — 色選択</div>
+      <div id="sc-list-tools"></div>
+    </div>
+
+    <div class="sc-section">
+      <div class="sc-section-lbl">// BRUSH — 筆サイズ</div>
+      <div id="sc-list-brush"></div>
+    </div>
+
+    <div class="sc-section">
+      <div class="sc-section-lbl">// PLAYBACK — 再生</div>
+      <div id="sc-list-play"></div>
+    </div>
+
+    <div class="sc-section">
+      <div class="sc-section-lbl">// EDIT — 編集</div>
+      <div id="sc-list-edit"></div>
+    </div>
+
+    <div class="sc-section">
+      <div class="sc-section-lbl">// EXPORT — 出力</div>
+      <div id="sc-list-export"></div>
+    </div>
+
+    <div class="sc-section" style="border:none;">
+      <div class="sc-note">
+        [EDIT] ボタンをクリック → キーを押す → 割り当て完了<br>
+        Ctrl/Shift/Alt の組み合わせは現在非対応（単キーのみ）
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="bottombar">
+  <span>ANTICIPATION = ACTION × 0.3〜0.6 // EXAGGERATION = REALISTIC × 1.5〜2.5</span>
+  <span id="bot-frame">FRAME: 01 / 12</span>
+  <span id="sc-open-btn" onclick="openShortcuts()">⌨ SHORTCUTS</span>
+</div>
+</div>
+
+<script>
+// ── グリッド定数 ──
+const GW=64,GH=25,CS=4,DR=1.6;
+const C={
+  _:null,K:'#111',W:'#DDD',S:'#444',
+  A:'#36FF00',Y:'#F9FF47',G:'#666',L:'#888'
+};
+const pf=rows=>rows.map(r=>[...Array(GW)].map((_,i)=>C[r[i]||' ']||null));
+
+// ══════════════════════════════════════
+// フレームデータ（設計書準拠・ライン・オブ・アクション意識）
+// ラインは左→右移動、進行方向は右
+// タメ：Cカーブ（左後方に縮む）
+// 解放：逆Cカーブ（右上方に伸びる）
+// ══════════════════════════════════════
+
+// F01: ニュートラル（直立・重心安定）
+const F01=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                         SSSS                                   ',
+  '                        S  KKS                                  ',
+  '                        S K KS                                  ',
+  '                        SKKWKW                                  ',
+  '                        SKKKKS                                  ',
+  '                         SSSS                                   ',
+  '                          KK                                    ',
+  '                          LKK                                   ',
+  '                         LKKK                                   ',
+  '                        LKKKS                                   ',
+  '                         AKKKY                                  ',
+  '                         KKKK                                   ',
+  '                         K  S                                   ',
+  '                        KS  KS                                  ',
+  '                        S   S                                   ',
+  '                       SAA  SY                                  ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F02=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                         SSS                                    ',
+  '                       SKKKKK                                   ',
+  '                       SKKKKK                                   ',
+  '                       SKKWKW                                   ',
+  '                       SKKKKK                                   ',
+  '                         SSS                                    ',
+  '                          KK                                    ',
+  '                          KK                                    ',
+  '                         SKKS                                   ',
+  '                        AKKYS                                   ',
+  '                           K                                    ',
+  '                         KKK                                    ',
+  '                         KK S                                   ',
+  '                        KS  KS                                  ',
+  '                        S    Y                                  ',
+  '                       SAA                                      ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F03=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                         SSS                                    ',
+  '                       SKKK K                                   ',
+  '                       SKKKKK                                   ',
+  '                       SKWKW                                    ',
+  '                       SKKKKK                                   ',
+  '                        SSSS                                    ',
+  '                          K                                     ',
+  '                         SK                                     ',
+  '                       ASSYK                                    ',
+  '                         KKSS                                   ',
+  '                           K                                    ',
+  '                         KKS                                    ',
+  '                         KKSS                                   ',
+  '                        KS  Y                                   ',
+  '                        S                                       ',
+  '                       SAA                                      ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F04=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                        SSS                                     ',
+  '                      SKKKKS                                    ',
+  '                      SKKKKS                                    ',
+  '                       KWKWK                                    ',
+  '                      S KKK                                     ',
+  '                       SSSS                                     ',
+  '                      A  YK                                     ',
+  '                       SKSSK                                    ',
+  '                        KKKS                                    ',
+  '                        KKKK                                    ',
+  '                         KKS                                    ',
+  '                         SKY                                    ',
+  '                        K S                                     ',
+  '                        SS                                      ',
+  '                       SAA                                      ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F05=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                      SS S                                      ',
+  '                     S KKKS                                     ',
+  '                     S K KS                                     ',
+  '                       WKW                                      ',
+  '                     A S S                                      ',
+  '                      S Y                                       ',
+  '                      SSKS                                      ',
+  '                        KKK                                     ',
+  '                        KKK                                     ',
+  '                         KS                                     ',
+  '                         SY                                     ',
+  '                        K S                                     ',
+  '                        SS                                      ',
+  '                       SAA                                      ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F06=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                 SSSK                           ',
+  '                                SKKWKW                          ',
+  '                                SKKKK                           ',
+  '                                 KKKK                           ',
+  '                                KSKKK                           ',
+  '                                 SSSA                           ',
+  '                                SKKSK                           ',
+  '                                 S  KY                          ',
+  '                                 SKKS                           ',
+  '                                  KSK                           ',
+  '                                  KKS                           ',
+  '                                  KKK                           ',
+  '                                 KSS                            ',
+  '                                 KA                             ',
+  '                                S                               ',
+  '                              SS                                ',
+  '                              Y                                 ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F07=pf([
+  '                                                                ',
+  '                                          SSS                   ',
+  '                                           K S                  ',
+  '                                        S KW W                  ',
+  '                                        SKK K                   ',
+  '                                        SKKKK A                 ',
+  '                                          SSSS                  ',
+  '                                           KS                   ',
+  '                                          SS  Y                 ',
+  '                                          KKK    SS             ',
+  '                                         SKKK  KSKSA            ',
+  '                                         KK KKS                 ',
+  '                                         K KK                   ',
+  '                                        SS                      ',
+  '                                       SK                       ',
+  '                                     SK                         ',
+  '                                    YS                          ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F08=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                               SSSS             ',
+  '                                               K K              ',
+  '                                             SKKW W             ',
+  '                                             SKKKK              ',
+  '                                             SKKKKK             ',
+  '                                               SSS K            ',
+  '                                               SKAK             ',
+  '                                              SKSKKY            ',
+  '                                              SKKKS             ',
+  '                                              KKKK  SS          ',
+  '                                              SS     A          ',
+  '                                             SS                 ',
+  '                                            SY                  ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F09=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                 SSSS           ',
+  '                                               S  KKK           ',
+  '                                               S KKKK           ',
+  '                                               SKKW W           ',
+  '                                               SKKKK            ',
+  '                                                 SSSK           ',
+  '                                                SKK             ',
+  '                                               KAKKKY           ',
+  '                                               SKKK S           ',
+  '                                                 KKSS           ',
+  '                                                 K SS           ',
+  '                                               SS KA            ',
+  '                                              KYKK              ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F10=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                   SSSS         ',
+  '                                                   KK           ',
+  '                                                 SK K           ',
+  '                                                 S  W W         ',
+  '                                                 SKKK           ',
+  '                                                 K SSS          ',
+  '                                               K KKKK           ',
+  '                                                SKK K Y         ',
+  '                                                SAKKKS          ',
+  '                                                 K KK           ',
+  '                                                  K             ',
+  '                                                K S             ',
+  '                                                SY  S           ',
+  '                                                    A           ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F11=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                   KSSSS        ',
+  '                                                  S K           ',
+  '                                                  S             ',
+  '                                                  SKKW W        ',
+  '                                                 K SKK          ',
+  '                                                 SKKKSS         ',
+  '                                                SKK KSK         ',
+  '                                                 SKKKSSY        ',
+  '                                                 KAKK           ',
+  '                                                  K             ',
+  '                                                K S             ',
+  '                                                    SS          ',
+  '                                                  Y A           ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const F12=pf([
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                     SSS        ',
+  '                                                   KKKKKK       ',
+  '                                                   SK KKK       ',
+  '                                                   S WKWS       ',
+  '                                                   SKKKK        ',
+  '                                                 K  KSSS        ',
+  '                                                  SKKSK         ',
+  '                                                 SK KKS         ',
+  '                                                 SKKKKSY        ',
+  '                                                 KAKK           ',
+  '                                                  K             ',
+  '                                                K S  S          ',
+  '                                                   SKK          ',
+  '                                                  Y   AA        ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+  '                                                                ',
+]);
+
+const FRAMES=[F01,F02,F03,F04,F05,F06,F07,F08,F09,F10,F11,F12];
+
+// フェーズ定義
+const PHASES=[
+  {label:'NEUTRAL — 待機',      color:'rgba(136,136,136,0.7)', note:'',                                     frames:[0,1]},
+  {label:'COMPRESS — 圧縮開始', color:'rgba(249,255,71,0.55)', note:'Cカーブ: 逆方向へ',                   frames:[2,3]},
+  {label:'WIND-UP MAX ●',       color:'rgba(249,255,71,0.95)', note:'最大タメ\n縮む + 広がる + 逆に振る', frames:[4]},
+  {label:'RELEASE — 爆発直前',  color:'rgba(54,255,0,0.7)',    note:'1F: 張力最大',                        frames:[5]},
+  {label:'ACTION — 解放',       color:'rgba(54,255,0,0.95)',   note:'逆Cカーブ: 伸びきり',                 frames:[6,7,8]},
+  {label:'SETTLE — 着地・定着', color:'rgba(54,255,0,0.45)',   note:'Squash → 戻り',                       frames:[9,10,11]},
+];
+function getPhase(fi){return PHASES.find(p=>p.frames.includes(fi))||PHASES[0];}
+
+// 重心X位置（フレームごと・左=0.2, 右=0.8）
+const COG_X=[0.5,0.52,0.38,0.28,0.18,0.52,0.82,0.82,0.82,0.72,0.62,0.52];
+// 速度マップ
+const VEL=[0,0.05,0.2,0.4,0.0,0.9,1.0,0.85,0.6,0.35,0.15,0.05];
+// LoAタイプ（'C'=タメ, 'S'=解放, null=直立）
+const LOA_TYPE=[null,null,'C','C','C','S','S','S','S',null,null,null];
+
+const state={playing:true,frame:0,fps:6,feat:{ground:true,loa:false,arrow:true,vel:false,note:true,fnum:true}};
+
+// SVG描画
+function renderDot(svgEl,fd){
+  let s='';
+  for(let r=0;r<GH;r++) for(let c=0;c<GW;c++){
+    const col=fd[r][c];if(!col)continue;
+    s+=`<circle cx="${c*CS+CS/2}" cy="${r*CS+CS/2}" r="${DR*0.8}" fill="${col}"/>`;
+  }
+  svgEl.innerHTML=s;
+}
+function renderThumb(svgEl,fd){
+  let s='';
+  for(let r=0;r<GH;r++) for(let c=0;c<GW;c++){
+    const col=fd[r][c];if(!col)continue;
+    s+=`<circle cx="${c*CS+CS/2}" cy="${r*CS+CS/2}" r="${DR*0.62}" fill="${col}"/>`;
+  }
+  svgEl.innerHTML=s;
+}
+
+// LoA描画
+function renderLoA(fi){
+  const loa=document.getElementById('loa-svg');
+  if(!state.feat.loa||!LOA_TYPE[fi]){
+    loa.classList.remove('show');
+    loa.innerHTML='';
+    return;
+  }
+  loa.classList.add('show');
+  const view=document.getElementById('anim-view');
+  const w=view.offsetWidth,h=view.offsetHeight;
+  loa.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  loa.setAttribute('preserveAspectRatio','none');
+  const type=LOA_TYPE[fi];
+  let path='';
+  if(type==='C'){
+    path=`M${w*0.6},${h*0.15} C${w*0.18},${h*0.25} ${w*0.08},${h*0.62} ${w*0.32},${h*0.88}`;
+  } else {
+    path=`M${w*0.22},${h*0.88} C${w*0.72},${h*0.72} ${w*0.92},${h*0.42} ${w*0.88},${h*0.08}`;
+  }
+  // FUI的なミニマル記号（すべて小さく統一）
+  const cx = type==='C' ? w*0.11 : w*0.89;
+  const ps = 3;   // + のサイズ
+  const stroke = 'rgba(170,170,170,0.55)';
+  const subtle = 'rgba(170,170,170,0.4)';
+  const parenChar = type==='C' ? '(' : ')';
+
+  loa.innerHTML=`
+    <path d="${path}" fill="none" stroke="${subtle}" stroke-width="1" stroke-dasharray="3 3"/>
+    <!-- + 上 -->
+    <line x1="${cx-ps}" y1="${h*0.45}" x2="${cx+ps}" y2="${h*0.45}" stroke="${stroke}" stroke-width="0.8"/>
+    <line x1="${cx}" y1="${h*0.45-ps}" x2="${cx}" y2="${h*0.45+ps}" stroke="${stroke}" stroke-width="0.8"/>
+    <!-- ( or ) -->
+    <text x="${cx}" y="${h*0.515}" font-family="IBM Plex Mono,monospace" font-size="9" fill="${stroke}" text-anchor="middle">${parenChar}</text>
+    <!-- + 下 -->
+    <line x1="${cx-ps}" y1="${h*0.58}" x2="${cx+ps}" y2="${h*0.58}" stroke="${stroke}" stroke-width="0.8"/>
+    <line x1="${cx}" y1="${h*0.58-ps}" x2="${cx}" y2="${h*0.58+ps}" stroke="${stroke}" stroke-width="0.8"/>
+    <!-- ラベル -->
+    <text x="${cx}" y="${h*0.65}" font-family="IBM Plex Mono,monospace" font-size="6" fill="${subtle}" text-anchor="middle" letter-spacing="1.5">LoA</text>`;
+}
+
+// ── フェーズマーカー（コマセル上に表示するアロー）──
+// F03–F05: ◀ MAX WIND-UP（F05でMAX強調）
+// F06: 1F爆発直前
+// F07–F09: ACTION ▶
+const MARKERS = [
+  { type:'empty', text:'' },           // F01
+  { type:'empty', text:'' },           // F02
+  { type:'wu',    text:'◀ WIND-UP' }, // F03
+  { type:'wu',    text:'◀ WIND-UP' }, // F04
+  { type:'wu',    text:'◀ MAX Wind-up' }, // F05 ●
+  { type:'wu',    text:'◀ RELEASE' },  // F06 (1F)
+  { type:'ac',    text:'ACTION ▶' },   // F07
+  { type:'ac',    text:'ACTION ▶' },   // F08
+  { type:'ac',    text:'ACTION ▶' },   // F09
+  { type:'empty', text:'' },           // F10
+  { type:'empty', text:'' },           // F11
+  { type:'empty', text:'' },           // F12
+];
+
+// フレームマーカー状態（'key'=原画 / 'in'=動画 / null=なし）
+const frameMarkers = new Array(12).fill(null);
+
+function buildStrip(){
+  const strip=document.getElementById('frame-strip');
+  strip.innerHTML='';
+  const cellH=78;
+  FRAMES.forEach((fd,i)=>{
+    const phKey=i<2?'idle':i<4?'prep':i===4?'windup':i===5?'action':i<9?'action':'settle';
+    const markerClass=frameMarkers[i]==='key'?' key-frame':frameMarkers[i]==='in'?' in-between':'';
+    const cell=document.createElement('div');
+    cell.className=`fc ph-${phKey}${i===4?' star':''}${markerClass}`;
+    cell.style.width=`${Math.round(cellH*(GW/GH))}px`;
+    cell.style.height=`${cellH}px`;
+    cell.style.position='relative';
+    const m=MARKERS[i];
+    const prevM=i>0?MARKERS[i-1]:{type:'_first_'};
+    const showMarker=m.type!=='empty'&&(i===0||m.text!==prevM.text);
+    const mkClass=frameMarkers[i]==='key'?'key-frame':frameMarkers[i]==='in'?'in-between':'';
+    cell.innerHTML=`
+      ${showMarker?`<div class="fc-marker ${m.type}">${m.text}</div>`:''}
+      <div class="fc-key-marker ${mkClass}"></div>
+      <div class="fc-num">${i===4?'● ':''}F${String(i+1).padStart(2,'0')}</div>
+      <div class="fc-mark-btn" title="原画/動画/なし"></div>
+    `;
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox',`0 0 ${GW*CS} ${GH*CS}`);
+    svg.style.cssText='position:absolute;top:14px;left:5%;width:90%;height:calc(100% - 28px);image-rendering:pixelated;';
+    cell.appendChild(svg);
+    renderThumb(svg,fd);
+    // クリック選択
+    cell.addEventListener('click',e=>{
+      if(e.target.classList.contains('fc-mark-btn'))return;
+      state.frame=i;state.playing=false;
+      document.getElementById('btn-play').textContent='▶';
+      document.getElementById('btn-play').classList.remove('active');
+      document.getElementById('scrubber').value=i;
+      if(typeof editor!=='undefined'&&editor.active)updateEditFrameInfo();
+      updateUI();
+    });
+    // マーカーボタン：原画→動画→なし循環
+    const markBtn=cell.querySelector('.fc-mark-btn');
+    markBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      frameMarkers[i]=frameMarkers[i]===null?'key':frameMarkers[i]==='key'?'in':null;
+      buildStrip();
+      applyCellScale();
+      updateScrollThumb();
+    });
+    // ドラッグ並び替え（EDIT中のみ）
+    cell.setAttribute('draggable','true');
+    cell.addEventListener('dragstart',e=>{
+      if(!editor.active){e.preventDefault();return;}
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',String(i));
+      cell.classList.add('dragging');
+    });
+    cell.addEventListener('dragend',()=>cell.classList.remove('dragging'));
+    cell.addEventListener('dragover',e=>{
+      if(!editor.active)return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      cell.classList.add('drag-over');
+    });
+    cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
+    cell.addEventListener('drop',e=>{
+      if(!editor.active)return;
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      const from=parseInt(e.dataTransfer.getData('text/plain'));
+      const to=i;
+      if(from===to)return;
+      pushHistory();
+      [FRAMES[from],FRAMES[to]]=[FRAMES[to],FRAMES[from]];
+      [frameMarkers[from],frameMarkers[to]]=[frameMarkers[to],frameMarkers[from]];
+      state.frame=to;
+      document.getElementById('scrubber').value=to;
+      buildStrip();applyCellScale();updateScrollThumb();updateUI();
+    });
+    strip.appendChild(cell);
+  });
+  if(typeof cellScale!=='undefined')applyCellScale();
+  else setTimeout(updateScrollThumb,50);
+}
+
+
+function updateUI(){
+  const fi=state.frame;
+  const ph=getPhase(fi);
+  renderDot(document.getElementById('dot-svg'),FRAMES[fi]);
+  renderLoA(fi);
+
+  // フェーズラベル
+  const phEl=document.getElementById('phase-label');
+  phEl.textContent=ph.label;
+  phEl.style.color=ph.color;
+
+  // フレームラベル
+  const fEl=document.getElementById('frame-label');
+  if(state.feat.fnum){fEl.textContent=`F${String(fi+1).padStart(2,'0')} / 12`;fEl.style.display='';}
+  else fEl.style.display='none';
+
+  // 地面 & 重心
+  document.getElementById('ground-line').classList.toggle('show',state.feat.ground);
+  const cogEl=document.getElementById('cog-line');
+  if(state.feat.ground){
+    cogEl.classList.add('show');
+    const view=document.getElementById('anim-view');
+    const cogX=COG_X[fi]*view.offsetWidth;
+    cogEl.style.left=`${cogX}px`;
+    // 重心が支持基底（足）の外かどうかで色変化
+    const isUnstable=fi>=2&&fi<=5;
+    cogEl.style.background=isUnstable?'rgba(249,255,71,0.7)':'rgba(54,255,0,0.5)';
+    cogEl.style.bottom='24px';
+    cogEl.style.height='50px';
+  } else cogEl.classList.remove('show');
+
+  // フェーズマーカー（コマセル上）の表示/非表示
+  document.querySelectorAll('.fc-marker').forEach(el => {
+    el.style.display = state.feat.arrow ? '' : 'none';
+  });
+
+  // フェーズ注釈
+  const noteEl=document.getElementById('phase-note');
+  if(state.feat.note&&ph.note){
+    noteEl.classList.add('show');
+    noteEl.style.color=ph.color;
+    noteEl.innerHTML=ph.note.replace('\n','<br>');
+  } else noteEl.classList.remove('show');
+
+  // 速度バー
+  const vv=VEL[fi]||0;
+  if(state.feat.vel){
+    document.getElementById('vel-bar-wrap').classList.add('show');
+    document.getElementById('vel-bar').style.width=`${vv*100}%`;
+    document.getElementById('vel-lbl').textContent=`SPD: ${vv.toFixed(2)}x`;
+  } else document.getElementById('vel-bar-wrap').classList.remove('show');
+
+  // ストリップ
+  document.querySelectorAll('.fc').forEach((el,i)=>el.classList.toggle('active',i===fi));
+  document.getElementById('scrubber').value=fi;
+  document.getElementById('bot-frame').textContent=`FRAME: ${String(fi+1).padStart(2,'0')} / 12`;
+}
+
+let lastTime=null,accumMs=0;
+function loop(now){
+  if(state.playing){
+    if(lastTime!==null)accumMs+=now-lastTime;
+    lastTime=now;
+    const mspf=1000/state.fps;
+    while(accumMs>=mspf){state.frame=(state.frame+1)%12;accumMs-=mspf;}
+  } else lastTime=null;
+  updateUI();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function togglePlay(){
+  state.playing=!state.playing;
+  const b=document.getElementById('btn-play');
+  b.textContent=state.playing?'▶':'⏸';
+  b.classList.toggle('active',state.playing);
+}
+function stepFrame(n){
+  state.playing=false;
+  document.getElementById('btn-play').textContent='▶';
+  document.getElementById('btn-play').classList.remove('active');
+  state.frame=(state.frame+n+12)%12;
+}
+function resetPlay(){state.frame=0;accumMs=0;}
+function scrubTo(v){state.frame=parseInt(v);}
+function setFps(fps){
+  state.fps=fps;accumMs=0;
+  [6,12,24].forEach(f=>{document.getElementById(`fps-${f}`).className='fp '+(f===fps?'on':'off');});
+}
+function togF(key){
+  state.feat[key]=!state.feat[key];
+  document.getElementById(`tog-${key}`).classList.toggle('on',state.feat[key]);
+}
+
+function toggleCheck(el){
+  el.classList.toggle('checked');
+  const items = document.querySelectorAll('.check-item');
+  let count = 0;
+  items.forEach(it => { if (it.classList.contains('checked')) count++; });
+  const prog = document.getElementById('check-progress');
+  prog.textContent = `CHECK: ${count} / 4` + (count === 4 ? '  ✓ ALL CLEAR' : '');
+  prog.classList.toggle('complete', count === 4);
+}
+// ══════════════════════════════════════
+// エディタモード
+// ══════════════════════════════════════
+const editor = {
+  active: false,
+  color: 'K',
+  brush: 1,
+  showGrid: true,
+  showGround: true,
+  isDrawing: false,
+  history: [],     // [{frameIdx, prev:[...]}]
+  redoStack: [],
+};
+
+// 色キーから16進への逆引き
+const COLOR_HEX = { K:'#111', S:'#444', L:'#888', W:'#DDD', A:'#36FF00', Y:'#F9FF47', _:null };
+const KEYS_FROM_COLOR = (c) => {
+  for (const k in COLOR_HEX) if (COLOR_HEX[k] === c) return k;
+  return null;
+};
+
+function toggleEditMode() {
+  editor.active = !editor.active;
+  const btn = document.getElementById('edit-toggle');
+  const view = document.getElementById('view-mode');
+  const edit = document.getElementById('edit-mode');
+  const animView = document.getElementById('anim-view');
+  const strip = document.getElementById('frame-strip');
+  const dotSvg = document.getElementById('dot-svg');
+
+  if (editor.active) {
+    btn.textContent = '✕ EXIT EDIT MODE';
+    btn.classList.add('active');
+    view.style.display = 'none';
+    edit.style.display = 'block';
+    state.playing = false;
+    document.getElementById('btn-play').textContent = '▶';
+    document.getElementById('btn-play').classList.remove('active');
+    animView.classList.add('editing');
+    strip.classList.add('editing');
+    dotSvg.classList.add('editing');
+    document.getElementById('main').classList.add('editing-mode');
+    updateEditFrameInfo();
+  } else {
+    btn.textContent = '✏ EDIT MODE';
+    btn.classList.remove('active');
+    view.style.display = 'block';
+    edit.style.display = 'none';
+    animView.classList.remove('editing');
+    strip.classList.remove('editing');
+    dotSvg.classList.remove('editing');
+    document.getElementById('main').classList.remove('editing-mode');
+  }
+  updateUI();
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  editor.color = el.dataset.color;
+}
+
+function setBrush(n) {
+  editor.brush = n;
+  [1,2,3].forEach(b => {
+    document.getElementById(`brush-${b}`).className = 'fp ' + (b===n?'on':'off');
+  });
+}
+
+function togEditGrid() {
+  editor.showGrid = !editor.showGrid;
+  document.getElementById('tog-edgrid').classList.toggle('on', editor.showGrid);
+  updateUI();
+}
+function togEditGround() {
+  editor.showGround = !editor.showGround;
+  document.getElementById('tog-edground').classList.toggle('on', editor.showGround);
+  updateUI();
+}
+
+function updateEditFrameInfo() {
+  const info = document.getElementById('edit-frame-info');
+  if (info) info.textContent = `F${String(state.frame+1).padStart(2,'0')}`;
+}
+
+// ── 描画 ──
+function paintCell(row, col) {
+  const fd = FRAMES[state.frame];
+  if (!fd) return;
+  const newColor = editor.color === '_' ? null : COLOR_HEX[editor.color];
+  const brush = editor.brush;
+  const half = Math.floor(brush/2);
+
+  for (let dy = -half; dy <= brush-1-half; dy++) {
+    for (let dx = -half; dx <= brush-1-half; dx++) {
+      const r = row + dy;
+      const c = col + dx;
+      if (r < 0 || r >= GH || c < 0 || c >= GW) continue;
+      fd[r][c] = newColor;
+    }
+  }
+}
+
+function pushHistory() {
+  // 全フレーム + frameMarkers + currentFrame をスナップショット保存
+  const snapshot = {
+    frames:  FRAMES.map(fd => fd.map(row => [...row])),
+    markers: [...frameMarkers],
+    frameIdx: state.frame,
+  };
+  editor.history.push(snapshot);
+  if (editor.history.length > 80) editor.history.shift();
+  editor.redoStack = [];
+}
+
+function restoreSnapshot(snap) {
+  snap.frames.forEach((fd, i) => { FRAMES[i] = fd.map(row => [...row]); });
+  snap.markers.forEach((m, i) => { frameMarkers[i] = m; });
+  state.frame = snap.frameIdx;
+  document.getElementById('scrubber').value = state.frame;
+  if (editor.active) updateEditFrameInfo();
+  buildStrip(); applyCellScale(); updateScrollThumb(); updateUI();
+}
+
+function undo() {
+  if (editor.history.length === 0) return;
+  // 現在状態をredoスタックへ
+  const cur = {
+    frames:  FRAMES.map(fd => fd.map(row => [...row])),
+    markers: [...frameMarkers],
+    frameIdx: state.frame,
+  };
+  editor.redoStack.push(cur);
+  restoreSnapshot(editor.history.pop());
+}
+function redo() {
+  if (editor.redoStack.length === 0) return;
+  const cur = {
+    frames:  FRAMES.map(fd => fd.map(row => [...row])),
+    markers: [...frameMarkers],
+    frameIdx: state.frame,
+  };
+  editor.history.push(cur);
+  restoreSnapshot(editor.redoStack.pop());
+}
+
+function copyFromPrev() {
+  const prevIdx = (state.frame - 1 + 12) % 12;
+  pushHistory();
+  FRAMES[state.frame] = FRAMES[prevIdx].map(row => [...row]);
+  buildStrip();
+  updateUI();
+}
+
+// フレームクリップボード（内部）
+let frameClipboard = null;
+function copyFrameToClipboard(){
+  frameClipboard = FRAMES[state.frame].map(row => [...row]);
+  updateCopyPasteBtns();
+}
+function pasteFrameFromClipboard(){
+  if(!frameClipboard)return;
+  pushHistory();
+  FRAMES[state.frame] = frameClipboard.map(row => [...row]);
+  buildStrip(); applyCellScale(); updateScrollThumb();
+  updateUI();
+}
+function doCopy(){ copyFrameToClipboard(); }
+function doPaste(){ pasteFrameFromClipboard(); }
+function updateCopyPasteBtns(){
+  const cb = document.getElementById('copy-btn');
+  const pb = document.getElementById('paste-btn');
+  if(!cb||!pb)return;
+  if(frameClipboard){
+    cb.classList.add('copy-active');
+    pb.style.opacity='1';
+  } else {
+    cb.classList.remove('copy-active');
+    pb.style.opacity='0.4';
+  }
+}
+function clearFrameNoConfirm() {
+  pushHistory();
+  FRAMES[state.frame] = Array.from({length:GH}, () => Array(GW).fill(null));
+  buildStrip();
+  updateUI();
+}
+
+function clearFrame() {
+  if (!confirm('現フレームをクリアしますか？')) return;
+  pushHistory();
+  FRAMES[state.frame] = Array.from({length:GH}, () => Array(GW).fill(null));
+  buildStrip();
+  updateUI();
+}
+
+// ── マウスイベント ──
+function setupEditorEvents() {
+  const svg = document.getElementById('dot-svg');
+
+  function getCellFromEvent(e) {
+    if (!editor.active) return null;
+    const rect = svg.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    if (clientX === undefined) return null;
+    // viewBox座標へ変換
+    const vbX = (clientX - rect.left) / rect.width  * (GW * CS);
+    const vbY = (clientY - rect.top)  / rect.height * (GH * CS);
+    const col = Math.floor(vbX / CS);
+    const row = Math.floor(vbY / CS);
+    if (row < 0 || row >= GH || col < 0 || col >= GW) return null;
+    return { row, col };
+  }
+
+  svg.addEventListener('mousedown', e => {
+    if (!editor.active) return;
+    e.preventDefault();
+    pushHistory();
+    editor.isDrawing = true;
+    const cell = getCellFromEvent(e);
+    if (cell) {
+      paintCell(cell.row, cell.col);
+      updateUI();
+    }
+  });
+  svg.addEventListener('mousemove', e => {
+    if (!editor.active || !editor.isDrawing) return;
+    const cell = getCellFromEvent(e);
+    if (cell) {
+      paintCell(cell.row, cell.col);
+      updateUI();
+    }
+  });
+  window.addEventListener('mouseup', () => { editor.isDrawing = false; });
+
+  // タッチ対応
+  svg.addEventListener('touchstart', e => {
+    if (!editor.active) return;
+    e.preventDefault();
+    pushHistory();
+    editor.isDrawing = true;
+    const cell = getCellFromEvent(e);
+    if (cell) { paintCell(cell.row, cell.col); updateUI(); }
+  }, {passive:false});
+  svg.addEventListener('touchmove', e => {
+    if (!editor.active || !editor.isDrawing) return;
+    e.preventDefault();
+    const cell = getCellFromEvent(e);
+    if (cell) { paintCell(cell.row, cell.col); updateUI(); }
+  }, {passive:false});
+  window.addEventListener('touchend', () => { editor.isDrawing = false; });
+}
+
+// ── 編集モード時のSVG描画拡張（renderDot は元のまま、上にグリッドを重ねる）──
+const _originalRenderDot = renderDot;
+renderDot = function(svgEl, fd) {
+  let s = '';
+  // ドット
+  for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+    const col = fd[r][c]; if (!col) continue;
+    s += `<circle cx="${c*CS+CS/2}" cy="${r*CS+CS/2}" r="${DR*0.8}" fill="${col}"/>`;
+  }
+  // 編集モード時のオーバーレイ
+  if (editor.active) {
+    if (editor.showGround) {
+      // 地面ライン (足元の行 ≒ row 18)
+      const gy = 19 * CS;
+      s += `<line x1="0" y1="${gy}" x2="${GW*CS}" y2="${gy}" class="edit-ground-line"/>`;
+    }
+    if (editor.showGrid) {
+      // マス目（ホバー反応するセル）
+      for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+        s += `<rect class="edit-grid-cell" x="${c*CS}" y="${r*CS}" width="${CS}" height="${CS}"/>`;
+      }
+    }
+  }
+  svgEl.innerHTML = s;
+};
+
+// ── JSONエクスポート（コピペ用形式）──
+function frameToText(fd, name) {
+  const lines = fd.map(row => {
+    return row.map(c => {
+      if (!c) return ' ';
+      const k = KEYS_FROM_COLOR(c);
+      return k || ' ';
+    }).join('');
+  });
+  return `const ${name}=pf([\n${lines.map(l => `  '${l}',`).join('\n')}\n]);`;
+}
+
+function exportJSON() {
+  const names = ['F01','F02','F03','F04','F05','F06','F07','F08','F09','F10','F11','F12'];
+  const out = FRAMES.map((fd, i) => frameToText(fd, names[i])).join('\n\n');
+  // クリップボードにコピー
+  navigator.clipboard.writeText(out).then(() => {
+    alert('JSON出力をクリップボードにコピーしました！\n次のチャットで貼り付けて「これをデフォルトに」と伝えてください。');
+  }).catch(() => {
+    // フォールバック：textareaに出力
+    const ta = document.getElementById('json-paste');
+    ta.value = out;
+    alert('JSON出力をIMPORT欄に出力しました（手動でコピーしてください）');
+  });
+}
+
+// ── PNG エクスポート ──
+function svgToPNG(svgEl, scale = 8) {
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const w = GW * CS * scale;
+  const h = GH * CS * scale;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, w, h);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob));
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+  });
+}
+
+async function exportPNG() {
+  // 編集オーバーレイなしで一時的に描画
+  const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  tempSvg.setAttribute('viewBox', `0 0 ${GW*CS} ${GH*CS}`);
+  tempSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  let s = '';
+  const fd = FRAMES[state.frame];
+  for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+    const col = fd[r][c]; if (!col) continue;
+    s += `<circle cx="${c*CS+CS/2}" cy="${r*CS+CS/2}" r="${DR*0.8}" fill="${col}"/>`;
+  }
+  tempSvg.innerHTML = s;
+  const blob = await svgToPNG(tempSvg);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kinetic-02-F${String(state.frame+1).padStart(2,'0')}.png`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function exportAllPNG() {
+  for (let i = 0; i < 12; i++) {
+    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    tempSvg.setAttribute('viewBox', `0 0 ${GW*CS} ${GH*CS}`);
+    tempSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    let s = '';
+    const fd = FRAMES[i];
+    for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+      const col = fd[r][c]; if (!col) continue;
+      s += `<circle cx="${c*CS+CS/2}" cy="${r*CS+CS/2}" r="${DR*0.8}" fill="${col}"/>`;
+    }
+    tempSvg.innerHTML = s;
+    const blob = await svgToPNG(tempSvg);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kinetic-02-F${String(i+1).padStart(2,'0')}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+    await new Promise(r => setTimeout(r, 200));  // ブラウザのDL制限対策
+  }
+}
+
+// ── JSONインポート ──
+function importJSON() {
+  const ta = document.getElementById('json-paste');
+  const text = ta.value.trim();
+  if (!text) { alert('JSONテキストを貼り付けてから [APPLY] を押してください'); return; }
+
+  try {
+    // const F01=pf([...]) 形式をパース
+    const matches = [...text.matchAll(/const\s+F(\d+)\s*=\s*pf\s*\(\s*\[([\s\S]*?)\]\s*\)\s*;/g)];
+    if (matches.length === 0) {
+      alert('フォーマットが認識できません。const F01=pf([...]) の形式が必要です。');
+      return;
+    }
+
+    pushHistory();
+
+    matches.forEach(m => {
+      const idx = parseInt(m[1]) - 1;
+      if (idx < 0 || idx >= 12) return;
+      // 各 '...' を抽出
+      const rowMatches = [...m[2].matchAll(/'([^']*)'/g)];
+      if (rowMatches.length !== GH) {
+        console.warn(`F${idx+1}: 行数が${rowMatches.length}でGH=${GH}と不一致`);
+        return;
+      }
+      const newFrame = rowMatches.map(rm => {
+        const row = rm[1];
+        const cells = [];
+        for (let i = 0; i < GW; i++) {
+          const ch = row[i] || ' ';
+          cells.push(COLOR_HEX[ch] || null);
+        }
+        return cells;
+      });
+      FRAMES[idx] = newFrame;
+    });
+
+    buildStrip();
+    updateUI();
+    alert(`${matches.length}フレーム読み込みました`);
+  } catch (err) {
+    alert('読み込みエラー: ' + err.message);
+  }
+}
+
+// ── ショートカット管理システム ──
+const SHORTCUT_DEFS = [
+  { id:'col-K',      group:'tools',  desc:'色: K（黒）',        key:'a',  action:()=>selectColorById('K') },
+  { id:'col-S',      group:'tools',  desc:'色: S（濃グレー）',   key:'s',  action:()=>selectColorById('S') },
+  { id:'col-L',      group:'tools',  desc:'色: L（中グレー）',   key:'d',  action:()=>selectColorById('L') },
+  { id:'col-W',      group:'tools',  desc:'色: W（白）',          key:'f',  action:()=>selectColorById('W') },
+  { id:'col-A',      group:'tools',  desc:'色: A（緑）',          key:'g',  action:()=>selectColorById('A') },
+  { id:'col-Y',      group:'tools',  desc:'色: Y（黄緑）',        key:'h',  action:()=>selectColorById('Y') },
+  { id:'col-eraser', group:'tools',  desc:'消しゴム',              key:'x',  action:()=>selectColorById('_') },
+  { id:'brush-up',   group:'brush',  desc:'筆サイズ ＋',          key:'ArrowUp',    action:()=>changeBrush(1) },
+  { id:'brush-down', group:'brush',  desc:'筆サイズ −',          key:'ArrowDown',  action:()=>changeBrush(-1) },
+  { id:'play',       group:'play',   desc:'再生 / 停止',           key:' ',          action:()=>togglePlay() },
+  { id:'prev-frame', group:'play',   desc:'前コマ',                key:'ArrowLeft',  action:()=>moveStrip(-1) },
+  { id:'next-frame', group:'play',   desc:'次コマ',                key:'ArrowRight', action:()=>moveStrip(1) },
+  { id:'copy-frame', group:'edit',   desc:'前コマをコピー（C）',  key:'c', mod:'ctrl',          action:()=>copyFrameToClipboard() },
+  { id:'paste-frame',group:'edit',   desc:'コピーを貼付（V）',    key:'v', mod:'ctrl',          action:()=>pasteFrameFromClipboard() },
+  { id:'clear-frame',group:'edit',   desc:'フレームをクリア',      key:'Backspace',  action:()=>clearFrameNoConfirm() },
+  { id:'undo',       group:'edit',   desc:'UNDO',                  key:'z', mod:'ctrl',          action:()=>undo() },
+  { id:'redo',       group:'edit',   desc:'REDO',                  key:'Z', mod:'ctrl+shift',    action:()=>redo() },
+  { id:'exp-json',   group:'export', desc:'JSON出力',              key:'s', mod:'ctrl',          action:()=>exportJSON() },
+  { id:'exp-png',    group:'export', desc:'現フレームPNG',         key:'s', mod:'ctrl+shift',    action:()=>exportPNG() },
+  { id:'exp-all',    group:'export', desc:'全12コマPNG',           key:'s', mod:'ctrl+shift+alt',action:()=>exportAllPNG() },
+];
+const keyMap = {};
+SHORTCUT_DEFS.forEach(d => { keyMap[d.id] = { key:d.key, mod:d.mod||'' }; });
+
+function selectColorById(colorKey){
+  const sw=document.querySelector(`.swatch[data-color="${colorKey}"]`);
+  if(sw) selectColor(sw);
+}
+function changeBrush(delta){
+  const next=Math.max(1,Math.min(3,editor.brush+delta));
+  setBrush(next);
+}
+function moveStrip(delta){
+  const next=(state.frame+delta+12)%12;
+  state.frame=next;
+  document.getElementById('scrubber').value=next;
+  if(editor.active) updateEditFrameInfo();
+  updateUI();
+}
+
+let recordingId=null;
+function formatKeyLabel(key,mod){
+  if(key===' ')           return 'Space';
+  if(key==='ArrowLeft')   return '←';
+  if(key==='ArrowRight')  return '→';
+  if(key==='ArrowUp')     return '↑';
+  if(key==='ArrowDown')   return '↓';
+  return key.length===1 ? key.toUpperCase() : key;
+}
+function buildShortcutModal(){
+  const groups={tools:'sc-list-tools',brush:'sc-list-brush',play:'sc-list-play',edit:'sc-list-edit',export:'sc-list-export'};
+  Object.values(groups).forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  SHORTCUT_DEFS.forEach(def=>{
+    const container=document.getElementById(groups[def.group]);
+    if(!container)return;
+    const km=keyMap[def.id];
+    const row=document.createElement('div');
+    row.className='sc-row';
+    const modParts=km.mod?km.mod.split('+'):[];
+    const modHtml=modParts.map(m=>`<span class="sc-key" style="pointer-events:none;opacity:0.5;">${m==='ctrl'?'Ctrl':m==='shift'?'Shift':m}</span><span style="color:var(--grey);font-size:10px;padding:0 2px;">+</span>`).join('');
+    row.innerHTML=`
+      <span class="sc-desc">${def.desc}</span>
+      <div class="sc-key-wrap">${modHtml}<span class="sc-key" id="sckey-${def.id}">${formatKeyLabel(km.key,km.mod)}</span></div>
+      <button class="sc-edit-btn" id="scedit-${def.id}" onclick="startRecording('${def.id}')" ${km.mod?'disabled style="opacity:0.3;"':''}>EDIT</button>
+    `;
+    container.appendChild(row);
+  });
+}
+function startRecording(id){
+  if(recordingId) cancelRecording();
+  recordingId=id;
+  const editBtn=document.getElementById(`scedit-${id}`);
+  const keyEl=document.getElementById(`sckey-${id}`);
+  if(editBtn) editBtn.classList.add('active');
+  if(keyEl){ keyEl.classList.add('recording'); keyEl.textContent='...'; }
+}
+function cancelRecording(){
+  if(!recordingId)return;
+  const km=keyMap[recordingId];
+  const keyEl=document.getElementById(`sckey-${recordingId}`);
+  const editBtn=document.getElementById(`scedit-${recordingId}`);
+  if(keyEl){keyEl.classList.remove('recording');keyEl.textContent=formatKeyLabel(km.key,km.mod);}
+  if(editBtn)editBtn.classList.remove('active');
+  recordingId=null;
+}
+function openShortcuts(){ buildShortcutModal(); document.getElementById('shortcut-modal').classList.add('open'); }
+function closeShortcuts(){ cancelRecording(); document.getElementById('shortcut-modal').classList.remove('open'); }
+
+// パレットのキーラベルを現在のkeyMapから更新
+function updatePaletteKeyLabels(){
+  const colMap={ 'col-K':'K','col-S':'S','col-L':'L','col-W':'W','col-A':'A','col-Y':'Y','col-eraser':'_' };
+  let hints = [];
+  Object.entries(colMap).forEach(([defId, colorKey]) => {
+    const km = keyMap[defId];
+    if (!km) return;
+    const label = formatKeyLabel(km.key, km.mod);
+    const el = document.getElementById(`swk-${colorKey}`);
+    if (el) el.textContent = label;
+    if (colorKey !== '_') hints.push(label);
+    else hints.push(`✕=${label}`);
+  });
+  const hintEl = document.getElementById('palette-key-hints');
+  if (hintEl) hintEl.textContent = hints.slice(0,6).join(' ') + '  ' + hints[6];
+}
+document.getElementById('shortcut-modal').addEventListener('click',e=>{
+  if(e.target.id==='shortcut-modal') closeShortcuts();
+});
+
+// ── tick ──
+function tick(){
+  const d=new Date();
+  document.getElementById('clock').textContent=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(tick,1000);tick();
+
+// ── 統合 keydown ──
+document.addEventListener('keydown',e=>{
+  // キー記録中
+  if(recordingId){
+    e.preventDefault();
+    const ignore=['Escape','Tab','CapsLock','Meta','Control','Shift','Alt'];
+    if(ignore.includes(e.key)){ if(e.key==='Escape') cancelRecording(); return; }
+    keyMap[recordingId].key=e.key;
+    keyMap[recordingId].mod='';
+    const km=keyMap[recordingId];
+    const keyEl=document.getElementById(`sckey-${recordingId}`);
+    const editBtn=document.getElementById(`scedit-${recordingId}`);
+    if(keyEl){keyEl.classList.remove('recording');keyEl.textContent=formatKeyLabel(km.key,km.mod);}
+    if(editBtn)editBtn.classList.remove('active');
+    // パレットのキーラベルも更新
+    updatePaletteKeyLabels();
+    recordingId=null;
+    return;
+  }
+  // Escでモーダルを閉じる
+  if(e.key==='Escape'){
+    if(document.getElementById('shortcut-modal').classList.contains('open')){closeShortcuts();return;}
+    if(editor.active){toggleEditMode();return;}
+  }
+  // Ctrl系ショートカット（mod付き定義を処理）
+  if(e.ctrlKey || e.metaKey) {
+    const k = e.key;
+    const shift = e.shiftKey;
+    const alt   = e.altKey;
+
+    // Ctrl+Z / Ctrl+Shift+Z（常時固定）
+    if(k.toLowerCase() === 'z') {
+      e.preventDefault();
+      if(shift) redo(); else undo();
+      return;
+    }
+    // 以下はedit mode中のみ
+    if(editor.active) {
+      if(k.toLowerCase() === 's') {
+        e.preventDefault();
+        if(shift && alt)  exportAllPNG();
+        else if(shift)    exportPNG();
+        else              exportJSON();
+        return;
+      }
+      if(k.toLowerCase() === 'c' && !shift && !alt) { e.preventDefault(); copyFrameToClipboard(); return; }
+      if(k.toLowerCase() === 'v' && !shift && !alt) { e.preventDefault(); pasteFrameFromClipboard(); return; }
+    }
+    return; // その他のCtrl組み合わせは通さない
+  }
+  // その他ショートカット（Ctrl系はスキップ）
+  for(const def of SHORTCUT_DEFS){
+    if(def.mod) continue;  // mod付きはCtrl処理で済ませる
+    const km=keyMap[def.id];
+    if(e.key===km.key && !e.ctrlKey && !e.metaKey && !e.altKey){
+      // Space / フレーム移動 は常時有効
+      if(def.id==='play'||def.id==='prev-frame'||def.id==='next-frame'){
+        e.preventDefault(); def.action(); return;
+      }
+      // ツール・筆サイズ・edit操作はedit modeのみ
+      if(editor.active && (def.group==='tools'||def.group==='brush'||def.group==='edit')){
+        e.preventDefault(); def.action(); return;
+      }
+    }
+  }
+});
+
+// 編集モード時のフレーム切替時に表示更新
+const _origScrubTo = scrubTo;
+scrubTo = function(v) { _origScrubTo(v); if (editor.active) updateEditFrameInfo(); };
+
+// ══════════════════════════════════════
+// カスタムスクロールバー（横スクロール + Alt+ホイール幅伸縮）
+// ══════════════════════════════════════
+const stripEl = () => document.getElementById('frame-strip');
+const thumbEl = () => document.getElementById('strip-thumb');
+const sbEl    = () => document.getElementById('strip-scrollbar');
+
+// セル幅の状態（デフォルト: GW/GH比率ベース）
+let cellScale = 1.0;   // 1.0 = デフォルト
+const CELL_SCALE_MIN = 0.3;
+const CELL_SCALE_MAX = 3.0;
+
+// cellScaleからpx幅を返す
+function calcCellW() {
+  const baseH = 78;
+  return Math.round(baseH * (GW / GH) * cellScale);
+}
+
+// 全セルに新しい幅を適用
+function applyCellScale() {
+  const w = calcCellW();
+  document.querySelectorAll('.fc').forEach(el => {
+    el.style.width = `${w}px`;
+  });
+  updateScrollThumb();
+}
+
+// スクロールサム位置・幅を更新
+function updateScrollThumb() {
+  const strip = stripEl();
+  const sb    = sbEl();
+  const thumb = thumbEl();
+  if (!strip || !sb || !thumb) return;
+
+  const totalW   = strip.scrollWidth;
+  const visibleW = strip.clientWidth;
+  const sbW      = sb.clientWidth;
+
+  if (totalW <= visibleW) {
+    thumb.style.display = 'none';
+    return;
+  }
+  thumb.style.display = 'block';
+
+  const ratio    = visibleW / totalW;
+  const thumbW   = Math.max(24, sbW * ratio);
+  const maxLeft  = sbW - thumbW;
+  const thumbLeft = (strip.scrollLeft / (totalW - visibleW)) * maxLeft;
+
+  thumb.style.width = `${thumbW}px`;
+  thumb.style.left  = `${thumbLeft}px`;
+}
+
+function setupStripScroll() {
+  const strip = document.getElementById('frame-strip');
+  const sb    = document.getElementById('strip-scrollbar');
+  const thumb = document.getElementById('strip-thumb');
+
+  // ── ホイールイベント ──
+  // 通常: 横スクロール / Alt: 幅伸縮
+  const stripArea = document.getElementById('strip-area');
+  if (stripArea) {
+    stripArea.addEventListener('wheel', e => {
+      if (e.altKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.08 : 0.08;
+        cellScale = Math.max(CELL_SCALE_MIN, Math.min(CELL_SCALE_MAX, cellScale + delta));
+        applyCellScale();
+      } else {
+        e.preventDefault();
+        strip.scrollLeft += e.deltaY * 0.8 + e.deltaX;
+        updateScrollThumb();
+      }
+    }, { passive: false });
+  }
+
+  // strip自体のスクロールでサムを追従
+  strip.addEventListener('scroll', updateScrollThumb);
+
+  // ── サムのドラッグ（中央ドラッグ = スクロール） ──
+  let thumbDragging = false;
+  let thumbDragStartX = 0;
+  let thumbDragStartScroll = 0;
+
+  thumb.addEventListener('mousedown', e => {
+    // 端部分かどうかは後のリサイズで処理
+    if (e.target === thumb && !resizeDragging) {
+      thumbDragging = true;
+      thumbDragStartX = e.clientX;
+      thumbDragStartScroll = strip.scrollLeft;
+      e.preventDefault();
+    }
+  });
+
+  // ── スクロールバートラック上クリック（ジャンプ） ──
+  sb.addEventListener('mousedown', e => {
+    if (e.target !== sb) return;
+    const rect   = sb.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const sbW    = sb.clientWidth;
+    const totalW = strip.scrollWidth;
+    const visW   = strip.clientWidth;
+    strip.scrollLeft = (clickX / sbW) * (totalW - visW);
+    updateScrollThumb();
+  });
+
+  // ── 端ドラッグリサイズ ──
+  let resizeDragging = false;
+  let resizeSide     = null;   // 'left' | 'right'
+  let resizeStartX   = 0;
+  let resizeStartScale = 1.0;
+  let resizeStartScroll = 0;
+  const EDGE_PX = 8;   // 端から何px以内をリサイズとみなすか
+
+  thumb.addEventListener('mousedown', e => {
+    const rect  = thumb.getBoundingClientRect();
+    const localX = e.clientX - rect.left;
+    if (localX <= EDGE_PX) {
+      resizeDragging = true; resizeSide = 'left';
+    } else if (localX >= rect.width - EDGE_PX) {
+      resizeDragging = true; resizeSide = 'right';
+    }
+    if (resizeDragging) {
+      resizeStartX     = e.clientX;
+      resizeStartScale = cellScale;
+      resizeStartScroll = strip.scrollLeft;
+      thumbDragging    = false;
+      e.preventDefault();
+    }
+  });
+
+  // カーソル変更
+  thumb.addEventListener('mousemove', e => {
+    if (resizeDragging || thumbDragging) return;
+    const rect   = thumb.getBoundingClientRect();
+    const localX = e.clientX - rect.left;
+    if (localX <= EDGE_PX || localX >= rect.width - EDGE_PX) {
+      thumb.style.cursor = 'ew-resize';
+    } else {
+      thumb.style.cursor = 'grab';
+    }
+  });
+  thumb.addEventListener('mouseleave', () => {
+    if (!resizeDragging && !thumbDragging) thumb.style.cursor = 'grab';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (thumbDragging) {
+      const dx = e.clientX - thumbDragStartX;
+      const sb = sbEl();
+      const th = thumbEl();
+      const strip = stripEl();
+      if (!sb || !th || !strip) return;
+      const totalW  = strip.scrollWidth;
+      const visW    = strip.clientWidth;
+      const sbW     = sb.clientWidth;
+      const thumbW  = th.offsetWidth;
+      const maxLeft = sbW - thumbW;
+      const ratio   = dx / maxLeft;
+      strip.scrollLeft = thumbDragStartScroll + ratio * (totalW - visW);
+      updateScrollThumb();
+    }
+    if (resizeDragging) {
+      const dx    = e.clientX - resizeStartX;
+      const sbW   = sbEl()?.clientWidth || 1;
+      const totalW = stripEl()?.scrollWidth || 1;
+      const visW   = stripEl()?.clientWidth || 1;
+      // 右端を引くと拡大・縮小
+      const scaleDelta = (resizeSide === 'right' ? dx : -dx) / sbW * (totalW / visW) * 0.5;
+      cellScale = Math.max(CELL_SCALE_MIN, Math.min(CELL_SCALE_MAX, resizeStartScale + scaleDelta));
+      applyCellScale();
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    thumbDragging  = false;
+    resizeDragging = false;
+  });
+
+  window.addEventListener('resize', updateScrollThumb);
+}
+
+buildStrip();
+setupEditorEvents();
+setupStripScroll();
+</script>
+</body>
+</html>

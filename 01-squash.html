@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 01 SQUASH & STRETCH</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --acid:  #CCFF00;
+  --black: #000;
+  --white: #fff;
+  --mid:   #888;
+  --panel: #0E0E0E;
+  --border:rgba(204,255,0,0.15);
+  --red:   #FF3B3B;
+  --blue:  #3BAAFF;
+  --mono:  'IBM Plex Mono', monospace;
+  --disp:  'Barlow Condensed', sans-serif;
+  --jp:    'Noto Sans JP', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; background:var(--black); color:var(--white); font-family:var(--mono); overflow:hidden; user-select:none; }
+
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:radial-gradient(rgba(0,0,0,0.25) 1px,transparent 1px);
+  background-size:4px 4px; pointer-events:none; z-index:9999; opacity:0.5;
+}
+
+/* ── LAYOUT ── */
+#app {
+  display:grid;
+  grid-template-rows:44px 1fr 44px;
+  grid-template-columns:1fr 320px;
+  height:100vh;
+}
+
+#topbar {
+  grid-column:1/-1;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; font-size:10px; color:rgba(204,255,0,0.5); letter-spacing:0.25em;
+}
+
+#main-stage {
+  position:relative; overflow:hidden; background:var(--black);
+  border-right:1px solid var(--border);
+}
+
+.stage-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(204,255,0,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(204,255,0,0.03) 1px,transparent 1px);
+  background-size:48px 48px; pointer-events:none;
+}
+.stage-bignum {
+  position:absolute; font-family:var(--disp); font-weight:900; font-style:italic;
+  font-size:clamp(200px,35vw,460px); color:rgba(255,255,255,0.025);
+  top:-60px; left:-20px; letter-spacing:-0.05em; line-height:1; pointer-events:none;
+}
+.checker {
+  position:absolute;
+  background-image:repeating-conic-gradient(rgba(204,255,0,0.06) 0% 25%,transparent 0% 50%);
+  background-size:18px 18px; pointer-events:none;
+}
+.accent-line { position:absolute; background:rgba(204,255,0,0.12); pointer-events:none; }
+
+.corner { position:absolute; width:16px; height:16px; pointer-events:none; }
+.corner::before,.corner::after { content:''; position:absolute; background:var(--acid); }
+.corner::before { width:100%; height:1px; top:0; left:0; }
+.corner::after  { width:1px; height:100%; top:0; left:0; }
+.corner.tl { top:10px; left:10px; }
+.corner.tr { top:10px; right:10px; transform:scaleX(-1); }
+.corner.bl { bottom:10px; left:10px; transform:scaleY(-1); }
+.corner.br { bottom:10px; right:10px; transform:scale(-1); }
+
+.principle-overlay {
+  position:absolute; top:12px; right:14px; text-align:right; pointer-events:none;
+}
+.po-num { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(40px,6vw,80px); color:var(--acid); line-height:1; letter-spacing:-0.03em; }
+.po-en  { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(14px,2vw,22px); color:var(--white); line-height:1; }
+.po-jp  { font-family:var(--jp); font-size:10px; color:var(--mid); margin-top:3px; }
+
+/* ── DEMO AREA ── */
+#demo-area {
+  position:absolute; inset:60px 20px 80px 20px;
+  display:grid; grid-template-columns:1fr 1fr; gap:2px;
+}
+.compare-panel {
+  position:relative; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  border:1px solid rgba(255,255,255,0.05); overflow:hidden;
+}
+.compare-panel.correct { border-color:rgba(204,255,0,0.2); }
+.compare-panel.wrong   { border-color:rgba(255,59,59,0.2); }
+
+.panel-label {
+  position:absolute; top:10px; left:12px;
+  font-size:9px; letter-spacing:0.4em; color:rgba(255,255,255,0.3);
+}
+.panel-label.good { color:var(--acid); }
+.panel-label.bad  { color:var(--red); }
+
+/* フレーム番号 — ラベルの1行下・左詰め */
+.frame-counter {
+  position:absolute; top:26px; left:12px;
+  font-size:9px; color:rgba(204,255,0,0.35); letter-spacing:0.2em;
+  pointer-events:none; display:none; white-space:nowrap;
+}
+.frame-counter.show { display:block; }
+
+.ball-stage { position:relative; width:100%; flex:1; display:flex; align-items:center; justify-content:center; }
+.render-svg { width:100%; height:100%; overflow:visible; }
+
+.diff-flash { position:absolute; inset:0; border:2px solid transparent; pointer-events:none; transition:border-color 0.3s; }
+.diff-flash.highlight-good { border-color:rgba(204,255,0,0.5); }
+.diff-flash.highlight-bad  { border-color:rgba(255,59,59,0.5); }
+
+.hazard-bar {
+  position:absolute; bottom:0; left:0; right:0; height:6px;
+  background:repeating-linear-gradient(-45deg,var(--acid),var(--acid) 5px,var(--black) 5px,var(--black) 14px);
+  opacity:0.5;
+}
+
+/* ── PLAYBAR ── */
+#playbar {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  display:flex; gap:8px; align-items:center; z-index:50;
+}
+.play-btn {
+  width:28px; height:28px; border:1px solid rgba(204,255,0,0.4);
+  background:rgba(0,0,0,0.6); color:var(--acid);
+  font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s;
+}
+.play-btn:hover { background:rgba(204,255,0,0.15); border-color:var(--acid); }
+.play-btn.active { background:rgba(204,255,0,0.2); border-color:var(--acid); }
+.scrub-wrap { width:140px; display:flex; align-items:center; gap:6px; }
+.scrub-label { font-size:9px; color:rgba(204,255,0,0.4); letter-spacing:0.2em; white-space:nowrap; }
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:2px;
+  background:rgba(255,255,255,0.1); outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--acid); cursor:pointer; transition:background 0.15s,transform 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { background:var(--white); transform:scale(1.2); }
+input[type=range].break-range::-webkit-slider-thumb { background:var(--red); }
+
+/* ── SIDE PANEL ── */
+#side-panel {
+  display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; background:var(--panel);
+}
+#side-panel::-webkit-scrollbar { width:2px; }
+#side-panel::-webkit-scrollbar-thumb { background:var(--acid); }
+
+.sp-section { border-bottom:1px solid rgba(255,255,255,0.06); padding:14px 16px; flex-shrink:0; }
+.sp-label {
+  font-size:9px; letter-spacing:0.4em; color:rgba(204,255,0,0.4); margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.sp-label .ltr {
+  font-size:11px; font-weight:700; color:var(--acid); background:rgba(204,255,0,0.1);
+  width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;
+  letter-spacing:0; flex-shrink:0;
+}
+
+/* pills */
+.demo-status { display:flex; gap:8px; flex-wrap:wrap; }
+.status-pill {
+  font-size:9px; letter-spacing:0.2em; padding:3px 8px; border:1px solid; cursor:pointer; transition:all 0.15s;
+}
+.status-pill.active-pill { background:var(--acid); border-color:var(--acid); color:var(--black); }
+.status-pill.inactive    { border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); }
+.status-pill:hover { border-color:var(--acid); color:var(--acid); }
+
+/* toggle */
+.toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:10px; letter-spacing:0.1em; color:rgba(255,255,255,0.6); }
+.toggle-switch { width:36px; height:18px; background:rgba(255,255,255,0.1); border-radius:9px; position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+.toggle-switch.on { background:var(--acid); }
+.toggle-switch::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:var(--white); top:2px; left:2px; transition:left 0.2s; }
+.toggle-switch.on::after { left:20px; background:var(--black); }
+
+/* slider */
+.slider-row { margin-bottom:12px; }
+.slider-header { display:flex; justify-content:space-between; margin-bottom:5px; font-size:10px; }
+.slider-name { color:rgba(255,255,255,0.6); letter-spacing:0.1em; }
+.slider-val  { color:var(--acid); font-weight:700; letter-spacing:0.05em; }
+.slider-val.break-val { color:var(--red); }
+
+/* vertical slider wrapper */
+.vslider-wrap {
+  display:flex; gap:10px; align-items:flex-start; margin-top:4px;
+}
+.vslider-col {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.vslider-col label { font-size:8px; color:rgba(204,255,0,0.4); letter-spacing:0.2em; writing-mode:horizontal-tb; }
+
+input[type=range].vertical {
+  -webkit-appearance:slider-vertical;
+  writing-mode:vertical-lr; direction:rtl;
+  width:18px; height:120px; padding:0;
+  background:rgba(255,255,255,0.1); cursor:pointer; outline:none;
+}
+/* Chromeで縦スライダーが効かない場合のfallback */
+.vslider-rotated {
+  transform:rotate(-90deg);
+  transform-origin:center center;
+  width:120px; height:18px;
+  margin:51px -51px; /* 中央補正 */
+}
+
+/* ease gauge */
+#ease-gauge-wrap {
+  display:flex; gap:6px; margin-top:6px; align-items:flex-start;
+}
+#ease-gauge-svg { flex-shrink:0; }
+.ease-gauge-label { font-size:8px; color:rgba(204,255,0,0.35); letter-spacing:0.1em; line-height:2; }
+
+/* break */
+.break-btn {
+  width:100%; padding:10px; background:rgba(255,59,59,0.08); border:1px solid rgba(255,59,59,0.3);
+  color:var(--red); font-family:var(--mono); font-size:10px; letter-spacing:0.3em; cursor:pointer; transition:all 0.15s; text-align:left;
+}
+.break-btn:hover { background:rgba(255,59,59,0.15); border-color:var(--red); }
+.break-btn.active-break { background:rgba(255,59,59,0.25); border-color:var(--red); color:var(--white); }
+.break-warning { font-size:9px; color:rgba(255,59,59,0.5); margin-top:6px; letter-spacing:0.1em; line-height:1.6; }
+
+/* def */
+.def-block { background:rgba(204,255,0,0.05); border-left:3px solid var(--acid); padding:10px 12px; margin-bottom:8px; }
+.def-en { font-family:var(--disp); font-weight:700; font-style:italic; font-size:16px; color:var(--white); line-height:1.2; }
+.def-jp { font-family:var(--jp); font-size:11px; color:var(--mid); margin-top:4px; line-height:1.6; }
+.def-core { margin-top:8px; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.1em; line-height:1.7; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; }
+
+/* apply デモ */
+.apply-dot {
+  width:10px; height:10px; border-radius:50%;
+  background:var(--acid);
+  animation:applyBounce 0.8s cubic-bezier(0.36,0.07,0.19,0.97) infinite;
+  transform-origin:center bottom;
+  flex-shrink:0;
+}
+@keyframes applyBounce {
+  0%,100%{ transform:scaleX(1)   scaleY(1)   translateY(0); }
+  30%    { transform:scaleX(1.4) scaleY(0.6) translateY(4px); }
+  50%    { transform:scaleX(0.7) scaleY(1.4) translateY(-8px); }
+  70%    { transform:scaleX(1.4) scaleY(0.6) translateY(4px); }
+}
+#apply-btn:active {
+  transform:scaleX(1.08) scaleY(0.82) !important;
+}
+
+/* bottombar */
+#bottombar {
+  grid-column:1/-1; border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; font-size:9px; color:rgba(204,255,0,0.3); letter-spacing:0.2em;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div style="display:flex;gap:32px;">
+      <span>KINETIC_GEOMETRY // LEC_08</span>
+      <span>PRINCIPLE_01 // SQUASH_AND_STRETCH</span>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <span>SYS_ID:08 // A1B2.XY</span>
+      <span id="clock">00:00:00</span>
+    </div>
+  </div>
+
+  <!-- MAIN STAGE -->
+  <div id="main-stage">
+    <div class="stage-grid"></div>
+    <div class="stage-bignum">01</div>
+    <div class="checker" style="right:4%;top:8%;width:120px;height:120px;"></div>
+    <div class="checker" style="left:3%;bottom:14%;width:90px;height:90px;opacity:0.5;"></div>
+    <div class="accent-line" style="top:38%;left:8%;right:8%;height:1px;"></div>
+    <div class="accent-line" style="top:62%;left:8%;right:8%;height:1px;"></div>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+
+    <div class="principle-overlay">
+      <div class="po-num">01</div>
+      <div class="po-en">SQUASH &amp; STRETCH</div>
+      <div class="po-jp">潰しと伸ばし</div>
+    </div>
+
+    <div id="demo-area">
+      <!-- CORRECT -->
+      <div class="compare-panel correct" id="panel-correct">
+        <div class="panel-label good">// CORRECT — WITH S&amp;S</div>
+        <div class="frame-counter" id="frame-correct"></div>
+        <div class="diff-flash" id="diff-correct"></div>
+        <div class="ball-stage">
+          <svg class="render-svg" id="svg-correct" viewBox="0 0 260 320"></svg>
+        </div>
+        <div class="hazard-bar"></div>
+      </div>
+      <!-- WRONG -->
+      <div class="compare-panel wrong" id="panel-wrong">
+        <div class="panel-label bad">// WRONG — WITHOUT S&amp;S</div>
+        <div class="frame-counter" id="frame-wrong"></div>
+        <div class="diff-flash" id="diff-wrong"></div>
+        <div class="ball-stage">
+          <svg class="render-svg" id="svg-wrong" viewBox="0 0 260 320"></svg>
+        </div>
+        <div class="hazard-bar"></div>
+      </div>
+    </div>
+
+    <div id="playbar">
+      <div class="play-btn active" id="btn-play" onclick="togglePlay()">▶</div>
+      <div class="play-btn" onclick="stepFrame(-1)">|◁</div>
+      <div class="play-btn" onclick="stepFrame(1)">▷|</div>
+      <div class="scrub-wrap">
+        <span class="scrub-label">SCR</span>
+        <input type="range" id="scrubber" min="0" max="119" value="0" oninput="scrubTo(this.value)">
+      </div>
+      <div class="play-btn" onclick="resetPlay()">↺</div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div id="side-panel">
+
+    <!-- A DEMO -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">A</span>DEMO — 比較表示</div>
+      <div class="demo-status">
+        <div class="status-pill active-pill" id="pill-compare" onclick="setMode('compare')">COMPARE</div>
+        <div class="status-pill inactive"    id="pill-correct" onclick="setMode('correct')">CORRECT</div>
+        <div class="status-pill inactive"    id="pill-wrong"   onclick="setMode('wrong')">WRONG</div>
+      </div>
+    </div>
+
+    <!-- B TOGGLE -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">B</span>TOGGLE — 差分ON/OFF</div>
+      <div class="toggle-row"><span>差分ハイライト</span><div class="toggle-switch" id="tog-diff" onclick="toggleFeature('diff')"></div></div>
+      <div class="toggle-row"><span>影</span><div class="toggle-switch on" id="tog-shadow" onclick="toggleFeature('shadow')"></div></div>
+      <div class="toggle-row"><span>体積インジケーター</span><div class="toggle-switch" id="tog-volume" onclick="toggleFeature('volume')"></div></div>
+      <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0 10px;"></div>
+      <div style="font-size:9px;color:rgba(204,255,0,0.5);letter-spacing:0.3em;margin-bottom:8px;">STRETCH MODE</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <div class="status-pill active-pill" id="pill-ss-full"   onclick="setSSMode('full')"   style="flex:1;text-align:center;font-size:8px;padding:5px 4px;line-height:1.4;">SQUASH<br>+STRETCH</div>
+        <div class="status-pill inactive"    id="pill-ss-squash" onclick="setSSMode('squash')" style="flex:1;text-align:center;font-size:8px;padding:5px 4px;line-height:1.4;">SQUASH<br>ONLY</div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.08em;line-height:1.7;">
+        ONLY: 落下中は丸 → 着地でつぶれのみ<br>
+        FULL: 離地後にストレッチも加わる
+      </div>
+    </div>
+
+    <!-- C DEBUG -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">C</span>DEBUG — ガイド表示</div>
+      <div class="toggle-row"><span>Bounding Box</span><div class="toggle-switch" id="tog-bbox" onclick="toggleFeature('bbox')"></div></div>
+      <div class="toggle-row"><span>軌道ガイド</span><div class="toggle-switch" id="tog-arc" onclick="toggleFeature('arc')"></div></div>
+      <div class="toggle-row"><span>接地ライン</span><div class="toggle-switch on" id="tog-ground" onclick="toggleFeature('ground')"></div></div>
+      <div class="toggle-row"><span>重心マーカー</span><div class="toggle-switch" id="tog-cog" onclick="toggleFeature('cog')"></div></div>
+      <div class="toggle-row"><span>フレーム番号</span><div class="toggle-switch" id="tog-frame" onclick="toggleFeature('frame')"></div></div>
+    </div>
+
+    <!-- D CONTROLS -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">D</span>CONTROLS — パラメータ</div>
+
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">SQUASH RATIO</span><span class="slider-val" id="val-squash">1.50</span></div>
+        <input type="range" id="sl-squash" min="100" max="300" value="150" oninput="updateParam('squash',this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">STRETCH RATIO</span><span class="slider-val" id="val-stretch">1.60</span></div>
+        <input type="range" id="sl-stretch" min="100" max="300" value="160" oninput="updateParam('stretch',this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">BOUNCE HEIGHT</span><span class="slider-val" id="val-height">140px</span></div>
+        <input type="range" id="sl-height" min="60" max="240" value="140" oninput="updateParam('height',this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span class="slider-name">SPEED</span><span class="slider-val" id="val-speed">1.0x</span></div>
+        <input type="range" id="sl-speed" min="25" max="300" value="100" oninput="updateParam('speed',this.value)">
+      </div>
+
+      <!-- イージングゲージ -->
+      <div style="margin-top:8px;">
+        <div style="font-size:9px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:8px;">EASING GAUGE</div>
+        <div id="ease-gauge-wrap">
+          <svg id="ease-gauge-svg" width="32" height="120" viewBox="0 0 32 120"></svg>
+          <div class="ease-gauge-label">
+            ← 減速（枚数多）<br><br><br><br>→ 加速（枚数少）
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="slider-header"><span class="slider-name">EASING POWER</span><span class="slider-val" id="val-ease">2.0</span></div>
+          <input type="range" id="sl-ease" min="10" max="50" value="20" oninput="updateParam('ease',this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- E BREAK -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">E</span>BREAK — 破綻体験</div>
+      <button class="break-btn" id="break-btn" onclick="toggleBreak()">⚠ OVERDRIVE MODE</button>
+      <div class="break-warning" id="break-warning" style="display:none;">
+        SYSTEM_GAIN: 310% // 体積が崩壊している。<br>これが「やりすぎ」の感覚。
+      </div>
+    </div>
+
+    <!-- F TEXT -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">F</span>TEXT — 言語化</div>
+      <div class="def-block">
+        <div class="def-en">Shape changes.<br>Volume does not.</div>
+        <div class="def-jp">形は変わるが、量は変わらない。</div>
+        <div class="def-core">
+          物体がつぶれるとき、横に広がる。<br>
+          伸びるとき、横は細くなる。<br>
+          この「体積の保存」が重さとリアリティを生む。
+        </div>
+      </div>
+    </div>
+
+    <!-- G APPLY -->
+    <div class="sp-section">
+      <div class="sp-label"><span class="ltr">G</span>APPLY — 応用例（クリックして体験）</div>
+      <!-- UI BUTTON -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">UI BUTTON</div>
+        <button id="apply-btn" onclick="applyDemo('button')"
+          style="background:#CCFF00;border:none;color:#000;font-family:'IBM Plex Mono',monospace;
+                 font-size:11px;letter-spacing:0.2em;padding:10px 20px;cursor:pointer;
+                 transform-origin:center bottom;transition:none;display:block;width:100%;">
+          CLICK ME
+        </button>
+        <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.1em;">
+          → 押す=Squash / 離す=Stretch
+        </div>
+      </div>
+      <!-- NOTIFICATION -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">NOTIFICATION</div>
+        <div style="position:relative;height:36px;overflow:hidden;">
+          <div id="apply-notif"
+            style="background:rgba(204,255,0,0.12);border:1px solid rgba(204,255,0,0.3);
+                   font-size:9px;letter-spacing:0.15em;color:#CCFF00;
+                   padding:8px 12px;transform:scaleY(0);transform-origin:top;
+                   transition:none;position:absolute;width:100%;">
+            ✓ SYSTEM_MESSAGE
+          </div>
+        </div>
+        <button onclick="applyDemo('notif')"
+          style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);
+                 font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.2em;
+                 padding:5px 10px;cursor:pointer;margin-top:4px;width:100%;">
+          TRIGGER
+        </button>
+      </div>
+      <!-- LOADING DOT -->
+      <div>
+        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">LOADING</div>
+        <div style="display:flex;gap:6px;align-items:flex-end;height:24px;">
+          <div class="apply-dot" style="animation-delay:0s"></div>
+          <div class="apply-dot" style="animation-delay:0.15s"></div>
+          <div class="apply-dot" style="animation-delay:0.3s"></div>
+          <div class="apply-dot" style="animation-delay:0.45s"></div>
+          <div class="apply-dot" style="animation-delay:0.6s"></div>
+        </div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.1em;">
+          → 各ドットが独立してSquash&Stretch
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /side-panel -->
+
+  <div id="bottombar">
+    <span>MASS_CONSERVATION: TRUE // DEFORMATION_INDEX: 0.85</span>
+    <span id="bottom-frame">FRAME: 000 / 120</span>
+    <span>ID: SENTIENT-BP-2026-VLS.01</span>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════
+   CONSTANTS
+══════════════════════════ */
+const SVG_W = 260, SVG_H = 320;
+const BALL_R  = 26;
+const GROUND_Y = SVG_H - 20;   // 地面のY座標（底辺がここに接地）
+const GAUGE_SAMPLES = 24;        // ゲージの刻み数
+
+/* ══════════════════════════
+   STATE
+══════════════════════════ */
+const state = {
+  playing: true,
+  frame: 0,
+  totalFrames: 120,
+  mode: 'compare',
+  breakMode: false,
+  ssMode: 'full',   // 'full' | 'squash' — ストレッチモード
+  params: {
+    squash:  1.50,
+    stretch: 1.60,
+    height:  140,
+    speed:   1.0,
+    ease:    2.0,
+  },
+  features: {
+    diff:   false,
+    shadow: true,
+    volume: false,
+    bbox:   false,
+    arc:    false,
+    ground: true,
+    cog:    false,
+    frame:  false,
+  },
+};
+
+/* ══════════════════════════
+   PHYSICS
+   
+   ボールの中心Y: 地面から上方向へheight
+   ─ 頂点: GROUND_Y - BALL_R - height
+   ─ 着地: GROUND_Y - BALL_R  （底辺が地面に接触）
+   
+   t=0: 頂点にいる状態からスタート
+   
+   Squash & Stretch の適用ルール：
+   ─ 離地〜下降中：横に伸び（Stretch）縦に縮む
+   ─ 着地前後：縦につぶれ（Squash）横に広がる
+   ─ 頂点：ほぼ真円に戻る
+   ─ 底辺は常にGROUND_Yに固定（地面基点）
+══════════════════════════ */
+
+// イージング: t^power でゆっくり加速
+// 0=頂点, 1=着地 を往復する
+function easePow(u, power) {
+  return Math.pow(u, power);
+}
+
+// フレームtからボール状態を計算
+function getBallState(frame, params) {
+  const t      = frame / state.totalFrames;
+  const power  = params.ease;
+
+  // 0→1→0 の往復サイクル（1=着地）
+  const cycle  = t % 1.0;
+  let phase;   // 0=頂点, 1=着地
+  let eased;
+  if (cycle < 0.5) {
+    // 前半: 頂点→着地（加速=ease-in）
+    const u = cycle / 0.5;
+    eased = easePow(u, power);
+    phase = eased;
+  } else {
+    // 後半: 着地→頂点（減速=ease-out）
+    const u = (cycle - 0.5) / 0.5;
+    eased = easePow(1 - u, power);
+    phase = eased;
+  }
+
+  // 実際のY（中心点）: phase=0→頂点, phase=1→着地
+  const topY    = GROUND_Y - BALL_R - params.height;   // 頂点中心Y
+  const bottomY = GROUND_Y - BALL_R;                    // 着地中心Y
+  const cy      = topY + (bottomY - topY) * phase;
+
+  // 速度（phase差分で近似）
+  const dPhase = (cycle < 0.5)
+    ? easePow((cycle/0.5)+0.01, power) - phase
+    : phase - easePow(1-((cycle-0.5)/0.5)+0.01, power);
+  const vel = Math.abs(dPhase) * 100;
+
+  return { cy, phase, vel, cycle };
+}
+
+/* Squash & Stretch の rx/ry 計算
+   ssMode='squash': 着地時のみSquash、それ以外は真円
+   ssMode='full':   離地後にStretchも付加
+*/
+function getSS(bs, params, isBreak) {
+  const mul = isBreak ? 3.1 : 1.0;
+  const sq  = params.squash  * mul;
+  const st  = params.stretch * mul;
+  const ph  = bs.phase;
+
+  // 着地付近のSquash重み（両モード共通）
+  const squashW = Math.max(0, (ph - 0.82) / 0.18);
+
+  // StretchはFULLモードのみ
+  const stretchW = (state.ssMode === 'full')
+    ? Math.max(0, Math.min(1, (ph - 0.10) / 0.35))
+      * Math.max(0, Math.min(1, (0.82 - ph) / 0.35))
+    : 0;
+
+  let rx, ry;
+  if (squashW > 0.01) {
+    rx = BALL_R * (1 + (sq - 1) * squashW);
+    ry = BALL_R / (1 + (sq - 1) * squashW);
+  } else if (stretchW > 0.01) {
+    ry = BALL_R * (1 + (st - 1) * stretchW);
+    rx = BALL_R / (1 + (st - 1) * stretchW);
+  } else {
+    rx = ry = BALL_R;
+  }
+
+  return { rx, ry, squashW, stretchW };
+}
+
+/* ボールのCY: Squash時は底辺がGROUND_Yに固定
+   cy_center = GROUND_Y - ry  （着地時）
+   それ以外は計算値のcy
+*/
+function getAdjustedCY(bs, ry, params) {
+  // 着地モードかどうか
+  const squashW = Math.max(0, (bs.phase - 0.82) / 0.18);
+  if (squashW > 0.01) {
+    // 底辺固定: 中心Y = GROUND_Y - ry
+    const groundCY = GROUND_Y - ry;
+    const freeCY   = bs.cy;
+    // squashWで補間
+    return freeCY + (groundCY - freeCY) * squashW;
+  }
+  return bs.cy;
+}
+
+/* ══════════════════════════
+   RENDER
+══════════════════════════ */
+function renderPanel(svgEl, withSS, params, features, isBreak) {
+  const bs  = getBallState(state.frame, params);
+  const cx  = SVG_W / 2;
+
+  let rx, ry, squashW = 0, stretchW = 0;
+  if (withSS) {
+    const ss = getSS(bs, params, isBreak);
+    rx = ss.rx; ry = ss.ry;
+    squashW  = ss.squashW;
+    stretchW = ss.stretchW;
+  } else {
+    rx = ry = BALL_R;
+  }
+
+  // 底辺固定の補正
+  const cy = withSS ? getAdjustedCY(bs, ry, params) : bs.cy;
+
+  const parts = [];
+
+  // ── 軌道ガイド ──
+  if (features.arc) {
+    const topY    = GROUND_Y - BALL_R - params.height;
+    const midY    = (topY + GROUND_Y - BALL_R) / 2;
+    const arcH    = (GROUND_Y - BALL_R - topY) / 2;
+    parts.push(`<ellipse cx="${cx}" cy="${midY}" rx="${SVG_W*0.18}" ry="${arcH}"
+      fill="none" stroke="rgba(59,170,255,0.3)" stroke-width="1" stroke-dasharray="4 4"/>`);
+  }
+
+  // ── 接地ライン ──
+  if (features.ground) {
+    parts.push(`<line x1="0" y1="${GROUND_Y}" x2="${SVG_W}" y2="${GROUND_Y}"
+      stroke="rgba(204,255,0,0.35)" stroke-width="1" stroke-dasharray="6 3"/>`);
+    parts.push(`<text x="${SVG_W-6}" y="${GROUND_Y-3}" font-family="IBM Plex Mono,monospace" 
+      font-size="8" fill="rgba(204,255,0,0.4)" text-anchor="end">GROUND</text>`);
+  }
+
+  // ── 影 ──
+  if (features.shadow) {
+    const shadowScale = 0.4 + bs.phase * 0.7;
+    const shadowOp    = 0.08 + bs.phase * 0.28;
+    parts.push(`<ellipse cx="${cx}" cy="${GROUND_Y}" rx="${BALL_R * shadowScale * 1.4}" ry="5"
+      fill="rgba(0,0,0,0.7)" opacity="${shadowOp}"/>`);
+    parts.push(`<ellipse cx="${cx}" cy="${GROUND_Y}" rx="${BALL_R * shadowScale}" ry="3"
+      fill="rgba(204,255,0,${(shadowOp*0.5).toFixed(2)})"/>`);
+  }
+
+  // ── Bounding Box ──
+  if (features.bbox) {
+    // 底辺は実際のGROUND_Yに接するよう表示
+    const bboxBottom = cy + ry;
+    parts.push(`<rect x="${cx-rx}" y="${cy-ry}" width="${rx*2}" height="${ry*2}"
+      fill="none" stroke="rgba(255,59,59,0.6)" stroke-width="1" stroke-dasharray="3 3"/>`);
+    // 底辺の強調
+    parts.push(`<line x1="${cx-rx}" y1="${bboxBottom}" x2="${cx+rx}" y2="${bboxBottom}"
+      stroke="rgba(255,59,59,0.9)" stroke-width="1.5"/>`);
+    const vol = (rx*ry/(BALL_R*BALL_R)).toFixed(2);
+    parts.push(`<text x="${cx}" y="${cy+ry+14}" font-family="IBM Plex Mono,monospace"
+      font-size="8" fill="rgba(255,59,59,0.7)" text-anchor="middle">VOL:${vol}×</text>`);
+  }
+
+  // ── ボール本体 ──
+  const ballColor = isBreak
+    ? (squashW > 0.5 ? '#FF3B3B' : stretchW > 0.5 ? '#FF7B3B' : '#FF3B3B')
+    : '#CCFF00';
+  parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${ballColor}"/>`);
+
+  // ハイライト
+  parts.push(`<ellipse cx="${cx-rx*0.28}" cy="${cy-ry*0.3}" rx="${rx*0.28}" ry="${ry*0.2}"
+    fill="rgba(255,255,255,0.35)"/>`);
+
+  // ── 重心マーカー ──
+  if (features.cog) {
+    parts.push(`<line x1="${cx-9}" y1="${cy}" x2="${cx+9}" y2="${cy}" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
+    parts.push(`<line x1="${cx}" y1="${cy-9}" x2="${cx}" y2="${cy+9}" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
+    parts.push(`<circle cx="${cx}" cy="${cy}" r="3" fill="none" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
+  }
+
+  // ── 体積インジケーター ──
+  if (features.volume) {
+    const vol  = (rx*ry/(BALL_R*BALL_R)).toFixed(2);
+    const diff = Math.abs(parseFloat(vol) - 1);
+    const vc   = diff < 0.05 ? '#CCFF00' : diff < 0.15 ? '#3BAAFF' : '#FF3B3B';
+    parts.push(`<text x="6" y="${SVG_H-6}" font-family="IBM Plex Mono,monospace"
+      font-size="9" fill="${vc}" letter-spacing="1">VOL: ${vol}×</text>`);
+    const barW = Math.min(56, parseFloat(vol)*28);
+    parts.push(`<rect x="6" y="${SVG_H-22}" width="28" height="3" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`);
+    parts.push(`<rect x="6" y="${SVG_H-22}" width="${barW}" height="3" fill="${vc}" opacity="0.8"/>`);
+  }
+
+  svgEl.innerHTML = parts.join('');
+}
+
+/* ══════════════════════════
+   EASE GAUGE（縦ゲージ）
+   上ほど間隔が狭い（=減速・枚数多）
+   下ほど間隔が広い（=加速・枚数少）
+══════════════════════════ */
+function updateEaseGauge(power) {
+  const gw = 32, gh = 120;
+  const lineCount = GAUGE_SAMPLES;
+  const svg = document.getElementById('ease-gauge-svg');
+  const parts = [];
+
+  // 背景
+  parts.push(`<rect width="${gw}" height="${gh}" fill="rgba(204,255,0,0.04)" rx="2"/>`);
+
+  // 中心の軸線
+  const ax = gw/2;
+  parts.push(`<line x1="${ax}" y1="0" x2="${ax}" y2="${gh}" stroke="rgba(204,255,0,0.15)" stroke-width="1"/>`);
+
+  // 現在フレームの位置（アニメ中）
+  const bs = getBallState(state.frame, state.params);
+  const cursorY = bs.phase * gh;
+
+  // ゲージ刻み線
+  for (let i = 0; i <= lineCount; i++) {
+    const phase = i / lineCount; // 0=頂点, 1=着地
+    // easeを適用: 均等フレームt→phaseへ変換
+    // ゲージはphase軸（Y）にframeをプロット
+    // 実際には「同じ時間間隔でどこにいるか」を示す
+    const frameUnit = i / lineCount;
+    let u;
+    if (frameUnit < 0.5) {
+      u = easePow(frameUnit / 0.5, power);
+    } else {
+      u = easePow(1 - (frameUnit - 0.5) / 0.5, power);
+    }
+    const y = u * gh;
+
+    // 刻み線の長さ：密なほど短め
+    const lineW = 8 + Math.random() * 0; // 固定幅、位置で密度表現
+    parts.push(`<line x1="${ax-6}" y1="${y.toFixed(1)}" x2="${ax+6}" y2="${y.toFixed(1)}"
+      stroke="rgba(204,255,0,0.5)" stroke-width="1"/>`);
+  }
+
+  // カーソル（現在位置）
+  parts.push(`<rect x="${ax-8}" y="${cursorY-1.5}" width="16" height="3" fill="#CCFF00"/>`);
+
+  // ラベル
+  parts.push(`<text x="${ax}" y="10" font-family="IBM Plex Mono,monospace" font-size="7"
+    fill="rgba(204,255,0,0.4)" text-anchor="middle">TOP</text>`);
+  parts.push(`<text x="${ax}" y="${gh-2}" font-family="IBM Plex Mono,monospace" font-size="7"
+    fill="rgba(204,255,0,0.4)" text-anchor="middle">GND</text>`);
+
+  svg.innerHTML = parts.join('');
+}
+
+/* ══════════════════════════
+   LOOP
+══════════════════════════ */
+let lastTime = null, accumMs = 0;
+
+function loop(now) {
+  if (state.playing) {
+    if (lastTime !== null) accumMs += (now - lastTime) * state.params.speed;
+    lastTime = now;
+    const mspf = 1000 / 60;
+    while (accumMs >= mspf) {
+      state.frame = (state.frame + 1) % state.totalFrames;
+      accumMs -= mspf;
+    }
+    document.getElementById('scrubber').value = state.frame;
+  } else {
+    lastTime = null;
+  }
+
+  const m = state.mode;
+  const svgC = document.getElementById('svg-correct');
+  const svgW = document.getElementById('svg-wrong');
+
+  if (m === 'compare' || m === 'correct') {
+    renderPanel(svgC, true, state.params, state.features, state.breakMode);
+    document.getElementById('panel-correct').style.display = '';
+  } else {
+    document.getElementById('panel-correct').style.display = 'none';
+  }
+  if (m === 'compare' || m === 'wrong') {
+    renderPanel(svgW, false, state.params, state.features, false);
+    document.getElementById('panel-wrong').style.display = '';
+  } else {
+    document.getElementById('panel-wrong').style.display = 'none';
+  }
+
+  // diff highlight
+  document.getElementById('diff-correct').className = 'diff-flash' + (state.features.diff ? ' highlight-good' : '');
+  document.getElementById('diff-wrong').className   = 'diff-flash' + (state.features.diff ? ' highlight-bad'  : '');
+
+  // フレームカウンター
+  const f = String(state.frame).padStart(3,'0');
+  document.getElementById('frame-correct').textContent = `F:${f}`;
+  document.getElementById('frame-wrong').textContent   = `F:${f}`;
+  document.getElementById('bottom-frame').textContent  = `FRAME: ${f} / ${state.totalFrames}`;
+
+  // ゲージ更新
+  updateEaseGauge(state.params.ease);
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ══════════════════════════
+   CONTROLS
+══════════════════════════ */
+function togglePlay() {
+  state.playing = !state.playing;
+  const btn = document.getElementById('btn-play');
+  btn.textContent = state.playing ? '▶' : '⏸';
+  btn.classList.toggle('active', state.playing);
+}
+function stepFrame(n) {
+  state.playing = false;
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.remove('active');
+  state.frame = (state.frame + n + state.totalFrames) % state.totalFrames;
+  document.getElementById('scrubber').value = state.frame;
+}
+function resetPlay() {
+  state.frame = 0; accumMs = 0;
+  document.getElementById('scrubber').value = 0;
+}
+function scrubTo(v) {
+  state.frame = parseInt(v);
+}
+function setMode(m) {
+  state.mode = m;
+  ['compare','correct','wrong'].forEach(k => {
+    document.getElementById(`pill-${k}`).className =
+      'status-pill ' + (k===m ? 'active-pill' : 'inactive');
+  });
+  document.getElementById('demo-area').style.gridTemplateColumns =
+    m === 'compare' ? '1fr 1fr' : '1fr';
+}
+function toggleFeature(key) {
+  state.features[key] = !state.features[key];
+  document.getElementById(`tog-${key}`).classList.toggle('on', state.features[key]);
+  if (key === 'frame') {
+    ['correct','wrong'].forEach(s => {
+      document.getElementById(`frame-${s}`).classList.toggle('show', state.features.frame);
+    });
+  }
+}
+function updateParam(key, rawVal) {
+  const v = parseInt(rawVal);
+  switch(key) {
+    case 'squash':
+      state.params.squash  = v/100;
+      document.getElementById('val-squash').textContent  = (v/100).toFixed(2);
+      break;
+    case 'stretch':
+      state.params.stretch = v/100;
+      document.getElementById('val-stretch').textContent = (v/100).toFixed(2);
+      break;
+    case 'height':
+      state.params.height  = v;
+      document.getElementById('val-height').textContent  = `${v}px`;
+      break;
+    case 'speed':
+      state.params.speed   = v/100;
+      document.getElementById('val-speed').textContent   = `${(v/100).toFixed(1)}x`;
+      break;
+    case 'ease':
+      state.params.ease    = v/10;
+      document.getElementById('val-ease').textContent    = (v/10).toFixed(1);
+      break;
+  }
+  const isBreaking = state.params.squash > 2.5 || state.params.stretch > 2.5;
+  ['squash','stretch'].forEach(k => {
+    const el = document.getElementById(`val-${k}`);
+    if (el) el.classList.toggle('break-val', isBreaking);
+  });
+}
+function toggleBreak() {
+  state.breakMode = !state.breakMode;
+  const btn  = document.getElementById('break-btn');
+  const warn = document.getElementById('break-warning');
+  btn.classList.toggle('active-break', state.breakMode);
+  warn.style.display = state.breakMode ? 'block' : 'none';
+  btn.textContent = state.breakMode ? '✕ EXIT OVERDRIVE' : '⚠ OVERDRIVE MODE';
+  if (state.breakMode) {
+    document.getElementById('sl-squash').value  = 300;
+    document.getElementById('sl-stretch').value = 300;
+    updateParam('squash',300); updateParam('stretch',300);
+  } else {
+    document.getElementById('sl-squash').value  = 150;
+    document.getElementById('sl-stretch').value = 160;
+    updateParam('squash',150); updateParam('stretch',160);
+  }
+}
+
+function setSSMode(m) {
+  state.ssMode = m;
+  document.getElementById('pill-ss-full').className   = 'status-pill ' + (m==='full'   ? 'active-pill' : 'inactive');
+  document.getElementById('pill-ss-squash').className = 'status-pill ' + (m==='squash' ? 'active-pill' : 'inactive');
+  // ラベル文字も変更
+  const correctLabel = document.querySelector('#panel-correct .panel-label');
+  if (correctLabel) correctLabel.textContent = m === 'full'
+    ? '// CORRECT — WITH S&S'
+    : '// CORRECT — SQUASH ONLY';
+}
+
+/* G APPLY デモ */
+function applyDemo(type) {
+  if (type === 'button') {
+    const btn = document.getElementById('apply-btn');
+    // Squash（押し込み）
+    btn.style.transition = 'transform 0.08s cubic-bezier(0.36,0.07,0.19,0.97)';
+    btn.style.transform  = 'scaleX(1.12) scaleY(0.75)';
+    btn.style.transformOrigin = 'center bottom';
+    setTimeout(() => {
+      // Stretch（離れ）
+      btn.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
+      btn.style.transform  = 'scaleX(0.92) scaleY(1.18)';
+      setTimeout(() => {
+        // Settle
+        btn.style.transition = 'transform 0.18s cubic-bezier(0.25,1,0.5,1)';
+        btn.style.transform  = 'scaleX(1) scaleY(1)';
+      }, 120);
+    }, 80);
+  }
+  if (type === 'notif') {
+    const el = document.getElementById('apply-notif');
+    el.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
+    el.style.transform  = 'scaleY(0)';
+    el.style.transformOrigin = 'top';
+    setTimeout(() => {
+      el.style.transition = 'transform 0.18s cubic-bezier(0.68,-0.55,0.27,1.55)';
+      el.style.transform  = 'scaleY(1.08)';
+      setTimeout(() => {
+        el.style.transition = 'transform 0.1s ease-out';
+        el.style.transform  = 'scaleY(1)';
+      }, 180);
+    }, 50);
+    // 2秒後に消える
+    setTimeout(() => {
+      el.style.transition = 'transform 0.15s ease-in';
+      el.style.transform  = 'scaleY(0)';
+    }, 2200);
+  }
+}
+
+/* clock */
+function tick() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(tick,1000); tick();
+
+/* keyboard */
+document.addEventListener('keydown', e => {
+  if (e.code==='Space')      { e.preventDefault(); togglePlay(); }
+  if (e.code==='ArrowRight') stepFrame(1);
+  if (e.code==='ArrowLeft')  stepFrame(-1);
+  if (e.code==='KeyR')       resetPlay();
+});
+</script>
+</body>
+</html>

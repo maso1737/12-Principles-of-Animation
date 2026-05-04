@@ -1,0 +1,101 @@
+/* ══════════════════════════════════════
+   KINETIC GEOMETRY — COMMON STYLES
+   shared across all 12-Principles pages
+══════════════════════════════════════ */
+
+/* ── Design tokens ── */
+:root {
+  --acid:  #CCFF00;
+  --black: #000000;
+  --white: #FFFFFF;
+  --grey:  #D9D9D9;
+  --mid:   #AAAAAA;
+  --dark:  #111111;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --disp: 'Barlow Condensed', sans-serif;
+  --jp:   'Noto Sans JP', sans-serif;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--black); }
+
+body {
+  font-family: var(--disp);
+  cursor: crosshair;
+  color: var(--white);
+}
+
+/* ── Halftone grain overlay ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.2) 1px, transparent 1px);
+  background-size: 5px 5px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* ── HUD corners ── */
+.hud {
+  position: fixed;
+  z-index: 500;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(204,255,0,0.5);
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  line-height: 1.7;
+}
+.hud.tl { top: 14px; left: 16px; }
+.hud.tr { top: 14px; right: 16px; text-align: right; }
+.hud.bl { bottom: 14px; left: 16px; }
+.hud.br { bottom: 14px; right: 16px; text-align: right; }
+
+.corner { position: fixed; width: 20px; height: 20px; z-index: 500; pointer-events: none; }
+.corner::before,
+.corner::after { content: ''; position: absolute; background: var(--acid); }
+.corner::before { width: 100%; height: 1px; }
+.corner::after  { width: 1px; height: 100%; }
+.corner.tl { top: 8px; left: 8px; }
+.corner.tr { top: 8px; right: 8px; transform: scaleX(-1); }
+.corner.bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+.corner.br { bottom: 8px; right: 8px; transform: scale(-1); }
+
+/* ── Grid background ── */
+.grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(204,255,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204,255,0,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── Navigation pill ── */
+.nav-pill {
+  position: fixed;
+  bottom: 32px; left: 50%; translate: -50% 0;
+  z-index: 600;
+  display: flex;
+  gap: 2px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(204,255,0,0.3);
+  border-radius: 999px;
+  padding: 6px 10px;
+  backdrop-filter: blur(8px);
+}
+.nav-pill a {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--mid);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 999px;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.1em;
+}
+.nav-pill a:hover,
+.nav-pill a.active { background: var(--acid); color: var(--black); }
