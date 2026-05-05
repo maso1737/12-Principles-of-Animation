@@ -986,14 +986,14 @@ body::after {
 ══════════════════════════════════════ */
 const principles = [
   {
-    num:'01', en:'SQUASH & STRETCH', jp:'潰しと伸ばし',
+    num:'01', en:'SQUASH & STRETCH', jp:'潰しと伸ばし', href:'01-squash.html',
     desc: ['グラフィック要素の「重量」「体積」「柔軟性」を定義する。', 'UIコンポーネントが持つ弾力性の視覚化。質量保存の法則に基づく変形。'],
     meta: 'MASS_CONSERVATION: TRUE // DEFORMATION_INDEX: 0.85\nID: SENTIENT-BP-2026-01',
     anim: 'squashStretch',
     bgColor: '#000',
   },
   {
-    num:'02', en:'ANTICIPATION', jp:'予備動作',
+    num:'02', en:'ANTICIPATION', jp:'予備動作', href:'02-anticipation.html',
     desc: ['動き出す前の「エネルギーの蓄積（Wind-up）」。', '視聴者の視線を次のアクションへ心理的に誘導する技術。'],
     meta: 'WIND_UP_INDEX: +1.5s // PROTOCOL: LOAD_AND_RELEASE\nID: SENTIENT-BP-2026-02',
     anim: 'anticipation',
@@ -1021,7 +1021,7 @@ const principles = [
     bgColor: '#000',
   },
   {
-    num:'06', en:'SLOW IN / SLOW OUT', jp:'イージング：動きの魂',
+    num:'06', en:'SLOW IN / SLOW OUT', jp:'イージング：動きの魂', href:'06-easing.html',
     desc: ['リニア（直線的）vs イーズイン／イーズアウト。', 'ベジェ曲線を用いて自然界の重力と摩擦をシミュレートする。機械と生命体を分ける究極の境界線。'],
     meta: 'BEZIER: CUBIC // VELOCITY: VARIABLE\nID: SENTIENT-BP-2026-06',
     anim: 'easing',
@@ -1086,7 +1086,13 @@ principles.forEach((p,i) => {
     </div>
     <div class="p-arrow">→</div>
   `;
-  item.addEventListener('click', () => openPrinciple(i));
+  if (p.href) {
+    item.addEventListener('click', () => { window.location.href = p.href; });
+  } else {
+    item.addEventListener('click', () => openPrinciple(i));
+    item.style.opacity = '0.45';
+    item.title = 'Coming soon';
+  }
   list.appendChild(item);
 });
 
