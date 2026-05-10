@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 05 FOLLOW THROUGH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --acid:#36FF00;--neon:#F9FF47;--black:#000;
+  --panel:#0C0C0C;--border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
+  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.22);
+  --red:#FF3636;--orange:#FF8C00;
+  --mono:'IBM Plex Mono',monospace;--cond:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+
+/* TOPBAR */
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
+.sys-id{color:var(--dim);font-size:9px}
+.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+
+/* STAGE */
+#stage{position:relative;overflow:hidden;background:var(--black);display:flex;flex-direction:column}
+.stage-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.stage-bignum{
+  position:absolute;font-family:var(--cond);font-weight:900;
+  font-size:clamp(180px,24vw,320px);color:rgba(54,255,0,0.022);
+  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
+.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
+.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
+.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
+.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
+.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
+.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
+.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
+
+/* MAIN ZONE — top 62% */
+#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border)}
+#main-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* HUD */
+#main-hud{
+  position:absolute;bottom:12px;left:16px;
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:28px;
+}
+#main-hud .val{color:var(--acid)}
+#main-hud .val.ng{color:var(--red)}
+
+/* phase badge */
+#phase-badge{
+  position:absolute;top:12px;left:16px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  padding:3px 8px;border:1px solid var(--border);
+  color:var(--dim);background:rgba(0,0,0,0.7);pointer-events:none;
+}
+
+/* GRAPH ZONE — bottom 38% */
+#graph-zone{position:relative;flex:0 0 38%;overflow:hidden}
+#graph-canvas{position:absolute;inset:0;width:100%;height:100%}
+#gz-header{
+  position:absolute;top:8px;left:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--dim);
+  pointer-events:none;display:flex;gap:20px;align-items:center;
+}
+#gz-header strong{color:var(--acid)}
+
+/* PANEL */
+#panel{
+  border-left:1px solid var(--border);background:var(--panel);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+}
+#panel::-webkit-scrollbar{width:2px}
+#panel::-webkit-scrollbar-thumb{background:var(--acid)}
+.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+.psec:last-child{border-bottom:none}
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
+.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--acid);font-weight:700}
+.dv.neon{color:var(--neon)}.dv.red{color:var(--red)}
+/* scrubable values */
+.dv.scrub{cursor:ew-resize;border-bottom:1px dashed rgba(54,255,0,0.3);user-select:none}
+.dv.scrub:hover{color:var(--neon);border-bottom-color:var(--neon)}
+.dv.scrub.scrubbing{color:var(--neon);border-bottom-color:var(--neon);background:rgba(249,255,71,0.07)}
+
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
+  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+}
+.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
+
+/* slider row */
+.sl-row{margin-bottom:10px}
+.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:3px}
+.sl-label span{color:var(--acid)}
+input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
+
+/* segment legend */
+.seg-legend{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.seg-row{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8px;color:var(--dim)}
+.seg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* insight */
+.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
+.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
+
+/* BOTTOMBAR */
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+}
+.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
+.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span class="sys-id">KINETIC_GEOMETRY // LEC_05</span>
+    <span class="title-tag">PRINCIPLE_05 // FOLLOW THROUGH</span>
+  </div>
+  <div class="right">
+    <span class="sys-id">SETTLING_FACTOR: -0.3s // INERTIA: ENGAGED</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="stage-grid"></div>
+  <div class="stage-bignum">05</div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="checker c1"></div><div class="checker c2"></div>
+  <div class="po">
+    <div class="po-num">PRINCIPLE // 05</div>
+    <div class="po-en">FOLLOW THROUGH</div>
+    <div class="po-jp">フォロースルー</div>
+  </div>
+
+  <!-- MAIN ZONE -->
+  <div id="main-zone">
+    <canvas id="main-canvas"></canvas>
+    <div id="phase-badge">PHASE: —</div>
+    <div id="main-hud">
+      <div>LEAD_POS&nbsp;<span class="val" id="h-leadpos">0</span>px</div>
+      <div>DELAY_Δ&nbsp;<span class="val" id="h-delay">0</span>fr</div>
+      <div>OVERSHOOT&nbsp;<span class="val" id="h-over">0.0</span>px</div>
+      <div>SETTLE&nbsp;<span class="val" id="h-settle">—</span></div>
+    </div>
+  </div>
+
+  <!-- GRAPH ZONE -->
+  <div id="graph-zone">
+    <div id="gz-header">
+      <span>// <strong>POSITION GRAPH</strong></span>
+      <span style="color:var(--acid)">— LEAD</span>
+      <span style="color:rgba(54,255,0,0.5)">— SEG 1</span>
+      <span style="color:var(--neon)">— TAIL</span>
+    </div>
+    <canvas id="graph-canvas"></canvas>
+  </div>
+</main>
+
+<aside id="panel">
+
+  <!-- THEORY -->
+  <div class="psec">
+    <div class="sec-label">ATHEORY — 原則解説</div>
+    <div class="sec-title">FOLLOW<br>THROUGH</div>
+    <div class="body-text">
+      リードが止まっても、トレイルは続く。<br>
+      慣性は「止まれ」を無視する。<br>
+      オーバーシュートして、落ち着く。
+    </div>
+    <div class="body-en">
+      The lead stops. The trail keeps going.<br>
+      Inertia ignores commands.<br>
+      Overshoot → settle. That's life.
+    </div>
+  </div>
+
+  <!-- LIVE DATA -->
+  <div class="psec">
+    <div class="sec-label">BLIVE — リアルタイム</div>
+    <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">—</span></div>
+    <div class="data-row"><span class="dk">LEAD_POSITION</span><span class="dv" id="lv-leadpos">0 px</span></div>
+    <div class="data-row"><span class="dk">LEAD_VELOCITY</span><span class="dv" id="lv-leadvel">0.00</span></div>
+    <div class="data-row"><span class="dk">TAIL_DELAY</span><span class="dv scrub" id="lv-delay" data-scrub="delay" title="← → drag to edit">0 fr</span></div>
+    <div class="data-row"><span class="dk">TAIL_OVERSHOOT</span><span class="dv scrub red" id="lv-over" data-scrub="over" title="← → drag to edit">0.0 px</span></div>
+    <div class="data-row"><span class="dk">SETTLE_FACTOR</span><span class="dv" id="lv-settle">—</span></div>
+    <div class="data-row"><span class="dk">DAMPING</span><span class="dv scrub" id="lv-damp" data-scrub="damp" title="← → drag to edit">—</span></div>
+    <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-frame">00 / 90</span></div>
+  </div>
+
+  <!-- PARAMS -->
+  <div class="psec">
+    <div class="sec-label">CPARAMS — パラメータ</div>
+
+    <div class="sl-row">
+      <div class="sl-label">SEGMENT COUNT <span id="sl-segs-val">5</span></div>
+      <input type="range" id="sl-segs" min="2" max="10" value="5">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">DELAY (慣性) <span id="sl-delay-val">0.30</span></div>
+      <input type="range" id="sl-delay" min="1" max="20" value="6">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">DAMPING (減衰) <span id="sl-damp-val">0.72</span></div>
+      <input type="range" id="sl-damp" min="10" max="98" value="72">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">OVERSHOOT <span id="sl-over-val">1.00</span></div>
+      <input type="range" id="sl-over" min="0" max="30" value="10">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">SPEED <span id="sl-spd-val">1.0x</span></div>
+      <input type="range" id="sl-spd" min="1" max="30" value="10">
+    </div>
+  </div>
+
+  <!-- PLAYBACK -->
+  <div class="psec">
+    <div class="sec-label">DPLAYBACK</div>
+    <div style="margin-bottom:8px">
+      <button class="btn active" id="btnPlay">▶ PLAY</button>
+      <button class="btn" id="btnPause">⏸ PAUSE</button>
+      <button class="btn" id="btnReset">↺ RESET</button>
+    </div>
+    <div>
+      <button class="btn active" id="btnTrail">TRAIL</button>
+      <button class="btn active" id="btnLabels">LABELS</button>
+      <button class="btn" id="btnNoFollow">NO FOLLOW</button>
+    </div>
+  </div>
+
+  <!-- PRESETS -->
+  <div class="psec">
+    <div class="sec-label">EPRESETS</div>
+    <button class="btn" onclick="applyPreset('hair')">HAIR</button>
+    <button class="btn" onclick="applyPreset('tail')">ANIMAL TAIL</button>
+    <button class="btn" onclick="applyPreset('cloth')">CLOTH</button>
+    <button class="btn" onclick="applyPreset('stiff')">STIFF</button>
+    <button class="btn" onclick="applyPreset('jelly')">JELLY</button>
+
+    <!-- segment color legend -->
+    <div class="seg-legend" id="seg-legend"></div>
+  </div>
+
+  <!-- INSIGHT -->
+  <div class="psec">
+    <div class="sec-label">FINSIGHT</div>
+    <div class="insight">
+      <strong>// FOLLOW THROUGH</strong>
+      セグメント数を増やすほど<br>
+      「柔らかさ」が増す。<br>
+      Dampingを下げると永遠に揺れ続ける。<br>
+      Overshootを0にすると<br>
+      ロボット的な動きになる。<br><br>
+      NO FOLLOWで違いを確認せよ。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div class="bl">
+    <span>SETTLING_FACTOR: -0.3s</span>
+    <span>INERTIA: ENGAGED</span>
+    <span>PHASE: <span id="bb-phase">—</span></span>
+  </div>
+  <div class="bc">FRAME: <span id="bb-fr">00</span> / <span id="bb-total">90</span></div>
+  <div class="br">
+    <span class="kbd">SPC</span>PLAY
+    <span class="kbd">←→</span>STEP
+    <span class="kbd">N</span>NO FOLLOW
+    <span class="kbd">ESC</span>INDEX
+    &nbsp;ID: SENTIENT-BP-2026-VLS.05
+  </div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// PARAMS
+// ═══════════════════════════════════════════
+let numSegs   = 5;
+let delayFac  = 0.30;   // 0..1: how much each seg lags behind leader
+let damping   = 0.72;   // 0..1: oscillation decay
+let overFac   = 1.0;    // multiplier for overshoot
+let playSpd   = 1.0;
+let playing   = true;
+let showTrail = true;
+let showLabels= true;
+let noFollow  = false;  // NO FOLLOW mode: all segs move with lead
+
+// lead manual drag
+let leadDragging  = false;
+let leadManualX   = null;   // null = use keyframe curve; number = dragged position
+let leadDragStartX= 0;
+
+// number scrubber
+let scrubTarget = null;  // {param, startX, startVal}
+
+const TOTAL   = 90;     // total frames in one cycle
+let masterFrame = 0;    // 0..TOTAL (float)
+let lastTime  = null;
+
+// ── SEGMENT STATE ──
+// Each segment has: pos (x), vel (x), history of positions
+let segs = [];          // [{x, vx, trail:[]}]
+let leadHistory = [];   // position of lead over time (ring buffer)
+const HISTORY = 300;
+
+// ── MOTION CURVE (lead) ──
+// Lead moves: rest → MOVE phase → STOP, trail overshoots and settles
+// We use a keyframe curve for the lead
+const LEAD_START_FR = 8;
+const LEAD_END_FR   = 52;  // lead stops here
+
+function leadTargetX(fr, stageW) {
+  if (leadManualX !== null) return leadManualX;
+  const PAD = 80;
+  const travel = stageW - PAD*2;
+  if (fr < LEAD_START_FR) return PAD;
+  if (fr > LEAD_END_FR)   return PAD + travel;
+  const t = (fr - LEAD_START_FR) / (LEAD_END_FR - LEAD_START_FR);
+  // ease-in-out for lead
+  const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+  return PAD + ease * travel;
+}
+
+function getPhase(fr) {
+  if (fr < LEAD_START_FR)  return 'IDLE';
+  if (fr < LEAD_END_FR)    return 'MOVING';
+  if (fr < LEAD_END_FR+20) return 'SETTLING';
+  return 'SETTLED';
+}
+
+// ── INIT SEGS ──
+function initSegs(startX) {
+  segs = [];
+  for (let i = 0; i < numSegs; i++) {
+    segs.push({ x: startX, vx: 0, trail: [] });
+  }
+  leadHistory = [];
+  masterFrame = 0;
+}
+
+// ── PHYSICS UPDATE (per animation step) ──
+function updatePhysics(leadX, dt) {
+  for (let i = 0; i < segs.length; i++) {
+    const target = i === 0 ? leadX : segs[i-1].x;
+    if (noFollow) {
+      // no follow: instant snap
+      segs[i].x = target;
+      segs[i].vx = 0;
+    } else {
+      // spring toward target with delay
+      const stiffness = (1 - delayFac) * 18 + 1;
+      const dx = target - segs[i].x;
+      // add overshoot: spring overshoots proportional to velocity
+      const overPull = segs[i].vx * overFac * 0.08;
+      segs[i].vx += (dx * stiffness + overPull) * dt;
+      segs[i].vx *= Math.pow(damping, dt * 60);
+      segs[i].x  += segs[i].vx * dt * 60;
+    }
+    // trail
+    segs[i].trail.push(segs[i].x);
+    if (segs[i].trail.length > HISTORY) segs[i].trail.shift();
+  }
+}
+
+// ── SEGMENT COLORS ──
+function segColor(i, alpha=1) {
+  // lead = acid, last seg = neon, middle = gradient
+  const t = segs.length <= 1 ? 0 : i / (segs.length - 1);
+  const r = Math.round(54  + (249-54)  * t);
+  const g = Math.round(255 + (255-255) * t);
+  const b = Math.round(0   + (71-0)    * t);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ── CANVAS REFS ──
+const mainC   = document.getElementById('main-canvas');
+const mainCtx = mainC.getContext('2d');
+const graphC  = document.getElementById('graph-canvas');
+const graphCtx= graphC.getContext('2d');
+
+function mainZoneSize(){ const z=document.getElementById('main-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
+function graphZoneSize(){ const z=document.getElementById('graph-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
+
+function resizeMain(){
+  const z=document.getElementById('main-zone');
+  mainC.width=z.offsetWidth*devicePixelRatio; mainC.height=z.offsetHeight*devicePixelRatio;
+  mainC.style.width=z.offsetWidth+'px'; mainC.style.height=z.offsetHeight+'px';
+}
+function resizeGraph(){
+  const z=document.getElementById('graph-zone');
+  graphC.width=z.offsetWidth*devicePixelRatio; graphC.height=z.offsetHeight*devicePixelRatio;
+  graphC.style.width=z.offsetWidth+'px'; graphC.style.height=z.offsetHeight+'px';
+}
+
+// ── DRAW MAIN ──
+function drawMain() {
+  const dpr = devicePixelRatio;
+  const {w,h} = mainZoneSize();
+  mainCtx.clearRect(0,0,mainC.width,mainC.height);
+  mainCtx.save(); mainCtx.scale(dpr,dpr);
+
+  const leadX = leadTargetX(masterFrame, w);
+  const cy = h * 0.42;   // center Y for the chain
+  const SEG_SPACING = 28; // vertical spread between segments
+  const segY = (i) => cy + (i - (segs.length-1)*0.5) * SEG_SPACING;
+
+  // ── RAIL (ground line) ──
+  mainCtx.save();
+  mainCtx.strokeStyle='rgba(54,255,0,0.1)';mainCtx.lineWidth=1;mainCtx.setLineDash([4,8]);
+  mainCtx.beginPath();mainCtx.moveTo(70,cy);mainCtx.lineTo(w-40,cy);mainCtx.stroke();
+  mainCtx.setLineDash([]);mainCtx.restore();
+
+  // START / END markers
+  const PAD=80;
+  [[PAD,'START'],[w-PAD,'END']].forEach(([x,lbl])=>{
+    mainCtx.save();mainCtx.strokeStyle='rgba(54,255,0,0.3)';mainCtx.lineWidth=1;
+    mainCtx.beginPath();mainCtx.moveTo(x,cy-8);mainCtx.lineTo(x,cy+8);mainCtx.stroke();
+    mainCtx.fillStyle='rgba(54,255,0,0.3)';mainCtx.font='8px IBM Plex Mono,monospace';
+    mainCtx.fillText(lbl,x+(lbl==='START'?4:-30),cy+20);mainCtx.restore();
+  });
+
+  // ── TRAILS ──
+  if (showTrail) {
+    segs.forEach((seg,i) => {
+      if (seg.trail.length < 2) return;
+      const sy = segY(i);
+      for (let t=1; t<seg.trail.length; t++) {
+        const al = (t/seg.trail.length)*0.35;
+        mainCtx.save();mainCtx.strokeStyle=segColor(i,al);mainCtx.lineWidth=1.5;
+        mainCtx.beginPath();mainCtx.moveTo(seg.trail[t-1],sy);mainCtx.lineTo(seg.trail[t],sy);
+        mainCtx.stroke();mainCtx.restore();
+      }
+    });
+    // lead trail
+    if (leadHistory.length>1) {
+      for(let t=1;t<leadHistory.length;t++){
+        const al=(t/leadHistory.length)*0.4;
+        mainCtx.save();mainCtx.strokeStyle=`rgba(54,255,0,${al})`;mainCtx.lineWidth=2;
+        mainCtx.beginPath();mainCtx.moveTo(leadHistory[t-1],cy);mainCtx.lineTo(leadHistory[t],cy);
+        mainCtx.stroke();mainCtx.restore();
+      }
+    }
+  }
+
+  // ── CONNECTOR LINES (chain links) ──
+  if (segs.length > 0) {
+    // lead to first seg
+    mainCtx.save();mainCtx.strokeStyle='rgba(54,255,0,0.2)';mainCtx.lineWidth=1;
+    mainCtx.beginPath();mainCtx.moveTo(leadX,cy);mainCtx.lineTo(segs[0].x,segY(0));mainCtx.stroke();mainCtx.restore();
+    // between segs
+    for(let i=0;i<segs.length-1;i++){
+      const col=segColor(i,0.18);
+      mainCtx.save();mainCtx.strokeStyle=col;mainCtx.lineWidth=1;
+      mainCtx.beginPath();mainCtx.moveTo(segs[i].x,segY(i));mainCtx.lineTo(segs[i+1].x,segY(i+1));
+      mainCtx.stroke();mainCtx.restore();
+    }
+  }
+
+  // ── DELAY DELTA ARROWS ──
+  segs.forEach((seg,i)=>{
+    const sy=segY(i);
+    const targetX=i===0?leadX:segs[i-1].x;
+    const dx=targetX-seg.x;
+    if(Math.abs(dx)>8){
+      const arrowX=seg.x+dx*0.6;
+      mainCtx.save();mainCtx.strokeStyle=segColor(i,0.3);mainCtx.lineWidth=0.8;
+      mainCtx.setLineDash([2,4]);
+      mainCtx.beginPath();mainCtx.moveTo(seg.x,sy+14);mainCtx.lineTo(targetX,sy+14);mainCtx.stroke();
+      mainCtx.setLineDash([]);
+      mainCtx.fillStyle=segColor(i,0.4);mainCtx.font='7px IBM Plex Mono,monospace';
+      mainCtx.fillText('Δ'+(Math.abs(dx)|0),arrowX-8,sy+24);
+      mainCtx.restore();
+    }
+  });
+
+  // ── OVERSHOOT ZONE (highlight when segs pass lead) ──
+  segs.forEach((seg,i)=>{
+    const sy=segY(i);
+    const targetX=i===0?leadX:segs[i-1].x;
+    const overX=seg.x-targetX;
+    if(Math.abs(overX)>4 && masterFrame>LEAD_END_FR){
+      // overshoot highlight
+      mainCtx.save();
+      mainCtx.fillStyle=`rgba(255,54,54,0.06)`;
+      const x1=Math.min(seg.x,targetX),x2=Math.max(seg.x,targetX);
+      mainCtx.fillRect(x1,sy-10,x2-x1,20);
+      mainCtx.fillStyle='rgba(255,54,54,0.5)';mainCtx.font='7px IBM Plex Mono,monospace';
+      mainCtx.fillText('OVER',x1+(x2-x1)/2-12,sy-13);
+      mainCtx.restore();
+    }
+  });
+
+  // ── SEGMENTS (balls) ──
+  segs.forEach((seg,i)=>{
+    const sy=segY(i);
+    const col=segColor(i);
+    const r=8+((segs.length-1-i)*1.2); // lead=larger
+
+    // glow
+    const grd=mainCtx.createRadialGradient(seg.x,sy,0,seg.x,sy,r*2.2);
+    grd.addColorStop(0,segColor(i,0.2));grd.addColorStop(1,'rgba(0,0,0,0)');
+    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r*2.2,0,Math.PI*2);
+    mainCtx.fillStyle=grd;mainCtx.fill();
+
+    // outer ring
+    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r,0,Math.PI*2);
+    mainCtx.strokeStyle=col;mainCtx.lineWidth=1.5;mainCtx.stroke();
+    // core
+    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r*0.45,0,Math.PI*2);
+    mainCtx.fillStyle=col;mainCtx.fill();
+
+    // label
+    if(showLabels){
+      const lbl=i===0?'SEG_0':i===segs.length-1?'TAIL':'SEG_'+i;
+      mainCtx.fillStyle=segColor(i,0.6);mainCtx.font='7px IBM Plex Mono,monospace';
+      mainCtx.fillText(lbl,seg.x-(lbl.length*3.5),sy-r-5);
+    }
+  });
+
+  // ── LEAD BALL ──
+  const lgrd=mainCtx.createRadialGradient(leadX,cy,0,leadX,cy,22);
+  lgrd.addColorStop(0,'rgba(54,255,0,0.3)');lgrd.addColorStop(1,'rgba(0,0,0,0)');
+  mainCtx.beginPath();mainCtx.arc(leadX,cy,22,0,Math.PI*2);
+  mainCtx.fillStyle=lgrd;mainCtx.fill();
+  mainCtx.beginPath();mainCtx.arc(leadX,cy,11,0,Math.PI*2);
+  mainCtx.strokeStyle='#36FF00';mainCtx.lineWidth=2;mainCtx.stroke();
+  mainCtx.beginPath();mainCtx.arc(leadX,cy,5,0,Math.PI*2);
+  mainCtx.fillStyle='#36FF00';mainCtx.fill();
+  if(showLabels){
+    mainCtx.fillStyle='rgba(54,255,0,0.8)';mainCtx.font='8px IBM Plex Mono,monospace';
+    mainCtx.fillText('LEAD',leadX-14,cy-16);
+    // drag hint
+    mainCtx.fillStyle='rgba(54,255,0,0.3)';mainCtx.font='7px IBM Plex Mono,monospace';
+    mainCtx.fillText(leadDragging?'DRAGGING':'⊕ DRAG',leadX-16,cy+24);
+  }
+
+  mainCtx.restore();
+
+  // ── UPDATE LIVE DATA ──
+  const phase=getPhase(masterFrame);
+  const tail=segs[segs.length-1];
+  const tailTarget=segs.length>1?segs[segs.length-2].x:leadX;
+  const overPx=tail?Math.abs(tail.x-tailTarget):0;
+
+  // lead velocity
+  const prevLeadX=leadTargetX(Math.max(0,masterFrame-1),w);
+  const leadVel=Math.abs(leadX-prevLeadX);
+
+  // delay in frames (approx: distance / avg vel)
+  const delayFr=leadVel>0.5?Math.round((leadX-(tail?tail.x:leadX))/Math.max(1,leadVel)):0;
+
+  document.getElementById('h-leadpos').textContent=Math.round(leadX);
+  document.getElementById('h-delay').textContent=Math.abs(delayFr);
+  document.getElementById('h-over').textContent=overPx.toFixed(1);
+  document.getElementById('h-settle').textContent=phase==='SETTLING'||phase==='SETTLED'?phase:'—';
+
+  document.getElementById('lv-phase').textContent=phase;
+  document.getElementById('lv-leadpos').textContent=Math.round(leadX)+' px';
+  document.getElementById('lv-leadvel').textContent=leadVel.toFixed(2);
+  document.getElementById('lv-delay').textContent=Math.abs(delayFr)+' fr';
+  document.getElementById('lv-over').textContent=overPx.toFixed(1)+' px';
+  document.getElementById('lv-settle').textContent=(-delayFac*3).toFixed(2)+'s';
+  document.getElementById('lv-damp').textContent=(damping*100).toFixed(0)+'%';
+  document.getElementById('lv-frame').textContent=String(Math.round(masterFrame)).padStart(2,'0')+' / '+TOTAL;
+
+  document.getElementById('bb-fr').textContent=String(Math.round(masterFrame)).padStart(2,'0');
+  document.getElementById('bb-total').textContent=TOTAL;
+  document.getElementById('bb-phase').textContent=phase;
+
+  const phaseBadge=document.getElementById('phase-badge');
+  phaseBadge.textContent='PHASE: '+phase;
+  phaseBadge.style.color=
+    phase==='MOVING'?'var(--acid)':
+    phase==='SETTLING'?'var(--neon)':
+    phase==='SETTLED'?'var(--dim)':'var(--dim)';
+  phaseBadge.style.borderColor=
+    phase==='MOVING'?'var(--border)':
+    phase==='SETTLING'?'rgba(249,255,71,0.3)':'var(--border)';
+}
+
+// ── DRAW GRAPH ──
+function drawGraph() {
+  const dpr=devicePixelRatio;
+  const {w,h}=graphZoneSize();
+  graphCtx.clearRect(0,0,graphC.width,graphC.height);
+  graphCtx.save();graphCtx.scale(dpr,dpr);
+
+  const PAD_L=44,PAD_R=16,PAD_T=28,PAD_B=20;
+  const W=w-PAD_L-PAD_R, H=h-PAD_T-PAD_B;
+  const OX=PAD_L, OY=PAD_T;
+
+  const stageW=mainZoneSize().w;
+  const XMIN=80, XMAX=stageW-80;
+  const xToCanvas=(x)=>OX+(x-XMIN)/(XMAX-XMIN)*W;
+  const frToCanvas=(fr)=>OX+(fr/TOTAL)*W;
+
+  // grid
+  graphCtx.strokeStyle='rgba(54,255,0,0.06)';graphCtx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=OY+H*(i/4);
+    graphCtx.beginPath();graphCtx.moveTo(OX,y);graphCtx.lineTo(OX+W,y);graphCtx.stroke();
+  }
+  // vertical phase lines
+  [[LEAD_START_FR,'rgba(54,255,0,0.2)'],[LEAD_END_FR,'rgba(249,255,71,0.2)']].forEach(([fr,col])=>{
+    graphCtx.strokeStyle=col;graphCtx.lineWidth=1;graphCtx.setLineDash([2,4]);
+    graphCtx.beginPath();graphCtx.moveTo(frToCanvas(fr),OY);graphCtx.lineTo(frToCanvas(fr),OY+H);graphCtx.stroke();
+    graphCtx.setLineDash([]);
+  });
+  graphCtx.fillStyle='rgba(54,255,0,0.25)';graphCtx.font='6px IBM Plex Mono,monospace';
+  graphCtx.fillText('START',frToCanvas(LEAD_START_FR)+2,OY+8);
+  graphCtx.fillText('STOP',frToCanvas(LEAD_END_FR)+2,OY+8);
+
+  // axis labels
+  graphCtx.fillStyle='rgba(54,255,0,0.3)';graphCtx.font='6px IBM Plex Mono,monospace';
+  graphCtx.fillText('0',OX-10,OY+H+12);graphCtx.fillText(TOTAL,OX+W-14,OY+H+12);
+  graphCtx.fillText('POS',OX-40,OY+8);
+
+  // draw lead history as position over time
+  const histLen=Math.min(leadHistory.length,TOTAL);
+  if(histLen>1){
+    graphCtx.save();graphCtx.strokeStyle='rgba(54,255,0,0.8)';graphCtx.lineWidth=1.5;
+    graphCtx.beginPath();
+    for(let i=0;i<histLen;i++){
+      const fr=Math.round(masterFrame)-histLen+i;
+      const x=frToCanvas(Math.max(0,fr));
+      const y=OY+H-(xToCanvas(leadHistory[i])-OX)/W*H;
+      if(i===0)graphCtx.moveTo(x,y);else graphCtx.lineTo(x,y);
+    }
+    graphCtx.stroke();graphCtx.restore();
+  }
+
+  // draw each seg history
+  segs.forEach((seg,si)=>{
+    const tl=seg.trail;
+    const tLen=Math.min(tl.length,TOTAL);
+    if(tLen<2)return;
+    graphCtx.save();graphCtx.strokeStyle=segColor(si,si===segs.length-1?0.9:0.5);graphCtx.lineWidth=1;
+    graphCtx.beginPath();
+    for(let i=0;i<tLen;i++){
+      const fr=Math.round(masterFrame)-tLen+i;
+      const x=frToCanvas(Math.max(0,fr));
+      const y=OY+H-(xToCanvas(tl[i])-OX)/W*H;
+      if(i===0)graphCtx.moveTo(x,y);else graphCtx.lineTo(x,y);
+    }
+    graphCtx.stroke();graphCtx.restore();
+  });
+
+  // playhead
+  const ph=frToCanvas(masterFrame);
+  graphCtx.strokeStyle='rgba(249,255,71,0.4)';graphCtx.lineWidth=1;graphCtx.setLineDash([3,3]);
+  graphCtx.beginPath();graphCtx.moveTo(ph,OY);graphCtx.lineTo(ph,OY+H);graphCtx.stroke();
+  graphCtx.setLineDash([]);
+
+  graphCtx.restore();
+}
+
+// ── ANIMATION LOOP ──
+function loop(ts){
+  if(!lastTime)lastTime=ts;
+  const dt=(ts-lastTime)/1000;lastTime=ts;
+
+  const {w}=mainZoneSize();
+
+  if(segs.length!==numSegs) initSegs(80);
+
+  const leadX=leadTargetX(masterFrame,w);
+  leadHistory.push(leadX);
+  if(leadHistory.length>HISTORY)leadHistory.shift();
+
+  if(playing){
+    updatePhysics(leadX, dt*playSpd);
+    masterFrame+=dt*playSpd*24; // ~24fps advance
+    if(masterFrame>=TOTAL){masterFrame=0;initSegs(80);}
+  } else {
+    updatePhysics(leadX, 0.016); // keep physics alive even paused (for scrub settle)
+  }
+
+  resizeMain();resizeGraph();
+  drawMain();drawGraph();
+  requestAnimationFrame(loop);
+}
+
+// ── SEGMENT LEGEND ──
+function buildLegend(){
+  const el=document.getElementById('seg-legend');
+  el.innerHTML='<div class="seg-row"><div class="seg-dot" style="background:#36FF00"></div>LEAD (先行)</div>';
+  for(let i=0;i<numSegs;i++){
+    const col=segColor(i);
+    const lbl=i===numSegs-1?`SEG_${i} — TAIL（末尾）`:`SEG_${i}`;
+    el.innerHTML+=`<div class="seg-row"><div class="seg-dot" style="background:${col}"></div>${lbl}</div>`;
+  }
+}
+
+// ── PRESETS ──
+function applyPreset(name){
+  const presets={
+    hair:  {segs:8, delay:0.55, damp:0.65, over:1.4},
+    tail:  {segs:5, delay:0.38, damp:0.72, over:1.1},
+    cloth: {segs:7, delay:0.45, damp:0.68, over:0.8},
+    stiff: {segs:3, delay:0.10, damp:0.92, over:0.2},
+    jelly: {segs:4, delay:0.30, damp:0.55, over:2.5},
+  };
+  const p=presets[name];
+  numSegs=p.segs; delayFac=p.delay; damping=p.damp; overFac=p.over;
+
+  document.getElementById('sl-segs').value=numSegs;
+  document.getElementById('sl-segs-val').textContent=numSegs;
+  document.getElementById('sl-delay').value=Math.round(p.delay*20);
+  document.getElementById('sl-delay-val').textContent=p.delay.toFixed(2);
+  document.getElementById('sl-damp').value=Math.round(p.damp*100);
+  document.getElementById('sl-damp-val').textContent=p.damp.toFixed(2);
+  document.getElementById('sl-over').value=Math.round(p.over*10);
+  document.getElementById('sl-over-val').textContent=p.over.toFixed(2);
+
+  initSegs(80); buildLegend();
+}
+
+// ── CONTROLS ──
+document.getElementById('btnPlay').onclick=()=>{
+  playing=true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+};
+document.getElementById('btnPause').onclick=()=>{
+  playing=false;
+  document.getElementById('btnPause').classList.add('active');
+  document.getElementById('btnPlay').classList.remove('active');
+};
+document.getElementById('btnReset').onclick=()=>{initSegs(80);};
+document.getElementById('btnTrail').onclick=function(){
+  showTrail=!showTrail;this.classList.toggle('active',showTrail);
+};
+document.getElementById('btnLabels').onclick=function(){
+  showLabels=!showLabels;this.classList.toggle('active',showLabels);
+};
+document.getElementById('btnNoFollow').onclick=function(){
+  noFollow=!noFollow;this.classList.toggle('active',noFollow);
+  this.textContent=noFollow?'NO FOLLOW ✓':'NO FOLLOW';
+  initSegs(80);
+};
+
+// sliders
+document.getElementById('sl-segs').oninput=function(){
+  numSegs=+this.value;document.getElementById('sl-segs-val').textContent=numSegs;
+  initSegs(80);buildLegend();
+};
+document.getElementById('sl-delay').oninput=function(){
+  delayFac=this.value/20;document.getElementById('sl-delay-val').textContent=delayFac.toFixed(2);
+};
+document.getElementById('sl-damp').oninput=function(){
+  damping=this.value/100;document.getElementById('sl-damp-val').textContent=damping.toFixed(2);
+};
+document.getElementById('sl-over').oninput=function(){
+  overFac=this.value/10;document.getElementById('sl-over-val').textContent=overFac.toFixed(2);
+};
+document.getElementById('sl-spd').oninput=function(){
+  playSpd=this.value/10;document.getElementById('sl-spd-val').textContent=playSpd.toFixed(1)+'x';
+};
+
+// ── LEAD BALL DRAG ──
+mainC.addEventListener('pointerdown', e => {
+  const rect = mainC.getBoundingClientRect();
+  const ex = e.clientX - rect.left;
+  const ey = e.clientY - rect.top;
+  const {w, h} = mainZoneSize();
+  const cy = h * 0.42;
+  const leadX = leadManualX !== null ? leadManualX : leadTargetX(masterFrame, w);
+  const dist = Math.sqrt((ex - leadX)**2 + (ey - cy)**2);
+  if (dist < 22) {
+    leadDragging = true;
+    leadManualX  = leadX;
+    mainC.setPointerCapture(e.pointerId);
+    mainC.style.cursor = 'grabbing';
+    // pause auto-advance while dragging
+    playing = false;
+    document.getElementById('btnPlay').classList.remove('active');
+    document.getElementById('btnPause').classList.add('active');
+  }
+  e.preventDefault();
+});
+mainC.addEventListener('pointermove', e => {
+  if (!leadDragging) return;
+  const rect = mainC.getBoundingClientRect();
+  const ex   = e.clientX - rect.left;
+  const {w}  = mainZoneSize();
+  leadManualX = Math.max(60, Math.min(w - 40, ex));
+  e.preventDefault();
+});
+mainC.addEventListener('pointerup', e => {
+  if (!leadDragging) return;
+  leadDragging = false;
+  mainC.style.cursor = 'default';
+  // resume play + let physics settle naturally, keep leadManualX so segs chase it
+  playing = true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+  // after 2s, release manual override and return to keyframe
+  setTimeout(() => { leadManualX = null; }, 2000);
+});
+
+// ── NUMBER SCRUBBER ──
+// params: delay=delayFac(0..1), damp=damping(0..1), over=overFac(0..3)
+const scrubConfig = {
+  delay: { get:()=>delayFac,   set:(v)=>{ delayFac=Math.max(0.01,Math.min(0.99,v)); syncSlider('sl-delay', Math.round(delayFac*20), 'sl-delay-val', delayFac.toFixed(2)); }, speed:0.005 },
+  damp:  { get:()=>damping,    set:(v)=>{ damping=Math.max(0.10,Math.min(0.99,v));  syncSlider('sl-damp',  Math.round(damping*100), 'sl-damp-val',  damping.toFixed(2));  }, speed:0.004 },
+  over:  { get:()=>overFac,    set:(v)=>{ overFac=Math.max(0,   Math.min(3.0, v));  syncSlider('sl-over',  Math.round(overFac*10),  'sl-over-val',  overFac.toFixed(2));  }, speed:0.01  },
+};
+function syncSlider(slId, val, lblId, txt) {
+  document.getElementById(slId).value = val;
+  document.getElementById(lblId).textContent = txt;
+}
+
+document.querySelectorAll('.dv.scrub').forEach(el => {
+  let sx = 0, startVal = 0, param = null, active = false;
+
+  el.addEventListener('pointerdown', e => {
+    param = el.dataset.scrub;
+    if (!scrubConfig[param]) return;
+    sx = e.clientX;
+    startVal = scrubConfig[param].get();
+    active = true;
+    el.classList.add('scrubbing');
+    el.setPointerCapture(e.pointerId);
+    e.stopPropagation(); // don't trigger lead drag
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => {
+    if (!active) return;
+    const dx = e.clientX - sx;
+    const cfg = scrubConfig[param];
+    cfg.set(startVal + dx * cfg.speed);
+    e.preventDefault();
+  });
+  el.addEventListener('pointerup', e => {
+    active = false;
+    el.classList.remove('scrubbing');
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if(e.code==='Space'){e.preventDefault();
+    playing=!playing;
+    document.getElementById('btnPlay').classList.toggle('active',playing);
+    document.getElementById('btnPause').classList.toggle('active',!playing);
+  }
+  if(e.code==='ArrowRight'){masterFrame=Math.min(TOTAL,masterFrame+1);}
+  if(e.code==='ArrowLeft') {masterFrame=Math.max(0,masterFrame-1);}
+  if(e.code==='KeyN'){
+    noFollow=!noFollow;
+    document.getElementById('btnNoFollow').classList.toggle('active',noFollow);
+    document.getElementById('btnNoFollow').textContent=noFollow?'NO FOLLOW ✓':'NO FOLLOW';
+    initSegs(80);
+  }
+  if(e.code==='Escape')window.location.href='index.html';
+});
+
+window.addEventListener('resize',()=>{initSegs(leadTargetX(0,mainZoneSize().w));});
+
+// INIT
+buildLegend();
+initSegs(80);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

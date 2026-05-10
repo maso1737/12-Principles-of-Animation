@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 08 TIMING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --acid:#36FF00;--neon:#F9FF47;--black:#000;--white:#fff;
+  --panel:#0C0C0C;--panel2:#0E0E0E;
+  --border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
+  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.25);
+  --mono:'IBM Plex Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
+
+#app{
+  display:grid;
+  grid-template-rows:44px 1fr 44px;
+  grid-template-columns:1fr 320px;
+  height:100vh;width:100vw;
+}
+
+/* ── TOPBAR ── */
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  background:var(--panel);position:relative;z-index:10;
+}
+#topbar .left{display:flex;align-items:center;gap:16px}
+#topbar .right{display:flex;align-items:center;gap:16px}
+.sys-id{color:var(--dim);font-size:9px}
+.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.esc-btn{
+  color:var(--dim);font-size:9px;cursor:pointer;text-decoration:none;
+  border:1px solid var(--border);padding:2px 8px;transition:all 0.15s;
+}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+
+/* ── STAGE ── */
+#stage{
+  position:relative;overflow:hidden;background:var(--black);
+  display:flex;flex-direction:column;
+}
+
+.stage-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--border2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.stage-bignum{
+  position:absolute;font-family:var(--cond);font-weight:900;
+  font-size:clamp(180px,26vw,340px);color:rgba(54,255,0,0.025);
+  line-height:1;bottom:-30px;left:-10px;
+  pointer-events:none;user-select:none;letter-spacing:-0.05em;
+}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
+.corner::before{width:1px;height:16px;top:0}
+.corner::after{width:16px;height:1px;top:0}
+.corner.tl{top:12px;left:12px}
+.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
+.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}
+.corner.br{bottom:12px;right:12px;transform:scale(-1)}
+.principle-overlay{
+  position:absolute;top:16px;right:16px;text-align:right;
+  font-family:var(--mono);pointer-events:none;
+}
+.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
+.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.checker{
+  position:absolute;
+  background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;
+  pointer-events:none;
+}
+.checker.c1{bottom:56px;right:0;width:48px;height:48px}
+.checker.c2{top:44px;left:0;width:24px;height:80px}
+
+/* ── BALL ZONE (top 55%) ── */
+#ball-zone{
+  position:relative;flex:0 0 55%;
+  display:flex;align-items:center;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* Rail */
+#rail-line{
+  position:absolute;left:60px;right:40px;
+  height:1px;background:var(--border);
+  top:50%;
+}
+/* start / end tick */
+#rail-line::before,#rail-line::after{
+  content:'';position:absolute;top:-6px;
+  width:1px;height:13px;background:var(--dim2);
+}
+#rail-line::before{left:0}
+#rail-line::after{right:0}
+
+/* labels */
+#start-label,#end-label{
+  position:absolute;top:calc(50% + 12px);
+  font-family:var(--mono);font-size:8px;color:var(--dim2);letter-spacing:0.08em;
+}
+#start-label{left:56px}
+#end-label{right:36px;text-align:right}
+
+/* trail canvas (behind ball) */
+#trail-canvas{
+  position:absolute;left:60px;right:40px;top:0;bottom:0;
+  pointer-events:none;
+}
+
+/* ball */
+#ball{
+  position:absolute;top:50%;left:60px;
+  width:26px;height:26px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:1.5px solid var(--neon);
+  background:rgba(249,255,71,0.12);
+  pointer-events:none;
+  transition:none;
+  z-index:4;
+}
+#ball-core{
+  position:absolute;inset:5px;border-radius:50%;
+  background:var(--neon);opacity:0.9;
+}
+/* velocity halo */
+#ball-halo{
+  position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(249,255,71,0.15);
+  pointer-events:none;
+}
+
+/* frame label on ball */
+#ball-fr-label{
+  position:absolute;top:calc(50% - 28px);
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  letter-spacing:0.06em;pointer-events:none;
+  transform:translateX(-50%);
+}
+
+/* ghost frames drawn via canvas — so no DOM ghosts needed */
+
+/* current speed readout */
+#speed-hud{
+  position:absolute;bottom:12px;left:60px;
+  font-family:var(--mono);font-size:9px;color:var(--dim);
+  letter-spacing:0.06em;
+  display:flex;gap:20px;
+}
+#speed-hud span{color:var(--acid)}
+
+/* ── SPACING ZONE (bottom 45%) ── */
+#spacing-zone{
+  position:relative;flex:0 0 45%;
+  overflow:hidden;
+}
+
+#sz-label{
+  position:absolute;top:10px;left:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
+  color:var(--dim);
+}
+#sz-label strong{color:var(--acid)}
+
+/* spacing canvas */
+#spacing-canvas{
+  position:absolute;left:0;right:0;top:0;bottom:0;
+  cursor:crosshair;
+  touch-action:none;
+}
+
+/* mode label */
+#spacing-mode-label{
+  position:absolute;bottom:10px;right:16px;
+  font-family:var(--mono);font-size:8px;
+  color:var(--dim);letter-spacing:0.08em;
+}
+
+/* ── SIDE PANEL ── */
+#panel{
+  border-left:1px solid var(--border);background:var(--panel);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+}
+#panel::-webkit-scrollbar{width:2px}
+#panel::-webkit-scrollbar-thumb{background:var(--acid)}
+
+.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+.psec:last-child{border-bottom:none}
+.sec-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.15em;
+  color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
+.sec-title{
+  font-family:var(--cond);font-weight:900;font-size:24px;
+  letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px;
+}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
+.body-en{
+  font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);
+  letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px;
+}
+.data-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border2);
+  font-family:var(--mono);font-size:9px;
+}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.05em}
+.dv{color:var(--acid);font-weight:700}
+.dv.neon{color:var(--neon)}
+
+/* buttons */
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;border:1px solid var(--border);
+  padding:5px 10px;cursor:pointer;color:var(--dim);background:transparent;
+  transition:all 0.15s;margin-right:3px;margin-bottom:3px;
+}
+.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
+.btn.neon:hover,.btn.neon.active{background:var(--neon);border-color:var(--neon);color:var(--black)}
+
+/* velocity graph */
+#vel-graph{width:100%;height:72px;display:block;margin-top:6px}
+
+/* spacing pattern display */
+.pattern-row{
+  display:flex;align-items:center;gap:3px;
+  padding:6px 0;border-bottom:1px solid var(--border2);
+  cursor:pointer;
+}
+.pattern-row:last-child{border-bottom:none}
+.pattern-row:hover .p-name{color:var(--acid)}
+.p-name{font-family:var(--mono);font-size:8px;color:var(--dim);width:72px;flex-shrink:0}
+.p-dots{display:flex;align-items:center;gap:0;flex:1;position:relative;height:12px}
+.p-dot{width:5px;height:5px;border-radius:50%;background:var(--dim2);flex-shrink:0}
+
+/* JSON output */
+#json-out{
+  font-family:var(--mono);font-size:7px;line-height:1.6;
+  color:rgba(54,255,0,0.5);word-break:break-all;
+  background:rgba(54,255,0,0.03);border:1px solid var(--border2);
+  padding:6px;max-height:80px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--dim2) transparent;
+}
+
+/* ── BOTTOM BAR ── */
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-top:1px solid var(--border);font-family:var(--mono);
+  font-size:9px;background:var(--panel);letter-spacing:0.06em;
+}
+#bottombar .bl{color:var(--dim);display:flex;gap:16px}
+#bottombar .bc{color:var(--acid);font-weight:700}
+#bottombar .br{color:var(--dim)}
+.kbd{
+  display:inline-block;border:1px solid var(--border);
+  padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px;
+}
+
+/* drag highlight */
+.dot-hover{filter:brightness(2)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="left">
+    <span class="sys-id">KINETIC_GEOMETRY // LEC_08</span>
+    <span class="title-tag">PRINCIPLE_08 // TIMING &amp; SPACING</span>
+  </div>
+  <div class="right">
+    <span class="sys-id">SYS_ID:08 // SPACING_EDIT: ACTIVE</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<!-- STAGE -->
+<main id="stage">
+  <div class="stage-grid"></div>
+  <div class="stage-bignum">08</div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="checker c1"></div><div class="checker c2"></div>
+  <div class="principle-overlay">
+    <div class="po-num">PRINCIPLE // 08</div>
+    <div class="po-en">TIMING</div>
+    <div class="po-jp">タイミング</div>
+  </div>
+
+  <!-- BALL ZONE -->
+  <div id="ball-zone">
+    <canvas id="trail-canvas"></canvas>
+    <div id="rail-line"></div>
+    <div id="start-label">START</div>
+    <div id="end-label">END</div>
+    <div id="ball"><div id="ball-core"></div><div id="ball-halo"></div></div>
+    <div id="ball-fr-label">F:00</div>
+    <div id="speed-hud">
+      <div>VEL&nbsp;<span id="hud-vel">0.00</span></div>
+      <div>FR&nbsp;<span id="hud-fr">00</span>&nbsp;/&nbsp;<span id="hud-total">12</span></div>
+      <div>POS&nbsp;<span id="hud-pos">0.0</span>%</div>
+    </div>
+  </div>
+
+  <!-- SPACING ZONE -->
+  <div id="spacing-zone">
+    <div id="sz-label">// <strong>SPACING EDITOR</strong> — ドットをドラッグして動きを設計する</div>
+    <canvas id="spacing-canvas"></canvas>
+    <div id="spacing-mode-label">MODE: <span id="mode-name">CUSTOM</span></div>
+  </div>
+</main>
+
+<!-- SIDE PANEL -->
+<aside id="panel">
+
+  <!-- THEORY -->
+  <div class="psec">
+    <div class="sec-label">ATHEORY — 原則解説</div>
+    <div class="sec-title">TIMING<br>&amp; SPACING</div>
+    <div class="body-text">
+      ドットの<em>間隔</em>が速度を決める。<br>
+      広い→速い。狭い→遅い。<br>
+      直接触って、easingを「発生」させる。
+    </div>
+    <div class="body-en">
+      Drag dots to set frame positions.<br>
+      Wide gap = fast. Narrow = slow.<br>
+      Easing emerges. You don't choose it.
+    </div>
+  </div>
+
+  <!-- LIVE DATA -->
+  <div class="psec">
+    <div class="sec-label">BLIVE — リアルタイム</div>
+    <div class="data-row"><span class="dk">CURRENT_VEL</span><span class="dv neon" id="lv-vel">—</span></div>
+    <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-fr">00 / 12</span></div>
+    <div class="data-row"><span class="dk">POSITION</span><span class="dv" id="lv-pos">0.0%</span></div>
+    <div class="data-row"><span class="dk">EASING_TYPE</span><span class="dv" id="lv-ease">—</span></div>
+    <div class="data-row"><span class="dk">SPACING_MODE</span><span class="dv" id="lv-mode">CUSTOM</span></div>
+  </div>
+
+  <!-- PLAYBACK -->
+  <div class="psec">
+    <div class="sec-label">CPLAYBACK — 再生コントロール</div>
+    <div style="margin-bottom:8px">
+      <button class="btn active" id="btnPlay">▶ PLAY</button>
+      <button class="btn" id="btnPause">⏸ PAUSE</button>
+      <button class="btn" id="btnReset">↺ RESET</button>
+      <button class="btn" id="btnReverse">⇄ REVERSE</button>
+    </div>
+    <div style="margin-bottom:8px">
+      <button class="btn" id="btnGhost">TRAIL: OFF</button>
+      <button class="btn" id="btnLoop">LOOP: ON</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:4px">
+      PLAYBACK SPEED
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="range" id="slSpd" min="1" max="40" value="10" style="flex:1;accent-color:var(--acid)">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--acid);min-width:28px" id="slSpd-val">1.0x</span>
+    </div>
+  </div>
+
+  <!-- PRESETS -->
+  <div class="psec">
+    <div class="sec-label">DPRESETS — スペーシングプリセット</div>
+    <div class="pattern-row" onclick="applyPreset('linear')">
+      <span class="p-name">LINEAR</span>
+      <div class="p-dots" id="pd-linear"></div>
+    </div>
+    <div class="pattern-row" onclick="applyPreset('easein')">
+      <span class="p-name">EASE-IN</span>
+      <div class="p-dots" id="pd-easein"></div>
+    </div>
+    <div class="pattern-row" onclick="applyPreset('easeout')">
+      <span class="p-name">EASE-OUT</span>
+      <div class="p-dots" id="pd-easeout"></div>
+    </div>
+    <div class="pattern-row" onclick="applyPreset('easeinout')">
+      <span class="p-name">EASE IN-OUT</span>
+      <div class="p-dots" id="pd-easeinout"></div>
+    </div>
+    <div class="pattern-row" onclick="applyPreset('bounce')">
+      <span class="p-name">BOUNCE</span>
+      <div class="p-dots" id="pd-bounce"></div>
+    </div>
+    <div class="pattern-row" onclick="applyPreset('snappy')">
+      <span class="p-name">SNAPPY</span>
+      <div class="p-dots" id="pd-snappy"></div>
+    </div>
+  </div>
+
+  <!-- VEL GRAPH -->
+  <div class="psec">
+    <div class="sec-label">EVELOCITY — 速度グラフ</div>
+    <canvas id="vel-graph"></canvas>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:4px">
+      縦軸:速度 / 横軸:フレーム — スペーシングの傾き
+    </div>
+  </div>
+
+  <!-- JSON OUTPUT -->
+  <div class="psec">
+    <div class="sec-label">FJSON — エクスポート</div>
+    <div id="json-out"></div>
+    <button class="btn" style="margin-top:6px" onclick="copyJSON()">COPY JSON</button>
+  </div>
+
+</aside>
+
+<!-- BOTTOMBAR -->
+<footer id="bottombar">
+  <div class="bl">
+    <span>SPACING_EDIT: ACTIVE</span>
+    <span>FRAME_RATE: VARIABLE</span>
+    <span>MASS_FACTOR: ACTIVE</span>
+  </div>
+  <div class="bc">FRAME: <span id="masterFr">00</span> / <span id="masterTotal2">12</span></div>
+  <div class="br">
+    <span class="kbd">SPC</span>PLAY
+    <span class="kbd">←→</span>STEP
+    <span class="kbd">R</span>REVERSE
+    <span class="kbd">ESC</span>INDEX
+    &nbsp;ID: SENTIENT-BP-2026-VLS.08
+  </div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// SPACING DATA
+// spacing[i] = position 0..1 of frame i
+// ═══════════════════════════════════════════════
+const PRESETS = {
+  linear:    [0,0.0833,0.1667,0.25,0.3333,0.4167,0.5,0.5833,0.6667,0.75,0.8333,0.9167,1],
+  easein:    [0,0.003,0.012,0.027,0.048,0.075,0.108,0.147,0.192,0.243,0.3,0.363,1],
+  easeout:   [0,0.637,0.7,0.757,0.808,0.853,0.892,0.925,0.952,0.973,0.988,0.997,1],
+  easeinout: [0,0.006,0.024,0.054,0.097,0.154,0.227,0.5,0.773,0.846,0.903,0.946,1],
+  bounce:    [0,0.18,0.34,0.47,0.57,0.64,0.69,0.72,0.84,0.93,0.98,0.995,1],
+  snappy:    [0,0.45,0.72,0.87,0.94,0.975,0.99,0.997,0.9992,0.9997,0.9999,1.0,1],
+};
+
+let spacing = [...PRESETS.easeinout];
+let playing = true;
+let reversed = false;
+let loopMode = true;
+let trailOn = false;
+let masterT = 0; // 0..1 normalized time
+let playSpd = 1.0;
+let lastTime = null;
+
+// drag state
+let dragging = -1;
+let dragOffsetX = 0;
+
+// trail positions
+let trailPositions = [];
+
+// ── DOM refs ──
+const ballEl   = document.getElementById('ball');
+const ballFrLb = document.getElementById('ball-fr-label');
+const trailC   = document.getElementById('trail-canvas');
+const trailCtx = trailC.getContext('2d');
+const spacingC = document.getElementById('spacing-canvas');
+const spacingCtx = spacingC.getContext('2d');
+const velC     = document.getElementById('vel-graph');
+const velCtx   = velC.getContext('2d');
+
+// ── LAYOUT ──
+function getRailRect() {
+  const bz = document.getElementById('ball-zone');
+  const w = bz.offsetWidth;
+  const left = 60, right = 40;
+  return { x: left, width: w - left - right };
+}
+
+function getSZRect() {
+  const sz = document.getElementById('spacing-zone');
+  return { w: sz.offsetWidth, h: sz.offsetHeight };
+}
+
+// ── INTERPOLATION ──
+function interpolate(sp, t) {
+  // t = 0..1, sp = array of positions
+  const n = sp.length - 1;
+  const fi = t * n;
+  const lo = Math.min(n - 1, Math.floor(fi));
+  const frac = fi - lo;
+  return sp[lo] + (sp[lo + 1] - sp[lo]) * frac;
+}
+
+function currentPos() {
+  let t = masterT;
+  if (reversed) t = 1 - t;
+  return interpolate(spacing, t);
+}
+
+function currentVel() {
+  const eps = 0.005;
+  const t0 = Math.max(0, masterT - eps);
+  const t1 = Math.min(1, masterT + eps);
+  let p0 = interpolate(spacing, reversed ? 1-t0 : t0);
+  let p1 = interpolate(spacing, reversed ? 1-t1 : t1);
+  return Math.abs((p1 - p0) / (2 * eps));
+}
+
+// ── EASING CLASSIFIER ──
+function classifyEasing(sp) {
+  const mid = sp[Math.floor(sp.length / 2)];
+  const linear_mid = 0.5;
+  if (Math.abs(mid - linear_mid) < 0.04) return 'LINEAR';
+  if (mid < 0.35) return 'EASE-IN';
+  if (mid > 0.65) return 'EASE-OUT';
+  return 'EASE IN-OUT';
+}
+
+// ── RENDER BALL ──
+function renderBall() {
+  const rail = getRailRect();
+  const pos = currentPos();
+  const px = rail.x + pos * rail.width;
+  ballEl.style.left = px + 'px';
+  ballFrLb.style.left = px + 'px';
+
+  const fr = Math.round(masterT * (spacing.length - 1));
+  ballFrLb.textContent = 'F:' + String(fr).padStart(2,'0');
+
+  const vel = currentVel();
+  const velPct = Math.min(vel * 2, 1);
+  // color: low=dim, high=neon
+  const r = Math.round(54 + (249-54)*velPct);
+  const g = Math.round(255 + (255-255)*velPct);
+  const b = Math.round(0   + (71-0)*velPct);
+  ballEl.style.borderColor = `rgb(${r},${g},${b})`;
+  document.getElementById('ball-core').style.background = `rgb(${r},${g},${b})`;
+
+  // hud
+  document.getElementById('hud-vel').textContent = vel.toFixed(2);
+  const frIdx = Math.round(masterT * (spacing.length - 1));
+  document.getElementById('hud-fr').textContent = String(frIdx).padStart(2,'0');
+  document.getElementById('hud-total').textContent = spacing.length - 1;
+  document.getElementById('hud-pos').textContent = (pos * 100).toFixed(1);
+
+  document.getElementById('lv-vel').textContent = vel.toFixed(3);
+  document.getElementById('lv-fr').textContent = frIdx + ' / ' + (spacing.length - 1);
+  document.getElementById('lv-pos').textContent = (pos * 100).toFixed(1) + '%';
+  document.getElementById('lv-ease').textContent = classifyEasing(spacing);
+  document.getElementById('lv-mode').textContent = document.getElementById('mode-name').textContent;
+
+  document.getElementById('masterFr').textContent = String(frIdx).padStart(2,'0');
+  document.getElementById('masterTotal2').textContent = spacing.length - 1;
+}
+
+// ── TRAIL ──
+function renderTrail() {
+  const bz = document.getElementById('ball-zone');
+  trailC.width = bz.offsetWidth * devicePixelRatio;
+  trailC.height = bz.offsetHeight * devicePixelRatio;
+  trailC.style.width = bz.offsetWidth + 'px';
+  trailC.style.height = bz.offsetHeight + 'px';
+  trailCtx.clearRect(0, 0, trailC.width, trailC.height);
+
+  if (!trailOn || trailPositions.length < 2) return;
+
+  const rail = getRailRect();
+  const cy = bz.offsetHeight / 2;
+
+  // draw spacing dots at each frame position
+  spacing.forEach((sp, i) => {
+    const x = (rail.x + sp * rail.width) * devicePixelRatio;
+    const y = cy * devicePixelRatio;
+    const alpha = 0.15 + 0.3 * (i / spacing.length);
+    trailCtx.beginPath();
+    trailCtx.arc(x, y, 3 * devicePixelRatio, 0, Math.PI * 2);
+    trailCtx.fillStyle = `rgba(249,255,71,${alpha})`;
+    trailCtx.fill();
+  });
+}
+
+// ── SPACING CANVAS ──
+function renderSpacingCanvas() {
+  const sz = getSZRect();
+  spacingC.width = sz.w * devicePixelRatio;
+  spacingC.height = sz.h * devicePixelRatio;
+  spacingC.style.width = sz.w + 'px';
+  spacingC.style.height = sz.h + 'px';
+  const ctx = spacingCtx;
+  const dpr = devicePixelRatio;
+  ctx.clearRect(0, 0, sz.w * dpr, sz.h * dpr);
+
+  const PAD_L = 40, PAD_R = 20, PAD_T = 32, PAD_B = 28;
+  const W = (sz.w - PAD_L - PAD_R) * dpr;
+  const H = (sz.h - PAD_T - PAD_B) * dpr;
+  const OX = PAD_L * dpr, OY = PAD_T * dpr;
+
+  // baseline
+  ctx.strokeStyle = 'rgba(54,255,0,0.2)';
+  ctx.lineWidth = 0.5 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(OX, OY + H);
+  ctx.lineTo(OX + W, OY + H);
+  ctx.stroke();
+
+  // top line (label)
+  ctx.strokeStyle = 'rgba(54,255,0,0.07)';
+  ctx.beginPath();
+  ctx.moveTo(OX, OY);
+  ctx.lineTo(OX + W, OY);
+  ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = 'rgba(54,255,0,0.3)';
+  ctx.font = `${7 * dpr}px IBM Plex Mono, monospace`;
+  ctx.fillText('END', (OX + W - 14 * dpr), OY + H + 16 * dpr);
+  ctx.fillText('START', OX - 2 * dpr, OY + H + 16 * dpr);
+  ctx.fillText('POS', OX - 36 * dpr, OY + 4 * dpr);
+
+  // connecting line
+  ctx.strokeStyle = 'rgba(54,255,0,0.18)';
+  ctx.lineWidth = 1 * dpr;
+  ctx.beginPath();
+  spacing.forEach((sp, i) => {
+    const x = OX + sp * W;
+    const y = OY + H; // all on baseline
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // velocity bars (height = gap between consecutive dots)
+  const maxGap = Math.max(...spacing.slice(1).map((v,i)=>v-spacing[i]));
+  for (let i = 0; i < spacing.length - 1; i++) {
+    const gap = spacing[i+1] - spacing[i];
+    const norm = maxGap > 0 ? gap / maxGap : 0;
+    const x1 = OX + spacing[i] * W;
+    const x2 = OX + spacing[i+1] * W;
+    const cx = (x1 + x2) / 2;
+    const barH = norm * H * 0.7;
+    // color by speed
+    const alpha = 0.08 + norm * 0.25;
+    ctx.fillStyle = norm > 0.6
+      ? `rgba(249,255,71,${alpha})`
+      : `rgba(54,255,0,${alpha})`;
+    ctx.fillRect(cx - 2*dpr, OY + H - barH, 4*dpr, barH);
+  }
+
+  // playhead
+  const playPos = interpolate(spacing, reversed ? 1-masterT : masterT);
+  const playX = OX + playPos * W;
+  ctx.strokeStyle = 'rgba(249,255,71,0.5)';
+  ctx.lineWidth = 1 * dpr;
+  ctx.setLineDash([3*dpr, 3*dpr]);
+  ctx.beginPath();
+  ctx.moveTo(playX, OY);
+  ctx.lineTo(playX, OY + H + 6*dpr);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // DOTS
+  spacing.forEach((sp, i) => {
+    const x = OX + sp * W;
+    const y = OY + H;
+    const isActive = (Math.round(masterT * (spacing.length-1)) === i);
+    const isDrag = (dragging === i);
+
+    // gap indicator line to next
+    if (i < spacing.length - 1) {
+      const x2 = OX + spacing[i+1] * W;
+      const gap = spacing[i+1] - spacing[i];
+      const norm2 = maxGap > 0 ? gap / maxGap : 0;
+      ctx.strokeStyle = norm2 > 0.6
+        ? `rgba(249,255,71,0.5)`
+        : `rgba(54,255,0,0.3)`;
+      ctx.lineWidth = 1 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 6*dpr);
+      ctx.lineTo(x2, y - 6*dpr);
+      ctx.stroke();
+    }
+
+    // frame number
+    ctx.fillStyle = isActive ? '#F9FF47' : 'rgba(54,255,0,0.3)';
+    ctx.font = `${6 * dpr}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(i, x, OY + H - 12*dpr);
+
+    // dot
+    const r = isDrag ? 9*dpr : isActive ? 8*dpr : 6*dpr;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isDrag ? '#F9FF47' : isActive ? '#F9FF47' : 'rgba(54,255,0,0.6)';
+    ctx.fill();
+    if (isDrag || isActive) {
+      ctx.beginPath();
+      ctx.arc(x, y, r + 3*dpr, 0, Math.PI * 2);
+      ctx.strokeStyle = isDrag ? 'rgba(249,255,71,0.5)' : 'rgba(54,255,0,0.3)';
+      ctx.lineWidth = 1*dpr;
+      ctx.stroke();
+    }
+  });
+}
+
+// ── VELOCITY GRAPH ──
+function renderVelGraph() {
+  const W = velC.offsetWidth * devicePixelRatio;
+  const H = velC.offsetHeight * devicePixelRatio;
+  velC.width = W; velC.height = H;
+  const ctx = velCtx;
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle = 'rgba(54,255,0,0.07)';
+  ctx.lineWidth = 0.5;
+  for (let i=0;i<=4;i++){
+    const y = (i/4)*H;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  }
+
+  // compute velocity at each frame
+  const n = spacing.length;
+  const vels = [];
+  for (let i = 0; i < n; i++) {
+    if (i === 0) vels.push(spacing[1]-spacing[0]);
+    else if (i === n-1) vels.push(spacing[n-1]-spacing[n-2]);
+    else vels.push((spacing[i+1]-spacing[i-1])/2);
+  }
+  const maxV = Math.max(...vels, 0.001);
+
+  ctx.strokeStyle = '#36FF00';
+  ctx.lineWidth = 1.5 * devicePixelRatio;
+  ctx.beginPath();
+  vels.forEach((v, i) => {
+    const x = (i / (n-1)) * W;
+    const y = H - (v / maxV) * H * 0.85 - H * 0.05;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // playhead
+  const px = masterT * W;
+  ctx.strokeStyle = 'rgba(249,255,71,0.6)';
+  ctx.lineWidth = 1 * devicePixelRatio;
+  ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();
+}
+
+// ── ANIMATION LOOP ──
+function loop(ts) {
+  if (!lastTime) lastTime = ts;
+  const dt = (ts - lastTime) / 1000;
+  lastTime = ts;
+
+  if (playing) {
+    const dur = 1.2 / playSpd;
+    masterT += dt / dur;
+    if (masterT >= 1) {
+      if (loopMode) masterT = masterT % 1;
+      else { masterT = 1; playing = false; }
+    }
+  }
+
+  // trail record
+  if (trailOn && playing) {
+    trailPositions.push(currentPos());
+    if (trailPositions.length > 200) trailPositions.shift();
+  }
+
+  renderBall();
+  renderTrail();
+  renderSpacingCanvas();
+  renderVelGraph();
+  updateJSON();
+
+  requestAnimationFrame(loop);
+}
+
+// ── SPACING CANVAS DRAG ──
+function getSpacingCoords(e) {
+  const rect = spacingC.getBoundingClientRect();
+  const ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const sz = getSZRect();
+  const PAD_L = 40, PAD_R = 20;
+  const W = sz.w - PAD_L - PAD_R;
+  return (ex - PAD_L) / W; // 0..1 normalized
+}
+
+function getDotHitRadius() {
+  const sz = getSZRect();
+  return 18 / sz.w; // normalized hit radius
+}
+
+spacingC.addEventListener('pointerdown', e => {
+  const normX = getSpacingCoords(e);
+  const hitR = getDotHitRadius();
+  // find closest dot (skip first and last)
+  let best = -1, bestD = Infinity;
+  spacing.forEach((sp, i) => {
+    if (i === 0 || i === spacing.length - 1) return;
+    const d = Math.abs(sp - normX);
+    if (d < bestD && d < hitR) { bestD = d; best = i; }
+  });
+  if (best !== -1) {
+    dragging = best;
+    spacingC.setPointerCapture(e.pointerId);
+    playing = false;
+    document.getElementById('btnPlay').classList.remove('active');
+    document.getElementById('btnPause').classList.add('active');
+  }
+  e.preventDefault();
+});
+
+spacingC.addEventListener('pointermove', e => {
+  if (dragging === -1) return;
+  let normX = Math.max(0, Math.min(1, getSpacingCoords(e)));
+  // clamp between neighbors
+  const lo = dragging > 0 ? spacing[dragging-1] + 0.01 : 0;
+  const hi = dragging < spacing.length-1 ? spacing[dragging+1] - 0.01 : 1;
+  spacing[dragging] = Math.max(lo, Math.min(hi, normX));
+  document.getElementById('mode-name').textContent = 'CUSTOM';
+  document.getElementById('lv-mode').textContent = 'CUSTOM';
+  e.preventDefault();
+});
+
+spacingC.addEventListener('pointerup', e => {
+  dragging = -1;
+  playing = true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+});
+
+// ── PRESET DOTS VISUALIZATION ──
+function buildPresetDots() {
+  Object.keys(PRESETS).forEach(key => {
+    const el = document.getElementById('pd-' + key);
+    if (!el) return;
+    el.innerHTML = '';
+    const sp = PRESETS[key];
+    const W = el.offsetWidth || 180;
+    // draw relative dot positions
+    sp.forEach((v, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'p-dot';
+      dot.style.position = 'absolute';
+      dot.style.left = (v * 100) + '%';
+      dot.style.transform = 'translateX(-50%)';
+      el.appendChild(dot);
+    });
+  });
+}
+
+// ── APPLY PRESET ──
+function applyPreset(name) {
+  spacing = [...PRESETS[name]];
+  masterT = 0; trailPositions = [];
+  document.getElementById('mode-name').textContent = name.toUpperCase();
+  document.getElementById('lv-mode').textContent = name.toUpperCase();
+  playing = true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+}
+
+// ── JSON ──
+function updateJSON() {
+  const arr = spacing.map(v => +v.toFixed(4));
+  document.getElementById('json-out').textContent =
+    'spacing: ' + JSON.stringify(arr);
+}
+
+function copyJSON() {
+  const arr = spacing.map(v => +v.toFixed(4));
+  navigator.clipboard.writeText(JSON.stringify(arr))
+    .catch(() => {});
+}
+
+// ── CONTROLS ──
+document.getElementById('btnPlay').addEventListener('click', () => {
+  playing = true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+});
+document.getElementById('btnPause').addEventListener('click', () => {
+  playing = false;
+  document.getElementById('btnPause').classList.add('active');
+  document.getElementById('btnPlay').classList.remove('active');
+});
+document.getElementById('btnReset').addEventListener('click', () => {
+  masterT = 0; trailPositions = [];
+});
+document.getElementById('btnReverse').addEventListener('click', function() {
+  reversed = !reversed;
+  this.classList.toggle('active', reversed);
+  masterT = 0; trailPositions = [];
+});
+document.getElementById('btnGhost').addEventListener('click', function() {
+  trailOn = !trailOn;
+  this.classList.toggle('active', trailOn);
+  this.textContent = trailOn ? 'TRAIL: ON' : 'TRAIL: OFF';
+  if (!trailOn) trailPositions = [];
+});
+document.getElementById('btnLoop').addEventListener('click', function() {
+  loopMode = !loopMode;
+  this.classList.toggle('active', loopMode);
+  this.textContent = loopMode ? 'LOOP: ON' : 'LOOP: OFF';
+});
+document.getElementById('slSpd').addEventListener('input', function() {
+  playSpd = this.value / 10;
+  document.getElementById('slSpd-val').textContent = playSpd.toFixed(1) + 'x';
+});
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    playing = !playing;
+    document.getElementById('btnPlay').classList.toggle('active', playing);
+    document.getElementById('btnPause').classList.toggle('active', !playing);
+  }
+  if (e.code === 'ArrowRight') { masterT = Math.min(1, masterT + 1/(spacing.length-1)); }
+  if (e.code === 'ArrowLeft')  { masterT = Math.max(0, masterT - 1/(spacing.length-1)); }
+  if (e.code === 'KeyR') {
+    reversed = !reversed; masterT = 0;
+    document.getElementById('btnReverse').classList.toggle('active', reversed);
+  }
+  if (e.code === 'Escape') { window.location.href = 'index.html'; }
+});
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  setTimeout(buildPresetDots, 100);
+  requestAnimationFrame(loop);
+});
+window.addEventListener('resize', buildPresetDots);
+</script>
+</body>
+</html>

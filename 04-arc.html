@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 04 THE ARC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --acid:#36FF00;--neon:#F9FF47;--black:#000;
+  --panel:#0C0C0C;--border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
+  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.22);
+  --mono:'IBM Plex Mono',monospace;--cond:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+
+/* TOPBAR */
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
+.sys-id{color:var(--dim);font-size:9px}
+.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+
+/* STAGE */
+#stage{position:relative;overflow:hidden;background:var(--black);display:flex;flex-direction:column}
+.stage-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.stage-bignum{
+  position:absolute;font-family:var(--cond);font-weight:900;
+  font-size:clamp(180px,24vw,320px);color:rgba(54,255,0,0.022);
+  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
+.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
+.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
+.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
+.principle-overlay{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
+.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
+.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
+.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
+
+/* ARC ZONE — top 58% */
+#arc-zone{position:relative;flex:0 0 58%;overflow:hidden;border-bottom:1px solid var(--border)}
+#arc-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+
+/* Mode badge */
+#mode-badge{
+  position:absolute;top:12px;left:16px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  padding:3px 8px;border:1px solid var(--border);
+  color:var(--dim);background:rgba(0,0,0,0.6);pointer-events:none;
+}
+#mode-badge.ng{color:#FF3636;border-color:rgba(255,54,54,0.4)}
+
+/* HUD */
+#arc-hud{
+  position:absolute;bottom:12px;left:16px;
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  letter-spacing:0.06em;line-height:2;pointer-events:none;
+  display:flex;gap:24px;
+}
+#arc-hud .val{color:var(--acid)}
+#arc-hud .val.neon{color:var(--neon)}
+
+/* SPACING ZONE — bottom 42% */
+#spacing-zone{position:relative;flex:0 0 42%;overflow:hidden}
+#spacing-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#sz-header{
+  position:absolute;top:8px;left:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--dim);
+  pointer-events:none;display:flex;gap:16px;align-items:center;
+}
+#sz-header strong{color:var(--acid)}
+#sz-easing-label{color:rgba(54,255,0,0.5)}
+
+/* PANEL */
+#panel{
+  border-left:1px solid var(--border);background:var(--panel);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+}
+#panel::-webkit-scrollbar{width:2px}
+#panel::-webkit-scrollbar-thumb{background:var(--acid)}
+.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+.psec:last-child{border-bottom:none}
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:24px;letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
+.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--acid);font-weight:700}.dv.neon{color:var(--neon)}
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
+  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+}
+.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
+.btn.ng-btn{border-color:rgba(255,54,54,0.3);color:rgba(255,54,54,0.6)}
+.btn.ng-btn:hover,.btn.ng-btn.active{background:#FF3636;border-color:#FF3636;color:#000}
+
+/* smoothness bar */
+.smooth-bar-wrap{height:3px;background:var(--border2);margin-top:6px;position:relative}
+.smooth-bar{height:100%;transition:width .15s,background .15s}
+
+/* insight */
+.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);letter-spacing:0.04em;margin-top:8px}
+.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
+
+/* BOTTOMBAR */
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+}
+.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
+.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span class="sys-id">KINETIC_GEOMETRY // LEC_04</span>
+    <span class="title-tag">PRINCIPLE_04 // THE ARC</span>
+  </div>
+  <div class="right">
+    <span class="sys-id">TRAJECTORY_CALC: ORGANIC // X_Y_DELTA: 0.045</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="stage-grid"></div>
+  <div class="stage-bignum">04</div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="checker c1"></div><div class="checker c2"></div>
+  <div class="principle-overlay">
+    <div class="po-num">PRINCIPLE // 04</div>
+    <div class="po-en">THE ARC</div>
+    <div class="po-jp">運動の弧</div>
+  </div>
+
+  <!-- ARC ZONE -->
+  <div id="arc-zone">
+    <canvas id="arc-canvas"></canvas>
+    <div id="mode-badge">MODE: NORMAL</div>
+    <div id="arc-hud">
+      <div>ARC_VEL&nbsp;<span class="val" id="h-arcvel">0.00</span></div>
+      <div>LINE_VEL&nbsp;<span class="val neon" id="h-linevel">0.00</span></div>
+      <div>SMOOTH&nbsp;<span class="val" id="h-smooth">100%</span></div>
+      <div>FRAME&nbsp;<span class="val" id="h-frame">00/60</span></div>
+    </div>
+  </div>
+
+  <!-- SPACING ZONE -->
+  <div id="spacing-zone">
+    <div id="sz-header">
+      <span>// <strong>SPACING EDITOR</strong></span>
+      <span id="sz-easing-label">EASING: —</span>
+      <span style="color:var(--acid)">DRAG DOTS</span>
+    </div>
+    <canvas id="spacing-canvas"></canvas>
+  </div>
+</main>
+
+<aside id="panel">
+
+  <div class="psec">
+    <div class="sec-label">ATHEORY — 原則解説</div>
+    <div class="sec-title">THE ARC</div>
+    <div class="body-text">
+      Spacingを設計すると、Arcが生まれる。<br>
+      弧は「描くもの」ではなく<br>「運動の結果として現れるもの」。
+    </div>
+    <div class="body-en">
+      Design the spacing → the arc emerges.<br>
+      Arc is not drawn. It's a consequence<br>
+      of how frames are distributed in time.
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">BLIVE — リアルタイム</div>
+    <div class="data-row"><span class="dk">ARC_SMOOTHNESS</span><span class="dv" id="lv-smooth">100%</span></div>
+    <div class="data-row"><span class="dk">ARC_LENGTH</span><span class="dv" id="lv-arclen">— px</span></div>
+    <div class="data-row"><span class="dk">LINE_LENGTH</span><span class="dv neon" id="lv-linelen">— px</span></div>
+    <div class="data-row"><span class="dk">CURVATURE</span><span class="dv" id="lv-curv">0.00</span></div>
+    <div class="data-row"><span class="dk">EASING</span><span class="dv" id="lv-ease">—</span></div>
+    <div class="data-row"><span class="dk">BROKEN_FRAMES</span><span class="dv" id="lv-broken">0</span></div>
+    <div class="sec-label" style="margin-top:8px;margin-bottom:4px">ARC SMOOTHNESS</div>
+    <div class="smooth-bar-wrap"><div class="smooth-bar" id="smooth-bar" style="width:100%;background:var(--acid)"></div></div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">CMODE — 動作モード</div>
+    <div style="margin-bottom:6px">
+      <button class="btn active" id="btnNormal">NORMAL</button>
+      <button class="btn ng-btn" id="btnBroken">BROKEN ARC</button>
+      <button class="btn ng-btn" id="btnStraight">STRAIGHT FORCE</button>
+    </div>
+    <div class="insight" id="mode-insight">
+      <strong>// NORMAL MODE</strong>
+      Spacingが生む有機的な弧。<br>フレーム配置が軌道を決定する。
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">DPLAYBACK — 再生</div>
+    <div style="margin-bottom:8px">
+      <button class="btn active" id="btnPlay">▶ PLAY</button>
+      <button class="btn" id="btnPause">⏸ PAUSE</button>
+      <button class="btn" id="btnReset">↺ RESET</button>
+    </div>
+    <div style="margin-bottom:8px">
+      <button class="btn active" id="btnTangents">TANGENTS</button>
+      <button class="btn active" id="btnTrail">TRAIL</button>
+      <button class="btn" id="btnCP">CTRL PT</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:4px">SPEED</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="range" id="slSpd" min="1" max="30" value="8" style="flex:1;accent-color:var(--acid)">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--acid);min-width:28px" id="slSpd-val">0.8x</span>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">EPRESETS — スペーシング</div>
+    <button class="btn" onclick="applySpacingPreset('linear')">LINEAR</button>
+    <button class="btn" onclick="applySpacingPreset('easein')">EASE-IN</button>
+    <button class="btn" onclick="applySpacingPreset('easeout')">EASE-OUT</button>
+    <button class="btn" onclick="applySpacingPreset('easeinout')">EASE I-O</button>
+    <button class="btn" onclick="applySpacingPreset('bounce')">BOUNCE</button>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:8px;line-height:1.7">
+      CP ARC SHAPE<br>
+      <button class="btn" style="margin-top:4px" onclick="setCPPreset('low')">LOW</button>
+      <button class="btn" onclick="setCPPreset('high')">HIGH</button>
+      <button class="btn" onclick="setCPPreset('left')">LEFT</button>
+      <button class="btn" onclick="setCPPreset('right')">RIGHT</button>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">FINSIGHT</div>
+    <div class="insight">
+      <strong>// ARC × SPACING</strong>
+      同じSpacingでも弧の形が変わると<br>
+      速度の「感じ方」が変わる。<br>
+      同じ弧でもSpacingが変わると<br>
+      重さの「印象」が変わる。<br><br>
+      BROKENモードで「カクつき」を体験し<br>
+      滑らかさの意味を掴め。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div class="bl">
+    <span>TRAJECTORY_CALC: ORGANIC</span>
+    <span>ARC_MODE: <span id="bb-mode">NORMAL</span></span>
+  </div>
+  <div class="bc">FRAME: <span id="bb-fr">00</span> / 60</div>
+  <div class="br">
+    <span class="kbd">SPC</span>PLAY
+    <span class="kbd">←→</span>STEP
+    <span class="kbd">DRAG</span>SPACING/CP
+    <span class="kbd">ESC</span>INDEX
+    &nbsp;ID: SENTIENT-BP-2026-VLS.04
+  </div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// SPACING — shared between ARC and LINE
+// ═══════════════════════════════════════════
+const SPACING_PRESETS = {
+  linear:    [0,.0833,.1667,.25,.3333,.4167,.5,.5833,.6667,.75,.8333,.9167,1],
+  easein:    [0,.004,.016,.036,.064,.1,.144,.196,.256,.324,.4,.484,1],
+  easeout:   [0,.516,.6,.676,.744,.8,.836,.9,.964,.984,.996,1,1],
+  easeinout: [0,.006,.024,.054,.097,.154,.23,.5,.77,.846,.903,.946,1],
+  bounce:    [0,.22,.4,.54,.65,.72,.77,.8,.88,.94,.98,.997,1],
+};
+
+let spacing = [...SPACING_PRESETS.easeinout];
+const N = spacing.length - 1; // 12 frames
+
+// arc control point (normalized)
+let cpNorm = { x: 0.5, y: 0.22 };
+
+// mode: 'normal' | 'broken' | 'straight'
+let arcMode = 'normal';
+
+// flags
+let playing = true, showTangents = true, showTrail = true, showCP = false;
+let playSpd = 0.8, masterT = 0, lastTime = null;
+
+// drag
+let draggingDot = -1, draggingCPFlag = false;
+let arcTrail = [], lineTrail = [];
+
+// ── CANVAS REFS ──
+const arcC   = document.getElementById('arc-canvas');
+const arcCtx = arcC.getContext('2d');
+const spC    = document.getElementById('spacing-canvas');
+const spCtx  = spC.getContext('2d');
+
+// ── GEOMETRY ──
+function arcZoneSize(){ const z=document.getElementById('arc-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
+function spZoneSize(){  const z=document.getElementById('spacing-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
+
+function getKeyPts(){
+  const {w,h} = arcZoneSize();
+  const PAD=72;
+  return {
+    S:{x:PAD, y:h*0.6},
+    E:{x:w-PAD, y:h*0.6},
+    CP:{x:cpNorm.x*w, y:cpNorm.y*h},
+  };
+}
+
+function bezier(t,S,CP,E){
+  const m=1-t;
+  return {x:m*m*S.x+2*m*t*CP.x+t*t*E.x, y:m*m*S.y+2*m*t*CP.y+t*t*E.y};
+}
+function bezierTan(t,S,CP,E){
+  const m=1-t;
+  return {x:2*(m*(CP.x-S.x)+t*(E.x-CP.x)), y:2*(m*(CP.y-S.y)+t*(E.y-CP.y))};
+}
+function linePt(t,S,E){ return {x:S.x+(E.x-S.x)*t, y:S.y+(E.y-S.y)*t}; }
+function dist(a,b){ return Math.sqrt((b.x-a.x)**2+(b.y-a.y)**2); }
+
+function arcLength(S,CP,E,steps=80){
+  let len=0,prev=bezier(0,S,CP,E);
+  for(let i=1;i<=steps;i++){const c=bezier(i/steps,S,CP,E);len+=dist(prev,c);prev=c;}
+  return len;
+}
+function lineDist(S,E){ return dist(S,E); }
+function curvature(S,CP,E){
+  const ld=lineDist(S,E);
+  if(ld<1)return 0;
+  const num=Math.abs((E.y-S.y)*CP.x-(E.x-S.x)*CP.y+E.x*S.y-E.y*S.x);
+  return num/ld;
+}
+
+// Get position for frame i under current mode
+// spacing[i] gives t along the path (0..1)
+// mode affects Y only (broken/straight)
+function getArcPos(i){
+  const {S,CP,E}=getKeyPts();
+  const t = spacing[i];
+  if(arcMode==='straight') return linePt(t,S,E);
+  if(arcMode==='broken'){
+    // frames 3..8 forced to line
+    if(i>=3 && i<=8) return linePt(t,S,E);
+    return bezier(t,S,CP,E);
+  }
+  return bezier(t,S,CP,E);
+}
+function getLinePos(i){
+  const {S,E}=getKeyPts();
+  return linePt(spacing[i],S,E);
+}
+
+// interpolate between frames for smooth ball position
+function interpArcPos(t_master){
+  const fi = t_master * N;
+  const lo = Math.min(N-1, Math.floor(fi));
+  const frac = fi - lo;
+  const p0 = getArcPos(lo), p1 = getArcPos(Math.min(N,lo+1));
+  return {x:p0.x+(p1.x-p0.x)*frac, y:p0.y+(p1.y-p0.y)*frac};
+}
+function interpLinePos(t_master){
+  const fi = t_master * N;
+  const lo = Math.min(N-1, Math.floor(fi));
+  const frac = fi - lo;
+  const p0 = getLinePos(lo), p1 = getLinePos(Math.min(N,lo+1));
+  return {x:p0.x+(p1.x-p0.x)*frac, y:p0.y+(p1.y-p0.y)*frac};
+}
+
+// smoothness: avg angular continuity across frames
+function calcSmoothness(){
+  const {S,CP,E}=getKeyPts();
+  if(arcMode!=='broken') return 1.0;
+  // count broken transition angles
+  let breaks=0;
+  for(let i=1;i<N;i++){
+    const prev=getArcPos(i-1),cur=getArcPos(i),next=getArcPos(Math.min(N,i+1));
+    const v1={x:cur.x-prev.x,y:cur.y-prev.y};
+    const v2={x:next.x-cur.x,y:next.y-cur.y};
+    const l1=Math.sqrt(v1.x**2+v1.y**2),l2=Math.sqrt(v2.x**2+v2.y**2);
+    if(l1<0.1||l2<0.1)continue;
+    const cos=(v1.x*v2.x+v1.y*v2.y)/(l1*l2);
+    const angle=Math.acos(Math.max(-1,Math.min(1,cos)))*180/Math.PI;
+    if(angle>25) breaks++;
+  }
+  return Math.max(0, 1 - breaks/(N*0.5));
+}
+
+// easing classifier
+function classifyEasing(){
+  const mid=spacing[Math.floor(N/2)];
+  if(Math.abs(mid-0.5)<0.04) return 'LINEAR';
+  if(mid<0.38) return 'EASE-IN';
+  if(mid>0.62) return 'EASE-OUT';
+  return 'EASE I-O';
+}
+
+// ── RESIZE ──
+function resizeArc(){
+  const z=document.getElementById('arc-zone');
+  arcC.width=z.offsetWidth*devicePixelRatio; arcC.height=z.offsetHeight*devicePixelRatio;
+  arcC.style.width=z.offsetWidth+'px'; arcC.style.height=z.offsetHeight+'px';
+}
+function resizeSp(){
+  const z=document.getElementById('spacing-zone');
+  spC.width=z.offsetWidth*devicePixelRatio; spC.height=z.offsetHeight*devicePixelRatio;
+  spC.style.width=z.offsetWidth+'px'; spC.style.height=z.offsetHeight+'px';
+}
+
+// ── DRAW ARC ZONE ──
+function drawArc(){
+  const dpr=devicePixelRatio;
+  const {w,h}=arcZoneSize();
+  arcCtx.clearRect(0,0,arcC.width,arcC.height);
+  arcCtx.save(); arcCtx.scale(dpr,dpr);
+
+  const {S,CP,E}=getKeyPts();
+  const aLen=arcLength(S,CP,E);
+  const lLen=lineDist(S,E);
+  const curv=curvature(S,CP,E);
+  const smooth=calcSmoothness();
+  const brokenFrames=(arcMode==='broken')?6:arcMode==='straight'?N:0;
+
+  // ── PATH LINES (ghost) ──
+  // full arc path
+  arcCtx.save();
+  arcCtx.strokeStyle='rgba(54,255,0,0.12)';arcCtx.lineWidth=1;arcCtx.setLineDash([4,4]);
+  arcCtx.beginPath();
+  arcCtx.moveTo(S.x,S.y);arcCtx.quadraticCurveTo(CP.x,CP.y,E.x,E.y);
+  arcCtx.stroke();arcCtx.setLineDash([]);
+  // full line path
+  arcCtx.strokeStyle='rgba(249,255,71,0.1)';arcCtx.lineWidth=1;arcCtx.setLineDash([4,4]);
+  arcCtx.beginPath();arcCtx.moveTo(S.x,S.y);arcCtx.lineTo(E.x,E.y);
+  arcCtx.stroke();arcCtx.setLineDash([]);
+  arcCtx.restore();
+
+  // ── FRAME DOTS (all frames, both tracks) ──
+  for(let i=0;i<=N;i++){
+    const fi=i/N;
+    const isActive=(Math.round(masterT*N)===i);
+    const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
+
+    // ARC dot
+    const ap=getArcPos(i);
+    const aAlpha=fi<=masterT?0.55:0.12;
+    arcCtx.beginPath();arcCtx.arc(ap.x,ap.y,isActive?5:2.5,0,Math.PI*2);
+    arcCtx.fillStyle=isBroken?`rgba(255,54,54,${aAlpha})`:`rgba(54,255,0,${aAlpha})`;arcCtx.fill();
+
+    // LINE dot
+    const lp=getLinePos(i);
+    arcCtx.beginPath();arcCtx.arc(lp.x,lp.y,isActive?4:2,0,Math.PI*2);
+    arcCtx.fillStyle=`rgba(249,255,71,${fi<=masterT?0.4:0.09})`;arcCtx.fill();
+
+    // TANGENT at each frame (ARC only, small)
+    if(showTangents && i<N){
+      const t0=spacing[i],t1=spacing[Math.min(N,i+1)];
+      const pm=bezier((t0+t1)/2,S,CP,E);
+      const tang=bezierTan((t0+t1)/2,S,CP,E);
+      const tl=Math.sqrt(tang.x**2+tang.y**2);
+      if(tl>0.1){
+        const sc=12/tl;
+        const col=isBroken?'rgba(255,54,54,0.3)':'rgba(54,255,0,0.25)';
+        arcCtx.save();arcCtx.strokeStyle=col;arcCtx.lineWidth=0.8;
+        arcCtx.beginPath();
+        arcCtx.moveTo(ap.x-tang.x*sc*0.4,ap.y-tang.y*sc*0.4);
+        arcCtx.lineTo(ap.x+tang.x*sc*0.6,ap.y+tang.y*sc*0.6);
+        arcCtx.stroke();arcCtx.restore();
+      }
+    }
+  }
+
+  // ── FRAME CONNECTION LINES (polyline) ──
+  // ARC polyline
+  arcCtx.save();arcCtx.lineWidth=1;
+  arcCtx.beginPath();
+  for(let i=0;i<=N;i++){
+    const p=getArcPos(i);const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
+    arcCtx.strokeStyle=isBroken?'rgba(255,54,54,0.4)':'rgba(54,255,0,0.3)';
+    if(i===0)arcCtx.moveTo(p.x,p.y);
+    else{arcCtx.lineTo(p.x,p.y);arcCtx.stroke();arcCtx.beginPath();arcCtx.moveTo(p.x,p.y);}
+  }
+  arcCtx.restore();
+
+  // LINE polyline (subtle)
+  arcCtx.save();arcCtx.strokeStyle='rgba(249,255,71,0.2)';arcCtx.lineWidth=0.8;
+  arcCtx.beginPath();
+  for(let i=0;i<=N;i++){const p=getLinePos(i);if(i===0)arcCtx.moveTo(p.x,p.y);else arcCtx.lineTo(p.x,p.y);}
+  arcCtx.stroke();arcCtx.restore();
+
+  // ── TRAIL ──
+  if(showTrail){
+    if(arcTrail.length>1){
+      for(let i=1;i<arcTrail.length;i++){
+        const al=(i/arcTrail.length)*0.4;
+        arcCtx.save();arcCtx.strokeStyle=`rgba(54,255,0,${al})`;arcCtx.lineWidth=1.5;
+        arcCtx.beginPath();arcCtx.moveTo(arcTrail[i-1].x,arcTrail[i-1].y);arcCtx.lineTo(arcTrail[i].x,arcTrail[i].y);
+        arcCtx.stroke();arcCtx.restore();
+      }
+    }
+    if(lineTrail.length>1){
+      for(let i=1;i<lineTrail.length;i++){
+        const al=(i/lineTrail.length)*0.3;
+        arcCtx.save();arcCtx.strokeStyle=`rgba(249,255,71,${al})`;arcCtx.lineWidth=1;
+        arcCtx.beginPath();arcCtx.moveTo(lineTrail[i-1].x,lineTrail[i-1].y);arcCtx.lineTo(lineTrail[i].x,lineTrail[i].y);
+        arcCtx.stroke();arcCtx.restore();
+      }
+    }
+  }
+
+  // ── CP UI ──
+  if(showCP){
+    arcCtx.save();
+    arcCtx.strokeStyle='rgba(54,255,0,0.15)';arcCtx.lineWidth=1;arcCtx.setLineDash([2,6]);
+    arcCtx.beginPath();arcCtx.moveTo(CP.x,CP.y);arcCtx.lineTo(S.x,S.y);
+    arcCtx.moveTo(CP.x,CP.y);arcCtx.lineTo(E.x,E.y);arcCtx.stroke();arcCtx.setLineDash([]);
+    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,8,0,Math.PI*2);
+    arcCtx.strokeStyle='rgba(54,255,0,0.6)';arcCtx.lineWidth=1.5;arcCtx.stroke();
+    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,3,0,Math.PI*2);
+    arcCtx.fillStyle='#36FF00';arcCtx.fill();
+    arcCtx.fillStyle='rgba(54,255,0,0.5)';arcCtx.font='8px IBM Plex Mono,monospace';
+    arcCtx.fillText('CP',CP.x+10,CP.y-8);
+    arcCtx.restore();
+  }
+
+  // ── START / END ──
+  [S,E].forEach((p,i)=>{
+    arcCtx.save();
+    arcCtx.strokeStyle='rgba(54,255,0,0.4)';arcCtx.lineWidth=1;
+    arcCtx.beginPath();arcCtx.moveTo(p.x-7,p.y);arcCtx.lineTo(p.x+7,p.y);
+    arcCtx.moveTo(p.x,p.y-7);arcCtx.lineTo(p.x,p.y+7);arcCtx.stroke();
+    arcCtx.fillStyle='rgba(54,255,0,0.35)';arcCtx.font='8px IBM Plex Mono,monospace';
+    arcCtx.fillText(i===0?'START':'END',p.x+10,p.y+3);arcCtx.restore();
+  });
+
+  // ── LIVE BALLS ──
+  const arcNow=interpArcPos(masterT);
+  const lineNow=interpLinePos(masterT);
+  const isBrokenNow=(arcMode==='broken'&&Math.round(masterT*N)>=3&&Math.round(masterT*N)<=8)||(arcMode==='straight');
+
+  // ARC ball glow
+  const grd=arcCtx.createRadialGradient(arcNow.x,arcNow.y,0,arcNow.x,arcNow.y,22);
+  grd.addColorStop(0,isBrokenNow?'rgba(255,54,54,0.3)':'rgba(54,255,0,0.25)');
+  grd.addColorStop(1,'rgba(0,0,0,0)');
+  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,22,0,Math.PI*2);
+  arcCtx.fillStyle=grd;arcCtx.fill();
+  // ball
+  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,10,0,Math.PI*2);
+  arcCtx.strokeStyle=isBrokenNow?'#FF3636':'#36FF00';arcCtx.lineWidth=1.5;arcCtx.stroke();
+  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,5,0,Math.PI*2);
+  arcCtx.fillStyle=isBrokenNow?'#FF3636':'#36FF00';arcCtx.fill();
+  // label
+  arcCtx.fillStyle=isBrokenNow?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.7)';
+  arcCtx.font='8px IBM Plex Mono,monospace';
+  arcCtx.fillText(isBrokenNow?'BROKEN':'ARC',arcNow.x+13,arcNow.y-8);
+
+  // tangent arrow on live ball
+  if(showTangents && masterT<1){
+    const tIdx=Math.min(N-1,Math.round(masterT*N));
+    const tang=bezierTan(spacing[tIdx],S,CP,E);
+    const tl=Math.sqrt(tang.x**2+tang.y**2);
+    if(tl>0){
+      const sc=26/tl;
+      arcCtx.save();
+      arcCtx.strokeStyle=isBrokenNow?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.7)';
+      arcCtx.lineWidth=1.5;
+      arcCtx.beginPath();arcCtx.moveTo(arcNow.x,arcNow.y);
+      arcCtx.lineTo(arcNow.x+tang.x*sc,arcNow.y+tang.y*sc);arcCtx.stroke();arcCtx.restore();
+    }
+  }
+
+  // LINE ball
+  const lgrd=arcCtx.createRadialGradient(lineNow.x,lineNow.y,0,lineNow.x,lineNow.y,18);
+  lgrd.addColorStop(0,'rgba(249,255,71,0.2)');lgrd.addColorStop(1,'rgba(0,0,0,0)');
+  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,18,0,Math.PI*2);
+  arcCtx.fillStyle=lgrd;arcCtx.fill();
+  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,8,0,Math.PI*2);
+  arcCtx.strokeStyle='#F9FF47';arcCtx.lineWidth=1.5;arcCtx.stroke();
+  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,3.5,0,Math.PI*2);
+  arcCtx.fillStyle='#F9FF47';arcCtx.fill();
+  arcCtx.fillStyle='rgba(249,255,71,0.6)';arcCtx.font='8px IBM Plex Mono,monospace';
+  arcCtx.fillText('LINE',lineNow.x+11,lineNow.y-8);
+
+  // Δy line
+  if(Math.abs(arcNow.y-lineNow.y)>4){
+    arcCtx.save();arcCtx.strokeStyle='rgba(54,255,0,0.2)';arcCtx.lineWidth=1;arcCtx.setLineDash([2,4]);
+    arcCtx.beginPath();arcCtx.moveTo(arcNow.x,arcNow.y);arcCtx.lineTo(arcNow.x,lineNow.y);arcCtx.stroke();
+    arcCtx.setLineDash([]);arcCtx.fillStyle='rgba(54,255,0,0.35)';arcCtx.font='7px IBM Plex Mono,monospace';
+    arcCtx.fillText('Δ'+(Math.abs(arcNow.y-lineNow.y)|0),arcNow.x+3,(arcNow.y+lineNow.y)/2);
+    arcCtx.restore();
+  }
+
+  arcCtx.restore();
+
+  // ── HUD updates ──
+  const eps=0.01;
+  const a0=interpArcPos(Math.max(0,masterT-eps));
+  const a1=interpArcPos(Math.min(1,masterT+eps));
+  const arcVel=dist(a0,a1)/(2*eps*60);
+  const lineVel=lLen/60;
+
+  document.getElementById('h-arcvel').textContent=arcVel.toFixed(2);
+  document.getElementById('h-linevel').textContent=lineVel.toFixed(2);
+  document.getElementById('h-smooth').textContent=Math.round(smooth*100)+'%';
+  document.getElementById('h-frame').textContent=String(Math.round(masterT*N)).padStart(2,'0')+'/'+N;
+
+  document.getElementById('lv-smooth').textContent=Math.round(smooth*100)+'%';
+  document.getElementById('lv-arclen').textContent=Math.round(aLen)+' px';
+  document.getElementById('lv-linelen').textContent=Math.round(lLen)+' px';
+  document.getElementById('lv-curv').textContent=(curv/100).toFixed(2);
+  document.getElementById('lv-ease').textContent=classifyEasing();
+  document.getElementById('lv-broken').textContent=brokenFrames;
+
+  document.getElementById('bb-fr').textContent=String(Math.round(masterT*N)).padStart(2,'0');
+
+  const sw=Math.round(smooth*100);
+  const sb=document.getElementById('smooth-bar');
+  sb.style.width=sw+'%';
+  sb.style.background=sw>80?'var(--acid)':sw>50?'var(--neon)':'#FF3636';
+
+  document.getElementById('sz-easing-label').textContent='EASING: '+classifyEasing();
+}
+
+// ── DRAW SPACING ZONE ──
+function drawSpacing(){
+  const dpr=devicePixelRatio;
+  const {w,h}=spZoneSize();
+  spCtx.clearRect(0,0,spC.width,spC.height);
+  spCtx.save();spCtx.scale(dpr,dpr);
+
+  const PAD_L=44,PAD_R=16,PAD_T=30,PAD_B=24;
+  const W=w-PAD_L-PAD_R,H=h-PAD_T-PAD_B;
+  const OX=PAD_L,OY=PAD_T;
+
+  // grid
+  spCtx.strokeStyle='rgba(54,255,0,0.06)';spCtx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=OY+H*(i/4);
+    spCtx.beginPath();spCtx.moveTo(OX,y);spCtx.lineTo(OX+W,y);spCtx.stroke();
+  }
+
+  // axis labels
+  spCtx.fillStyle='rgba(54,255,0,0.3)';spCtx.font=`${6*dpr/dpr}px IBM Plex Mono,monospace`;
+  spCtx.fillText('0',OX-14,OY+H+4);spCtx.fillText('1',OX+W-4,OY+H+4);
+  spCtx.fillText('POS',OX-40,OY+4);
+
+  // velocity bars between dots
+  const maxGap=Math.max(...spacing.slice(1).map((v,i)=>v-spacing[i]));
+  for(let i=0;i<N;i++){
+    const gap=spacing[i+1]-spacing[i];
+    const norm=maxGap>0?gap/maxGap:0;
+    const x1=OX+spacing[i]*W,x2=OX+spacing[i+1]*W;
+    const cx=(x1+x2)/2,barH=norm*H*0.65;
+    const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
+    spCtx.fillStyle=isBroken
+      ?`rgba(255,54,54,${0.06+norm*0.2})`
+      :norm>0.6?`rgba(249,255,71,${0.06+norm*0.2})`:`rgba(54,255,0,${0.06+norm*0.2})`;
+    spCtx.fillRect(cx-2,OY+H-barH,4,barH);
+  }
+
+  // gap lines
+  for(let i=0;i<N;i++){
+    const x1=OX+spacing[i]*W,x2=OX+spacing[i+1]*W;
+    const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
+    const gap=spacing[i+1]-spacing[i];
+    const norm=maxGap>0?gap/maxGap:0;
+    spCtx.strokeStyle=isBroken?`rgba(255,54,54,0.4)`:norm>0.5?`rgba(249,255,71,0.4)`:`rgba(54,255,0,0.3)`;
+    spCtx.lineWidth=1;
+    spCtx.beginPath();spCtx.moveTo(x1,OY+H-7);spCtx.lineTo(x2,OY+H-7);spCtx.stroke();
+  }
+
+  // playhead
+  const playPos=spacing[Math.round(masterT*N)];
+  const px=OX+playPos*W;
+  spCtx.strokeStyle='rgba(249,255,71,0.4)';spCtx.lineWidth=1;spCtx.setLineDash([3,3]);
+  spCtx.beginPath();spCtx.moveTo(px,OY);spCtx.lineTo(px,OY+H+6);spCtx.stroke();
+  spCtx.setLineDash([]);
+
+  // DOTS
+  for(let i=0;i<=N;i++){
+    const x=OX+spacing[i]*W;
+    const y=OY+H;
+    const isActive=(Math.round(masterT*N)===i);
+    const isDrag=(draggingDot===i);
+    const isEdge=(i===0||i===N);
+    const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
+
+    // frame num
+    spCtx.fillStyle=isActive?'#F9FF47':isBroken?'rgba(255,54,54,0.5)':'rgba(54,255,0,0.3)';
+    spCtx.font=`6px IBM Plex Mono,monospace`;
+    spCtx.textAlign='center';
+    spCtx.fillText(i,x,OY+H-11);
+
+    // dot
+    const r=isDrag?10:isActive?8:isEdge?5:6;
+    spCtx.beginPath();spCtx.arc(x,y,r,0,Math.PI*2);
+    spCtx.fillStyle=isDrag?'#F9FF47':isActive?'#F9FF47':isBroken?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.65)';
+    spCtx.fill();
+    if(isDrag||isActive){
+      spCtx.beginPath();spCtx.arc(x,y,r+3,0,Math.PI*2);
+      spCtx.strokeStyle=isDrag?'rgba(249,255,71,0.5)':'rgba(54,255,0,0.3)';
+      spCtx.lineWidth=1;spCtx.stroke();
+    }
+  }
+
+  spCtx.restore();
+}
+
+// ── SPACING DRAG ──
+function spNormX(e){
+  const rect=spC.getBoundingClientRect();
+  const ex=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  const {w}=spZoneSize();
+  const PAD_L=44,PAD_R=16;
+  return (ex-PAD_L)/(w-PAD_L-PAD_R);
+}
+
+spC.addEventListener('pointerdown',e=>{
+  const nx=spNormX(e);
+  const hitR=20/spZoneSize().w;
+  let best=-1,bestD=Infinity;
+  spacing.forEach((sp,i)=>{
+    if(i===0||i===N)return;
+    const d=Math.abs(sp-nx);
+    if(d<bestD&&d<hitR){bestD=d;best=i;}
+  });
+  if(best!==-1){
+    draggingDot=best;
+    spC.setPointerCapture(e.pointerId);
+    playing=false;
+    document.getElementById('btnPlay').classList.remove('active');
+    document.getElementById('btnPause').classList.add('active');
+  }
+  e.preventDefault();
+});
+spC.addEventListener('pointermove',e=>{
+  if(draggingDot===-1)return;
+  let nx=Math.max(0,Math.min(1,spNormX(e)));
+  const lo=draggingDot>0?spacing[draggingDot-1]+0.015:0;
+  const hi=draggingDot<N?spacing[draggingDot+1]-0.015:1;
+  spacing[draggingDot]=Math.max(lo,Math.min(hi,nx));
+  arcTrail=[];lineTrail=[];
+  e.preventDefault();
+});
+spC.addEventListener('pointerup',e=>{
+  draggingDot=-1;
+  playing=true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+});
+
+// ── ARC CANVAS CP DRAG ──
+arcC.addEventListener('pointerdown',e=>{
+  if(!showCP)return;
+  const rect=arcC.getBoundingClientRect();
+  const ex=e.clientX-rect.left,ey=e.clientY-rect.top;
+  const {CP}=getKeyPts();
+  if(Math.sqrt((ex-CP.x)**2+(ey-CP.y)**2)<16){
+    draggingCPFlag=true;
+    arcC.setPointerCapture(e.pointerId);
+    playing=false;
+    document.getElementById('btnPlay').classList.remove('active');
+    document.getElementById('btnPause').classList.add('active');
+  }
+  e.preventDefault();
+});
+arcC.addEventListener('pointermove',e=>{
+  if(!draggingCPFlag)return;
+  const rect=arcC.getBoundingClientRect();
+  const ex=e.clientX-rect.left,ey=e.clientY-rect.top;
+  const {w,h}=arcZoneSize();
+  cpNorm.x=Math.max(0.05,Math.min(0.95,ex/w));
+  cpNorm.y=Math.max(0.05,Math.min(0.95,ey/h));
+  arcTrail=[];lineTrail=[];
+  e.preventDefault();
+});
+arcC.addEventListener('pointerup',e=>{
+  if(!draggingCPFlag)return;
+  draggingCPFlag=false;
+  playing=true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+});
+
+// ── ANIMATION LOOP ──
+function loop(ts){
+  if(!lastTime)lastTime=ts;
+  const dt=(ts-lastTime)/1000;lastTime=ts;
+  if(playing){
+    masterT+=dt*playSpd*0.35;
+    if(masterT>=1)masterT=masterT%1;
+  }
+  if(playing&&showTrail){
+    arcTrail.push(interpArcPos(masterT));
+    lineTrail.push(interpLinePos(masterT));
+    if(arcTrail.length>90)arcTrail.shift();
+    if(lineTrail.length>90)lineTrail.shift();
+  }
+  resizeArc();resizeSp();
+  drawArc();drawSpacing();
+  requestAnimationFrame(loop);
+}
+
+// ── MODE ──
+const modeInsights={
+  normal:'<strong>// NORMAL MODE</strong>Spacingが生む有機的な弧。<br>フレーム配置が軌道を決定する。',
+  broken:'<strong>// BROKEN ARC</strong>フレーム3〜8を直線化。<br>弧が「途切れ」るとどう見えるか。<br><span style="color:#FF3636">カクつき＝Arc違反の証拠</span>',
+  straight:'<strong>// STRAIGHT FORCE</strong>全フレームを直線軌道に強制。<br>機械的・死んだ動き。<br><span style="color:#FF3636">自然界にはない運動</span>',
+};
+function setMode(m){
+  arcMode=m;
+  masterT=0;arcTrail=[];lineTrail=[];
+  ['btnNormal','btnBroken','btnStraight'].forEach(id=>{
+    document.getElementById(id).classList.remove('active');
+  });
+  const map={normal:'btnNormal',broken:'btnBroken',straight:'btnStraight'};
+  document.getElementById(map[m]).classList.add('active');
+  const badge=document.getElementById('mode-badge');
+  badge.textContent='MODE: '+m.toUpperCase().replace('straight','STRAIGHT FORCE');
+  badge.className='';badge.id='mode-badge';
+  if(m!=='normal')badge.classList.add('ng');
+  document.getElementById('mode-insight').innerHTML=modeInsights[m];
+  document.getElementById('bb-mode').textContent=m.toUpperCase();
+}
+
+// ── PRESETS ──
+function applySpacingPreset(name){
+  if(SPACING_PRESETS[name])spacing=[...SPACING_PRESETS[name]];
+  masterT=0;arcTrail=[];lineTrail=[];
+  playing=true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+}
+function setCPPreset(name){
+  const presets={low:{x:0.5,y:0.78},high:{x:0.5,y:0.08},left:{x:0.2,y:0.3},right:{x:0.8,y:0.3}};
+  cpNorm={...presets[name]};arcTrail=[];lineTrail=[];
+}
+
+// ── CONTROLS ──
+document.getElementById('btnPlay').onclick=()=>{
+  playing=true;
+  document.getElementById('btnPlay').classList.add('active');
+  document.getElementById('btnPause').classList.remove('active');
+};
+document.getElementById('btnPause').onclick=()=>{
+  playing=false;
+  document.getElementById('btnPause').classList.add('active');
+  document.getElementById('btnPlay').classList.remove('active');
+};
+document.getElementById('btnReset').onclick=()=>{masterT=0;arcTrail=[];lineTrail=[];};
+document.getElementById('btnNormal').onclick=()=>setMode('normal');
+document.getElementById('btnBroken').onclick=()=>setMode('broken');
+document.getElementById('btnStraight').onclick=()=>setMode('straight');
+document.getElementById('btnTangents').onclick=function(){
+  showTangents=!showTangents;this.classList.toggle('active',showTangents);
+};
+document.getElementById('btnTrail').onclick=function(){
+  showTrail=!showTrail;this.classList.toggle('active',showTrail);
+  if(!showTrail){arcTrail=[];lineTrail=[];}
+};
+document.getElementById('btnCP').onclick=function(){
+  showCP=!showCP;this.classList.toggle('active',showCP);
+};
+document.getElementById('slSpd').oninput=function(){
+  playSpd=this.value/10;
+  document.getElementById('slSpd-val').textContent=playSpd.toFixed(1)+'x';
+};
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();playing=!playing;
+    document.getElementById('btnPlay').classList.toggle('active',playing);
+    document.getElementById('btnPause').classList.toggle('active',!playing);}
+  if(e.code==='ArrowRight')masterT=Math.min(1,masterT+1/N);
+  if(e.code==='ArrowLeft') masterT=Math.max(0,masterT-1/N);
+  if(e.code==='Escape')window.location.href='index.html';
+});
+
+window.addEventListener('resize',()=>{arcTrail=[];lineTrail=[];});
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
