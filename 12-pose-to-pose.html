@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 12 POSE TO POSE</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --acid:#36FF00;--neon:#F9FF47;--grey:#888;
+  --black:#000;--panel:#0C0C0C;
+  --border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
+  --mono:'IBM Plex Mono',monospace;--disp:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--black);color:var(--acid);font-family:var(--mono);overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(0,0,0,0.28) 1px,transparent 1px);background-size:4px 4px;pointer-events:none;z-index:9998;opacity:0.5;}
+
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 300px;height:100vh;}
+
+/* TOPBAR */
+#topbar{
+  grid-column:1/-1;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;font-size:10px;color:rgba(54,255,0,0.5);letter-spacing:0.2em;
+}
+#topbar .left{display:flex;align-items:center;gap:16px}
+#topbar .right{display:flex;align-items:center;gap:12px}
+.esc-btn{color:rgba(54,255,0,0.4);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+
+/* MAIN STAGE */
+#main{position:relative;overflow:hidden;background:var(--black);border-right:1px solid var(--border);}
+.stage-grid{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:40px 40px;}
+.stage-bignum{
+  position:absolute;bottom:-40px;left:-10px;
+  font-family:var(--disp);font-weight:900;font-style:italic;
+  font-size:clamp(180px,28vw,380px);color:rgba(54,255,0,0.025);
+  letter-spacing:-0.05em;line-height:1;pointer-events:none;
+}
+.checker{position:absolute;background-image:repeating-conic-gradient(rgba(54,255,0,0.05) 0% 25%,transparent 0% 50%);background-size:16px 16px;pointer-events:none;}
+.corner{position:absolute;width:14px;height:14px;pointer-events:none;}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid);}
+.corner::before{width:100%;height:1px;}.corner::after{width:1px;height:100%;}
+.corner.tl{top:10px;left:10px;}.corner.tr{top:10px;right:10px;transform:scaleX(-1);}
+.corner.bl{bottom:10px;left:10px;transform:scaleY(-1);}.corner.br{bottom:10px;right:10px;transform:scale(-1);}
+.po{position:absolute;top:12px;right:14px;text-align:right;pointer-events:none;}
+.po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,5.5vw,72px);color:var(--acid);line-height:1;letter-spacing:-0.03em;}
+.po-en{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(11px,1.8vw,18px);color:rgba(255,255,255,0.9);line-height:1;}
+.po-jp{font-family:var(--jp);font-size:10px;color:var(--grey);margin-top:3px;}
+
+/* ── STAGE LAYOUT ── */
+#stage-inner{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+}
+
+/* ANIM VIEW — top 56% */
+#anim-view{
+  flex:0 0 56%;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+#anim-canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+/* phase badge */
+#phase-badge{
+  position:absolute;top:12px;left:14px;
+  font-size:9px;letter-spacing:0.35em;color:var(--acid);
+  pointer-events:none;line-height:1.8;
+}
+#frame-counter{
+  position:absolute;top:30px;left:14px;
+  font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;pointer-events:none;
+}
+
+/* HUD live data */
+#stage-hud{
+  position:absolute;bottom:12px;left:14px;
+  font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.1em;
+  pointer-events:none;line-height:2;
+  display:flex;gap:20px;
+}
+#stage-hud span{color:var(--acid)}
+
+/* ── TIMELINE STRIP — bottom 44% ── */
+#timeline-area{
+  flex:1;min-height:0;
+  position:relative;
+  display:flex;flex-direction:column;
+  padding:18px 12px 8px 12px;
+  gap:8px;
+}
+#tl-header{
+  font-size:8px;letter-spacing:0.25em;color:rgba(54,255,0,0.4);
+  display:flex;align-items:center;gap:16px;flex-shrink:0;
+}
+#tl-header strong{color:var(--acid)}
+
+/* FRAME STRIP */
+#frame-strip{
+  flex:1;min-height:0;
+  display:flex;align-items:center;
+  gap:3px;overflow-x:auto;overflow-y:visible;
+  padding:18px 4px 4px 4px;
+  scrollbar-width:none;
+}
+#frame-strip::-webkit-scrollbar{display:none;}
+
+/* FRAME CELL */
+.fc{
+  flex-shrink:0;position:relative;
+  border:1px solid rgba(54,255,0,0.1);
+  background:#050505;cursor:pointer;
+  transition:border-color 0.15s;
+  display:flex;flex-direction:column;align-items:center;
+  overflow:visible;
+}
+.fc:hover{border-color:rgba(54,255,0,0.3);}
+.fc.active{border-color:var(--acid);box-shadow:0 0 8px rgba(54,255,0,0.2);}
+/* key marker top stripe */
+.fc-stripe{position:absolute;top:0;left:0;right:0;height:3px;pointer-events:none;}
+.fc.is-key .fc-stripe{background:var(--acid);}
+.fc.is-inbet .fc-stripe{background:rgba(136,136,136,0.5);}
+.fc.is-ghost .fc-stripe{background:rgba(249,255,71,0.4);}
+/* frame number */
+.fc-num{
+  position:absolute;bottom:3px;left:0;right:0;
+  text-align:center;font-size:7px;color:rgba(54,255,0,0.3);letter-spacing:0.15em;
+}
+.fc.active .fc-num{color:var(--acid);}
+.fc.is-key .fc-num{color:rgba(54,255,0,0.7);}
+.fc.is-ghost .fc-num{color:rgba(249,255,71,0.6);}
+/* phase marker above cell */
+.fc-marker{
+  position:absolute;top:-16px;left:0;right:0;
+  text-align:center;font-size:7px;letter-spacing:0.1em;
+  pointer-events:none;white-space:nowrap;
+}
+.fc.is-key .fc-marker{color:rgba(54,255,0,0.8);}
+.fc.is-ghost .fc-marker{color:rgba(249,255,71,0.7);}
+
+/* drag state */
+.fc.dragging{opacity:0.35;cursor:grabbing;}
+.fc.drag-over{border-color:var(--neon)!important;background:rgba(249,255,71,0.04);}
+
+/* KEY POSE indicator dot */
+.fc-key-dot{
+  position:absolute;top:4px;right:4px;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--acid);display:none;
+}
+.fc.is-key .fc-key-dot{display:block;}
+
+/* scrollbar */
+#strip-scrollbar{height:8px;background:rgba(255,255,255,0.03);position:relative;flex-shrink:0;cursor:default;border-top:1px solid rgba(255,255,255,0.04);}
+#strip-thumb{position:absolute;top:1px;height:6px;background:rgba(54,255,0,0.35);border-radius:3px;cursor:grab;min-width:24px;transition:background .15s;}
+#strip-thumb:hover{background:rgba(54,255,0,0.6);}
+#strip-thumb:active{cursor:grabbing;background:var(--acid);}
+
+/* playbar */
+#playbar{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;align-items:center;z-index:50;
+}
+.pb{
+  width:28px;height:28px;border:1px solid rgba(54,255,0,0.4);
+  background:rgba(0,0,0,0.7);color:var(--acid);font-size:11px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;user-select:none;
+}
+.pb:hover{background:rgba(54,255,0,0.1);}
+.pb.active{background:rgba(54,255,0,0.15);border-color:var(--acid);}
+input[type=range]{-webkit-appearance:none;width:80px;height:2px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acid);cursor:pointer;}
+
+/* ── SIDE PANEL ── */
+#side{display:flex;flex-direction:column;overflow-y:auto;background:var(--panel);}
+#side::-webkit-scrollbar{width:2px;}
+#side::-webkit-scrollbar-thumb{background:var(--acid);}
+.sp{border-bottom:1px solid rgba(54,255,0,0.08);padding:14px 16px;flex-shrink:0;}
+.spl{font-size:8px;letter-spacing:0.35em;color:rgba(54,255,0,0.4);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.spl .lt{font-size:10px;font-weight:700;color:var(--acid);background:rgba(54,255,0,0.1);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0;flex-shrink:0;}
+.db{background:rgba(54,255,0,0.04);border-left:3px solid var(--acid);padding:10px 12px;margin-bottom:8px;}
+.de{font-family:var(--disp);font-weight:700;font-style:italic;font-size:15px;color:rgba(255,255,255,0.9);line-height:1.2;}
+.dj{font-family:var(--jp);font-size:11px;color:var(--grey);margin-top:4px;line-height:1.6;}
+.dc{margin-top:8px;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.04em;line-height:1.8;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-size:9px;}
+.data-row:last-child{border-bottom:none;}
+.dk{color:rgba(54,255,0,0.45);letter-spacing:0.04em;}.dv{color:var(--acid);font-weight:700;}
+.dv.neon{color:var(--neon);}
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:0.05em;}
+.tg{width:34px;height:17px;background:rgba(255,255,255,0.1);border-radius:9px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tg.on{background:var(--acid);}
+.tg::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;}
+.tg.on::after{left:19px;background:var(--black);}
+.fp{font-size:9px;letter-spacing:0.12em;padding:4px 10px;border:1px solid;cursor:pointer;transition:all .15s;user-select:none;display:inline-block;margin-right:4px;margin-bottom:4px;}
+.fp.on{background:var(--acid);border-color:var(--acid);color:var(--black);}
+.fp.off{border-color:rgba(54,255,0,0.25);color:rgba(54,255,0,0.5);}
+
+/* legend */
+.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:8px;color:rgba(255,255,255,0.5);}
+.legend-stripe{width:28px;height:3px;flex-shrink:0;}
+.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-size:8px;line-height:1.8;color:rgba(54,255,0,0.45);margin-top:8px;}
+.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.12em;}
+
+/* BOTTOMBAR */
+#bottombar{
+  grid-column:1/-1;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;font-size:9px;color:rgba(54,255,0,0.3);letter-spacing:0.15em;
+}
+.kbd{display:inline-block;border:1px solid rgba(54,255,0,0.2);padding:1px 5px;font-size:8px;margin-left:4px;color:rgba(54,255,0,0.35);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span>KINETIC_GEOMETRY // LEC_12</span>
+    <span style="color:var(--acid);font-weight:700;font-size:11px;letter-spacing:0.12em">PRINCIPLE_12 // POSE TO POSE</span>
+  </div>
+  <div class="right">
+    <span>KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<main id="main">
+  <div class="stage-grid"></div>
+  <div class="stage-bignum">12</div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="checker" style="bottom:56px;right:0;width:48px;height:48px"></div>
+  <div class="checker" style="top:0;left:0;width:24px;height:80px"></div>
+  <div class="po">
+    <div class="po-num">12</div>
+    <div class="po-en">POSE TO POSE</div>
+    <div class="po-jp">ポーズ・トゥ・ポーズ</div>
+  </div>
+
+  <div id="stage-inner">
+    <!-- ANIM VIEW -->
+    <div id="anim-view">
+      <canvas id="anim-canvas"></canvas>
+      <div id="phase-badge">PHASE: —</div>
+      <div id="frame-counter">FRAME: 000 / 000</div>
+      <div id="stage-hud">
+        <div>KEY_FR&nbsp;<span id="hud-key">0</span></div>
+        <div>INBET&nbsp;<span id="hud-inb">0</span></div>
+        <div>GHOST&nbsp;<span id="hud-gho">—</span></div>
+        <div>INTERP&nbsp;<span id="hud-itp">LINEAR</span></div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div id="timeline-area">
+      <div id="tl-header">
+        <span>// <strong>TIMELINE</strong> — ドラッグで原画を並べ替え &nbsp;|&nbsp; <span style="color:var(--acid)">■</span> KEY &nbsp;<span style="color:rgba(136,136,136,0.6)">■</span> IN-BET &nbsp;<span style="color:rgba(249,255,71,0.6)">■</span> GHOST</span>
+      </div>
+      <div id="frame-strip"></div>
+      <div id="strip-scrollbar"><div id="strip-thumb"></div></div>
+      <div id="playbar">
+        <div class="pb" id="pb-prev" title="prev(←)">◀</div>
+        <div class="pb active" id="pb-play" title="play(SPC)">▶</div>
+        <div class="pb" id="pb-next" title="next(→)">▶</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+          <span style="font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.15em">SPD</span>
+          <input type="range" id="sl-spd" min="1" max="30" value="10">
+          <span style="font-size:9px;color:var(--acid);min-width:24px" id="spd-val">1.0x</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SIDE PANEL -->
+<aside id="side">
+
+  <!-- THEORY -->
+  <div class="sp">
+    <div class="spl"><span class="lt">A</span>THEORY — 原則解説</div>
+    <div class="db">
+      <div class="de">Pose to Pose</div>
+      <div class="dj">キーポーズを先に決め、後から動画（中割り）で繋ぐ。</div>
+      <div class="dc">
+        Key frames define the story.<br>
+        In-betweens connect them.<br>
+        The pose is the message.
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE DATA -->
+  <div class="sp">
+    <div class="spl"><span class="lt">B</span>LIVE — リアルタイム</div>
+    <div class="data-row"><span class="dk">CURRENT_FRAME</span><span class="dv" id="lv-fr">000</span></div>
+    <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">—</span></div>
+    <div class="data-row"><span class="dk">FRAME_TYPE</span><span class="dv" id="lv-type">—</span></div>
+    <div class="data-row"><span class="dk">NEAREST_KEY</span><span class="dv" id="lv-nkey">—</span></div>
+    <div class="data-row"><span class="dk">INTERP_T</span><span class="dv neon" id="lv-t">0.000</span></div>
+    <div class="data-row"><span class="dk">GHOST_ALPHA</span><span class="dv" id="lv-ga">—</span></div>
+    <div class="data-row"><span class="dk">KEY_COUNT</span><span class="dv" id="lv-kc">—</span></div>
+    <div class="data-row"><span class="dk">INBET_COUNT</span><span class="dv" id="lv-ic">—</span></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="sp">
+    <div class="spl"><span class="lt">C</span>CONTROLS — 操作</div>
+    <div class="tr">
+      <span>GHOST FRAMES</span>
+      <div class="tg on" id="tg-ghost" onclick="toggleGhost()"></div>
+    </div>
+    <div class="tr">
+      <span>ONION SKIN</span>
+      <div class="tg on" id="tg-onion" onclick="toggleOnion()"></div>
+    </div>
+    <div class="tr">
+      <span>INTERPOLATION LINE</span>
+      <div class="tg on" id="tg-line" onclick="toggleLine()"></div>
+    </div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.2em">EASING</div>
+    <div>
+      <span class="fp on" id="fp-linear" onclick="setEasing('linear')">LINEAR</span>
+      <span class="fp off" id="fp-ease" onclick="setEasing('ease')">EASE I-O</span>
+      <span class="fp off" id="fp-step" onclick="setEasing('step')">STEP</span>
+    </div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.2em">PRESET SEQUENCE</div>
+    <div>
+      <span class="fp off" onclick="loadPreset('jump')">JUMP</span>
+      <span class="fp off" onclick="loadPreset('walk')">WALK</span>
+      <span class="fp off" onclick="loadPreset('punch')">PUNCH</span>
+      <span class="fp off" onclick="loadPreset('wave')">WAVE</span>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="sp">
+    <div class="spl"><span class="lt">D</span>FRAME TYPE — フレーム種別</div>
+    <div class="legend-row"><div class="legend-stripe" style="background:var(--acid)"></div>KEY FRAME — 原画（アニメーターが描く）</div>
+    <div class="legend-row"><div class="legend-stripe" style="background:rgba(136,136,136,0.5)"></div>IN-BETWEEN — 動画（補間で計算）</div>
+    <div class="legend-row"><div class="legend-stripe" style="background:rgba(249,255,71,0.5)"></div>GHOST — 前後の原画を透過表示</div>
+    <div class="insight">
+      <strong>// POSE TO POSE</strong>
+      直線補間（LINEAR）は機械的。<br>
+      EASE I-Oで有機的な重みが生まれる。<br>
+      STEPは動画なし——原画のみの世界。<br><br>
+      ゴーストを見ると「次に何が来るか」が<br>
+      アニメーターに見えている視点がわかる。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div>KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED // PROTOCOL: POSE_TO_POSE</div>
+  <div>FRAME: <span id="bb-fr" style="color:var(--acid)">000</span> / <span id="bb-total">000</span></div>
+  <div>
+    <span class="kbd">SPC</span>PLAY
+    <span class="kbd">←→</span>STEP
+    <span class="kbd">K</span>MARK KEY
+    <span class="kbd">ESC</span>INDEX
+    &nbsp;ID: SENTIENT-BP-2026-VLS.12
+  </div>
+</footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// POSE DEFINITIONS
+// Each pose: a stick-figure defined by joint positions (normalized 0..1)
+// joints: head, neck, lShoulder, rShoulder, lElbow, rElbow, lHand, rHand,
+//         hip, lKnee, rKnee, lFoot, rFoot
+// ══════════════════════════════════════════════
+const JOINT_NAMES=['head','neck','lSho','rSho','lElb','rElb','lHan','rHan','hip','lKne','rKne','lFoo','rFoo'];
+
+// Pose library
+const POSES = {
+  // JUMP sequence
+  stand:   {head:[.50,.18],neck:[.50,.28],lSho:[.43,.29],rSho:[.57,.29],lElb:[.40,.40],rElb:[.60,.40],lHan:[.38,.52],rHan:[.62,.52],hip:[.50,.50],lKne:[.46,.65],rKne:[.54,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
+  crouch:  {head:[.50,.28],neck:[.50,.36],lSho:[.43,.37],rSho:[.57,.37],lElb:[.38,.46],rElb:[.62,.46],lHan:[.34,.54],rHan:[.66,.54],hip:[.50,.58],lKne:[.43,.70],rKne:[.57,.70],lFoo:[.44,.82],rFoo:[.56,.82]},
+  launch:  {head:[.50,.12],neck:[.50,.22],lSho:[.40,.24],rSho:[.60,.24],lElb:[.34,.16],rElb:[.66,.16],lHan:[.28,.10],rHan:[.72,.10],hip:[.50,.40],lKne:[.44,.54],rKne:[.56,.54],lFoo:[.42,.70],rFoo:[.58,.70]},
+  peak:    {head:[.50,.08],neck:[.50,.16],lSho:[.38,.18],rSho:[.62,.18],lElb:[.30,.12],rElb:[.70,.12],lHan:[.24,.06],rHan:[.76,.06],hip:[.50,.34],lKne:[.45,.46],rKne:[.55,.46],lFoo:[.42,.60],rFoo:[.58,.60]},
+  descend: {head:[.50,.14],neck:[.50,.22],lSho:[.40,.24],rSho:[.60,.24],lElb:[.34,.18],rElb:[.66,.18],lHan:[.30,.12],rHan:[.70,.12],hip:[.50,.42],lKne:[.44,.56],rKne:[.56,.56],lFoo:[.42,.72],rFoo:[.58,.72]},
+  land:    {head:[.50,.30],neck:[.50,.38],lSho:[.42,.40],rSho:[.58,.40],lElb:[.36,.50],rElb:[.64,.50],lHan:[.32,.58],rHan:[.68,.58],hip:[.50,.58],lKne:[.43,.71],rKne:[.57,.71],lFoo:[.44,.83],rFoo:[.56,.83]},
+  // WALK
+  walk1:   {head:[.50,.18],neck:[.50,.27],lSho:[.43,.28],rSho:[.57,.28],lElb:[.36,.38],rElb:[.64,.38],lHan:[.32,.50],rHan:[.62,.46],hip:[.50,.49],lKne:[.45,.63],rKne:[.56,.61],lFoo:[.41,.78],rFoo:[.58,.75]},
+  walk2:   {head:[.50,.17],neck:[.50,.26],lSho:[.42,.27],rSho:[.58,.27],lElb:[.37,.36],rElb:[.65,.36],lHan:[.33,.48],rHan:[.63,.44],hip:[.50,.48],lKne:[.46,.62],rKne:[.57,.60],lFoo:[.42,.77],rFoo:[.59,.74]},
+  walk3:   {head:[.50,.16],neck:[.50,.25],lSho:[.41,.26],rSho:[.59,.26],lElb:[.34,.35],rElb:[.66,.35],lHan:[.30,.47],rHan:[.66,.42],hip:[.50,.47],lKne:[.47,.61],rKne:[.55,.59],lFoo:[.43,.76],rFoo:[.57,.72]},
+  // PUNCH
+  punch1:  {head:[.50,.18],neck:[.50,.27],lSho:[.44,.28],rSho:[.58,.28],lElb:[.40,.38],rElb:[.70,.36],lHan:[.38,.50],rHan:[.82,.34],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.63],lFoo:[.44,.80],rFoo:[.57,.78]},
+  punch2:  {head:[.52,.20],neck:[.52,.29],lSho:[.45,.30],rSho:[.60,.29],lElb:[.40,.40],rElb:[.72,.28],lHan:[.38,.52],rHan:[.88,.22],hip:[.50,.52],lKne:[.46,.66],rKne:[.55,.64],lFoo:[.44,.81],rFoo:[.57,.79]},
+  // WAVE
+  wave1:   {head:[.50,.17],neck:[.50,.26],lSho:[.43,.28],rSho:[.58,.27],lElb:[.40,.38],rElb:[.68,.22],lHan:[.38,.50],rHan:[.76,.12],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
+  wave2:   {head:[.50,.17],neck:[.50,.26],lSho:[.43,.28],rSho:[.58,.27],lElb:[.40,.38],rElb:[.65,.18],lHan:[.38,.50],rHan:[.80,.10],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
+};
+
+// PRESETS: sequences of [poseName, frameIndex, label]
+const PRESET_SEQUENCES = {
+  jump: [
+    {pose:'stand',  label:'IDLE',    phase:'READY'},
+    {pose:'crouch', label:'CROUCH',  phase:'WIND_UP'},
+    {pose:'launch', label:'LAUNCH',  phase:'ACTION'},
+    {pose:'peak',   label:'PEAK',    phase:'ACTION'},
+    {pose:'descend',label:'DESCEND', phase:'ACTION'},
+    {pose:'land',   label:'LAND',    phase:'FOLLOW'},
+    {pose:'stand',  label:'SETTLE',  phase:'SETTLE'},
+  ],
+  walk: [
+    {pose:'walk1', label:'STEP_A', phase:'ACTION'},
+    {pose:'walk2', label:'MID',    phase:'ACTION'},
+    {pose:'walk3', label:'STEP_B', phase:'ACTION'},
+    {pose:'walk2', label:'MID',    phase:'ACTION'},
+  ],
+  punch: [
+    {pose:'stand',  label:'IDLE',   phase:'READY'},
+    {pose:'crouch', label:'PREP',   phase:'WIND_UP'},
+    {pose:'punch1', label:'EXTEND', phase:'ACTION'},
+    {pose:'punch2', label:'IMPACT', phase:'ACTION'},
+    {pose:'stand',  label:'RETURN', phase:'SETTLE'},
+  ],
+  wave: [
+    {pose:'stand', label:'IDLE',   phase:'READY'},
+    {pose:'wave1', label:'WAVE_A', phase:'ACTION'},
+    {pose:'wave2', label:'WAVE_B', phase:'ACTION'},
+    {pose:'wave1', label:'WAVE_A', phase:'ACTION'},
+    {pose:'stand', label:'IDLE',   phase:'SETTLE'},
+  ],
+};
+
+// ── TIMELINE STATE ──
+// Each entry: {pose, label, phase, inBetween (count before next key)}
+let keyFrames = []; // [{pose, label, phase}]
+const INBET_DEFAULT = 4; // in-betweens between each key
+
+// Full expanded frame list: [{type:'key'|'inbet', keyIdx, t, pose0, pose1, label, phase}]
+let frames = [];
+let currentFrame = 0;
+let playing = false;
+let playSpd = 1.0;
+let lastTime = null;
+let playT = 0; // float frame position
+
+// Display flags
+let showGhost = true;
+let showOnion = true;
+let showLine  = true;
+let easingMode = 'linear'; // 'linear'|'ease'|'step'
+
+// Drag state (frame strip)
+let dragSrcIdx = null;
+
+// ── CANVAS ──
+const canvas = document.getElementById('anim-canvas');
+const ctx    = canvas.getContext('2d');
+
+// ── RESIZE ──
+function resizeCanvas(){
+  const av = document.getElementById('anim-view');
+  canvas.width  = av.offsetWidth  * devicePixelRatio;
+  canvas.height = av.offsetHeight * devicePixelRatio;
+  canvas.style.width  = av.offsetWidth  + 'px';
+  canvas.style.height = av.offsetHeight + 'px';
+}
+function cw(){ return canvas.offsetWidth; }
+function ch(){ return canvas.offsetHeight; }
+
+// ── POSE INTERPOLATION ──
+function lerpPose(p0, p1, t){
+  const out = {};
+  for(const k of JOINT_NAMES){
+    if(!p0[k]||!p1[k]) continue;
+    out[k] = [p0[k][0]+(p1[k][0]-p0[k][0])*t, p0[k][1]+(p1[k][1]-p0[k][1])*t];
+  }
+  return out;
+}
+
+function applyEasing(t){
+  if(easingMode==='linear') return t;
+  if(easingMode==='ease')   return t<0.5?2*t*t:-1+(4-2*t)*t;
+  if(easingMode==='step')   return t<0.5?0:1;
+  return t;
+}
+
+function getPose(pose){ return POSES[pose]||POSES['stand']; }
+
+// ── BUILD FRAME LIST ──
+function buildFrames(){
+  frames = [];
+  if(keyFrames.length === 0) return;
+  if(keyFrames.length === 1){
+    frames.push({type:'key', keyIdx:0, t:0, pose:getPose(keyFrames[0].pose), label:keyFrames[0].label, phase:keyFrames[0].phase, phaseSrc:keyFrames[0].phase});
+    return;
+  }
+  for(let k=0; k<keyFrames.length; k++){
+    const kf = keyFrames[k];
+    const nextKf = keyFrames[(k+1)%keyFrames.length];
+    // key frame itself
+    frames.push({type:'key', keyIdx:k, t:0, pose:getPose(kf.pose), label:kf.label, phase:kf.phase});
+    // in-betweens (not for last key if no loop)
+    if(k < keyFrames.length-1){
+      const n = INBET_DEFAULT;
+      for(let i=1; i<=n; i++){
+        const rawT = i/(n+1);
+        const easedT = applyEasing(rawT);
+        const interpolated = lerpPose(getPose(kf.pose), getPose(nextKf.pose), easedT);
+        frames.push({type:'inbet', keyIdx:k, t:rawT, pose:interpolated, label:'IN_'+(i), phase:kf.phase});
+      }
+    }
+  }
+}
+
+// ── DRAW POSE ──
+function drawPose(pose, alpha, color, scale, offX, offY){
+  if(!pose) return;
+  const w = cw(), h = ch();
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // bones to draw: [joint0, joint1]
+  const bones = [
+    ['head','neck'],['neck','lSho'],['neck','rSho'],
+    ['lSho','lElb'],['lElb','lHan'],
+    ['rSho','rElb'],['rElb','rHan'],
+    ['neck','hip'],
+    ['hip','lKne'],['lKne','lFoo'],
+    ['hip','rKne'],['rKne','rFoo'],
+  ];
+
+  const px = j => offX + (pose[j]?.[0]||0)*w*scale;
+  const py = j => offY + (pose[j]?.[1]||0)*h*scale;
+
+  // draw bones
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2 * scale;
+  ctx.lineCap = 'round';
+  for(const [a,b] of bones){
+    if(!pose[a]||!pose[b]) continue;
+    ctx.beginPath();
+    ctx.moveTo(px(a), py(a));
+    ctx.lineTo(px(b), py(b));
+    ctx.stroke();
+  }
+
+  // draw joints
+  for(const j of JOINT_NAMES){
+    if(!pose[j]) continue;
+    const r = j==='head'?8*scale:j==='hip'?5*scale:3.5*scale;
+    ctx.beginPath();
+    ctx.arc(px(j), py(j), r, 0, Math.PI*2);
+    ctx.fillStyle = j==='head'?'transparent':color;
+    ctx.fill();
+    if(j==='head'){
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5*scale;
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+// ── DRAW FRAME ──
+function drawFrame(){
+  const dpr = devicePixelRatio;
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.save(); ctx.scale(dpr, dpr);
+  const w = cw(), h = ch();
+
+  if(frames.length === 0){ ctx.restore(); return; }
+
+  const fi = Math.round(playT) % frames.length;
+  const frame = frames[fi];
+
+  // Ground line
+  ctx.save();
+  ctx.strokeStyle = 'rgba(54,255,0,0.2)'; ctx.lineWidth=1; ctx.setLineDash([4,8]);
+  const gy = h*0.82;
+  ctx.beginPath(); ctx.moveTo(w*0.08, gy); ctx.lineTo(w*0.92, gy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── ONION SKIN (prev/next key ghost) ──
+  if(showOnion){
+    // previous key
+    const prevKeyIdx = Math.max(0, (frame.type==='key' ? frame.keyIdx-1 : frame.keyIdx));
+    if(prevKeyIdx >= 0 && prevKeyIdx < keyFrames.length){
+      drawPose(getPose(keyFrames[prevKeyIdx].pose), 0.10, '#36FF00', 1, 0, 0);
+    }
+    // next key
+    const nextKeyIdx = Math.min(keyFrames.length-1, (frame.type==='key'?frame.keyIdx+1:frame.keyIdx+1));
+    if(nextKeyIdx < keyFrames.length){
+      drawPose(getPose(keyFrames[nextKeyIdx].pose), 0.10, '#F9FF47', 1, 0, 0);
+    }
+  }
+
+  // ── GHOST (prev frame + next frame at low alpha) ──
+  if(showGhost){
+    const prevFi = (fi-1+frames.length)%frames.length;
+    const nextFi = (fi+1)%frames.length;
+    drawPose(frames[prevFi].pose, 0.18, '#36FF00', 1, 0, 0);
+    drawPose(frames[nextFi].pose, 0.12, '#F9FF47', 1, 0, 0);
+  }
+
+  // ── INTERPOLATION LINE ──
+  if(showLine && frame.type==='inbet'){
+    // draw dashed line from prev key to next key hip position
+    const kf0 = keyFrames[frame.keyIdx];
+    const kf1 = keyFrames[Math.min(keyFrames.length-1, frame.keyIdx+1)];
+    const p0 = getPose(kf0.pose), p1 = getPose(kf1.pose);
+    if(p0.hip && p1.hip){
+      ctx.save();
+      ctx.strokeStyle='rgba(54,255,0,0.2)'; ctx.lineWidth=1; ctx.setLineDash([2,4]);
+      ctx.beginPath();
+      ctx.moveTo(p0.hip[0]*w, p0.hip[1]*h);
+      ctx.lineTo(p1.hip[0]*w, p1.hip[1]*h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // current position dot
+      const cur = frame.pose;
+      if(cur.hip){
+        ctx.beginPath();ctx.arc(cur.hip[0]*w,cur.hip[1]*h,4,0,Math.PI*2);
+        ctx.fillStyle='rgba(54,255,0,0.5)';ctx.fill();
+        ctx.fillStyle='rgba(54,255,0,0.35)';ctx.font='7px IBM Plex Mono,monospace';
+        ctx.fillText('t='+frame.t.toFixed(2),cur.hip[0]*w+6,cur.hip[1]*h+3);
+      }
+      ctx.restore();
+    }
+  }
+
+  // ── MAIN POSE ──
+  const isKey = frame.type==='key';
+  const poseColor = isKey?'#36FF00':'rgba(54,255,0,0.75)';
+  drawPose(frame.pose, 1.0, poseColor, 1, 0, 0);
+
+  // ── KEY FRAME HIGHLIGHT ──
+  if(isKey){
+    ctx.save();
+    ctx.strokeStyle='rgba(54,255,0,0.25)'; ctx.lineWidth=1;
+    ctx.strokeRect(w*0.12, h*0.04, w*0.76, h*0.86);
+    ctx.fillStyle='rgba(54,255,0,0.35)';
+    ctx.font='700 9px IBM Plex Mono,monospace';
+    ctx.fillText('KEY: '+frame.label, w*0.14, h*0.96);
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // ── HUD UPDATE ──
+  const phase = frame.phase||'—';
+  document.getElementById('phase-badge').textContent = 'PHASE: '+phase;
+  document.getElementById('frame-counter').textContent = 'FRAME: '+String(fi).padStart(3,'0')+' / '+String(frames.length-1).padStart(3,'0');
+  document.getElementById('hud-key').textContent = keyFrames.length;
+  document.getElementById('hud-inb').textContent = frames.filter(f=>f.type==='inbet').length;
+  document.getElementById('hud-gho').textContent = showGhost?'ON':'OFF';
+  document.getElementById('hud-itp').textContent = easingMode.toUpperCase();
+
+  // panel live data
+  document.getElementById('lv-fr').textContent    = String(fi).padStart(3,'0');
+  document.getElementById('lv-phase').textContent  = phase;
+  document.getElementById('lv-type').textContent   = isKey?'KEY FRAME':'IN-BETWEEN';
+  document.getElementById('lv-type').style.color   = isKey?'var(--acid)':'rgba(136,136,136,0.8)';
+  document.getElementById('lv-nkey').textContent   = isKey?frame.label:(keyFrames[frame.keyIdx]?.label||'—');
+  document.getElementById('lv-t').textContent      = frame.t.toFixed(3);
+  document.getElementById('lv-ga').textContent     = showGhost?'0.18 / 0.12':'—';
+  document.getElementById('lv-kc').textContent     = keyFrames.length;
+  document.getElementById('lv-ic').textContent     = frames.filter(f=>f.type==='inbet').length;
+  document.getElementById('bb-fr').textContent     = String(fi).padStart(3,'0');
+  document.getElementById('bb-total').textContent  = String(frames.length-1).padStart(3,'0');
+}
+
+// ── ANIMATION LOOP ──
+function loop(ts){
+  if(!lastTime) lastTime=ts;
+  const dt=(ts-lastTime)/1000; lastTime=ts;
+  if(playing && frames.length>0){
+    playT += dt * playSpd * 12; // ~12fps base
+    if(playT >= frames.length) playT = 0;
+  }
+  resizeCanvas();
+  drawFrame();
+  buildStripHighlight();
+  requestAnimationFrame(loop);
+}
+
+// ── FRAME STRIP ──
+const CELL_W = 28, CELL_H = 52;
+
+function buildStrip(){
+  const strip = document.getElementById('frame-strip');
+  strip.innerHTML='';
+  frames.forEach((fr,i)=>{
+    const cell = document.createElement('div');
+    cell.className = 'fc '+(fr.type==='key'?'is-key':fr.type==='ghost'?'is-ghost':'is-inbet');
+    cell.style.width  = CELL_W+'px';
+    cell.style.height = CELL_H+'px';
+    cell.dataset.idx  = i;
+
+    // stripe
+    const stripe = document.createElement('div');
+    stripe.className='fc-stripe'; cell.appendChild(stripe);
+
+    // key dot
+    const dot = document.createElement('div');
+    dot.className='fc-key-dot'; cell.appendChild(dot);
+
+    // phase marker (above)
+    if(fr.type==='key'){
+      const mk = document.createElement('div');
+      mk.className='fc-marker';
+      mk.textContent = fr.label;
+      cell.appendChild(mk);
+    }
+
+    // mini pose thumbnail (canvas)
+    const mini = document.createElement('canvas');
+    mini.width  = CELL_W * devicePixelRatio;
+    mini.height = (CELL_H-12) * devicePixelRatio;
+    mini.style.width  = CELL_W+'px';
+    mini.style.height = (CELL_H-12)+'px';
+    mini.style.display='block';
+    cell.appendChild(mini);
+
+    // draw mini pose
+    drawMiniPose(mini, fr.pose, fr.type);
+
+    // frame number
+    const num = document.createElement('div');
+    num.className='fc-num'; num.textContent=String(i).padStart(2,'0');
+    cell.appendChild(num);
+
+    // click to seek
+    cell.addEventListener('click',()=>{ playT=i; playing=false; syncPlayBtn(); });
+
+    // drag to reorder KEYS only
+    if(fr.type==='key'){
+      cell.draggable=true;
+      cell.addEventListener('dragstart',e=>{ dragSrcIdx=i; cell.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+      cell.addEventListener('dragend',  ()=>{ cell.classList.remove('dragging'); document.querySelectorAll('.fc').forEach(c=>c.classList.remove('drag-over')); });
+      cell.addEventListener('dragover', e=>{ e.preventDefault(); cell.classList.add('drag-over'); });
+      cell.addEventListener('dragleave',()=>{ cell.classList.remove('drag-over'); });
+      cell.addEventListener('drop',     e=>{
+        e.preventDefault(); cell.classList.remove('drag-over');
+        if(dragSrcIdx===null||dragSrcIdx===i) return;
+        // find key indices for both
+        const srcKeyIdx = frames[dragSrcIdx]?.keyIdx;
+        const dstKeyIdx = frames[i]?.keyIdx;
+        if(srcKeyIdx===undefined||dstKeyIdx===undefined) return;
+        // swap keyFrames
+        [keyFrames[srcKeyIdx], keyFrames[dstKeyIdx]] = [keyFrames[dstKeyIdx], keyFrames[srcKeyIdx]];
+        buildFrames(); buildStrip(); playT=0;
+        dragSrcIdx=null;
+      });
+    }
+
+    strip.appendChild(cell);
+  });
+  updateScrollbar();
+}
+
+function buildStripHighlight(){
+  const fi = Math.round(playT)%Math.max(1,frames.length);
+  document.querySelectorAll('.fc').forEach((c,i)=>{
+    c.classList.toggle('active', i===fi);
+  });
+}
+
+function drawMiniPose(miniCanvas, pose, type){
+  if(!pose) return;
+  const mc = miniCanvas.getContext('2d');
+  const dpr = devicePixelRatio;
+  const mw = miniCanvas.width/dpr, mh = miniCanvas.height/dpr;
+  mc.clearRect(0,0,miniCanvas.width,miniCanvas.height);
+  mc.save(); mc.scale(dpr,dpr);
+  const col = type==='key'?'rgba(54,255,0,0.8)':type==='ghost'?'rgba(249,255,71,0.5)':'rgba(136,136,136,0.5)';
+  const bones=[['head','neck'],['neck','lSho'],['neck','rSho'],['lSho','lElb'],['lElb','lHan'],['rSho','rElb'],['rElb','rHan'],['neck','hip'],['hip','lKne'],['lKne','lFoo'],['hip','rKne'],['rKne','rFoo']];
+  mc.strokeStyle=col; mc.lineWidth=1; mc.lineCap='round';
+  const px=j=>(pose[j]?.[0]||0)*mw*0.9+mw*0.05;
+  const py=j=>(pose[j]?.[1]||0)*mh*0.9+mh*0.02;
+  for(const[a,b]of bones){
+    if(!pose[a]||!pose[b])continue;
+    mc.beginPath(); mc.moveTo(px(a),py(a)); mc.lineTo(px(b),py(b)); mc.stroke();
+  }
+  // head
+  if(pose.head){mc.beginPath();mc.arc(px('head'),py('head'),3,0,Math.PI*2);mc.strokeStyle=col;mc.stroke();}
+  mc.restore();
+}
+
+// ── SCROLLBAR ──
+function updateScrollbar(){
+  const strip = document.getElementById('frame-strip');
+  const thumb = document.getElementById('strip-thumb');
+  const sb    = document.getElementById('strip-scrollbar');
+  const ratio = strip.offsetWidth / (strip.scrollWidth||1);
+  const tw    = Math.max(24, sb.offsetWidth*ratio);
+  thumb.style.width = tw+'px';
+  const maxLeft = sb.offsetWidth-tw;
+  const scrollRatio = strip.scrollLeft/(strip.scrollWidth-strip.offsetWidth||1);
+  thumb.style.left  = (scrollRatio*maxLeft)+'px';
+}
+document.getElementById('frame-strip').addEventListener('scroll', updateScrollbar);
+// thumb drag
+(function(){
+  const thumb=document.getElementById('strip-thumb');
+  const sb=document.getElementById('strip-scrollbar');
+  const strip=document.getElementById('frame-strip');
+  let dragging=false,startX=0,startLeft=0;
+  thumb.addEventListener('pointerdown',e=>{dragging=true;startX=e.clientX;startLeft=thumb.offsetLeft;thumb.setPointerCapture(e.pointerId);e.preventDefault();});
+  document.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dx=e.clientX-startX;
+    const maxLeft=sb.offsetWidth-thumb.offsetWidth;
+    const newLeft=Math.max(0,Math.min(maxLeft,startLeft+dx));
+    thumb.style.left=newLeft+'px';
+    const ratio=maxLeft?newLeft/maxLeft:0;
+    strip.scrollLeft=ratio*(strip.scrollWidth-strip.offsetWidth);
+  });
+  document.addEventListener('pointerup',()=>{dragging=false;});
+})();
+
+// ── PRESETS ──
+function loadPreset(name){
+  const seq = PRESET_SEQUENCES[name];
+  if(!seq) return;
+  keyFrames = seq.map(s=>({pose:s.pose, label:s.label, phase:s.phase}));
+  buildFrames(); buildStrip(); playT=0; playing=true; syncPlayBtn();
+}
+
+// ── CONTROLS ──
+function toggleGhost(){ showGhost=!showGhost; document.getElementById('tg-ghost').classList.toggle('on',showGhost); }
+function toggleOnion(){ showOnion=!showOnion; document.getElementById('tg-onion').classList.toggle('on',showOnion); }
+function toggleLine(){  showLine =!showLine;  document.getElementById('tg-line').classList.toggle('on',showLine); }
+function setEasing(m){
+  easingMode=m;
+  ['linear','ease','step'].forEach(k=>{
+    document.getElementById('fp-'+k).className='fp '+(k===m?'on':'off');
+  });
+  buildFrames(); buildStrip();
+}
+
+function syncPlayBtn(){
+  document.getElementById('pb-play').textContent = playing?'⏸':'▶';
+  document.getElementById('pb-play').classList.toggle('active',playing);
+}
+
+document.getElementById('pb-play').onclick=()=>{ playing=!playing; syncPlayBtn(); };
+document.getElementById('pb-prev').onclick=()=>{ playing=false; playT=Math.max(0,Math.round(playT)-1); syncPlayBtn(); };
+document.getElementById('pb-next').onclick=()=>{ playing=false; playT=Math.min(frames.length-1,Math.round(playT)+1); syncPlayBtn(); };
+document.getElementById('sl-spd').oninput=function(){
+  playSpd=this.value/10;
+  document.getElementById('spd-val').textContent=playSpd.toFixed(1)+'x';
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();playing=!playing;syncPlayBtn();}
+  if(e.code==='ArrowRight'){playing=false;playT=Math.min(frames.length-1,Math.round(playT)+1);syncPlayBtn();}
+  if(e.code==='ArrowLeft') {playing=false;playT=Math.max(0,Math.round(playT)-1);syncPlayBtn();}
+  if(e.code==='KeyK'){
+    // mark current inbet as key (insert key at current position)
+    const fi=Math.round(playT)%Math.max(1,frames.length);
+    const fr=frames[fi];
+    if(fr&&fr.type==='inbet'){
+      const newKey={pose:Object.keys(POSES).find(k=>true)||'stand',label:'KEY_'+fi,phase:fr.phase};
+      // approximate: use interpolated pose, map back to closest named pose
+      keyFrames.splice(fr.keyIdx+1,0,newKey);
+      buildFrames();buildStrip();
+    }
+  }
+  if(e.code==='Escape')window.location.href='index.html';
+});
+
+// ── INIT ──
+loadPreset('jump');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
