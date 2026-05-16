@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 11 SOLID DRAWING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050807; --bg2:#070C0A; --panel:#080C0B;
+  --acid:#36FF00; --neon:#7FFF9B; --ice:#9FF6FF; --warm:#FFE066; --hot:#FF4F4F;
+  --ink:#DCFFE0;
+  --dim:rgba(220,255,224,0.5); --dim2:rgba(220,255,224,0.3); --dim3:rgba(220,255,224,0.12);
+  --border:rgba(54,255,0,0.18); --border2:rgba(54,255,0,0.07);
+  --mono:'IBM Plex Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+
+/* TOPBAR */
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
+.sys-id{color:var(--dim);font-size:9px}
+.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+
+/* STAGE */
+#stage{position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.stage-bignum{
+  position:absolute;font-family:var(--cond);font-weight:900;
+  font-size:clamp(180px,24vw,320px);color:rgba(54,255,0,0.025);
+  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;z-index:1;
+}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
+.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
+.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
+.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
+.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:3}
+.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
+.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;z-index:2}
+.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
+
+/* MAIN ZONE */
+#main-zone{position:relative;flex:1;overflow:hidden;cursor:ns-resize}
+#main-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* HUD */
+#main-hud{
+  position:absolute;bottom:12px;left:16px;
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:24px;z-index:4;
+}
+#main-hud .val{color:var(--acid);font-weight:700}
+#main-hud .val.warn{color:var(--hot)}
+
+#phase-badge{
+  position:absolute;top:12px;left:16px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  padding:3px 8px;border:1px solid var(--border);
+  color:var(--dim);background:rgba(5,8,7,0.85);pointer-events:none;z-index:4;
+  transition:color .15s, border-color .15s;
+}
+#phase-badge.POINT{color:var(--ink);border-color:var(--dim2)}
+#phase-badge.EDGE{color:var(--neon);border-color:var(--neon)}
+#phase-badge.FACE{color:var(--ice);border-color:var(--ice)}
+#phase-badge.VOLUME{color:var(--acid);border-color:var(--acid);background:rgba(54,255,0,0.12)}
+
+#big-form{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--cond);font-weight:900;font-size:48px;letter-spacing:0.1em;
+  color:var(--acid);text-shadow:0 0 30px rgba(54,255,0,0.5);
+  pointer-events:none;z-index:5;opacity:0;
+  transition:opacity .2s;
+}
+#big-form.show{opacity:1}
+
+/* ZOOM RAIL — right side */
+#zoom-rail{
+  position:absolute;top:50%;right:24px;transform:translateY(-50%);
+  width:42px;height:65%;display:flex;flex-direction:column;align-items:center;gap:6px;
+  pointer-events:none;z-index:4;
+}
+.rail-label{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:0.15em;writing-mode:vertical-rl;text-orientation:mixed}
+#rail-track{
+  position:relative;flex:1;width:2px;background:var(--border);
+}
+#rail-marker{
+  position:absolute;left:-12px;width:26px;height:2px;background:var(--acid);
+  transition:bottom .12s;box-shadow:0 0 8px var(--acid);
+}
+.rail-tick{position:absolute;left:-30px;font-family:var(--mono);font-size:7px;color:var(--dim);letter-spacing:0.05em;line-height:1;white-space:nowrap}
+.rail-tick.active{color:var(--acid);font-weight:700}
+.rail-tick::after{content:'';position:absolute;right:-12px;top:50%;width:8px;height:1px;background:var(--dim2)}
+.rail-tick.active::after{background:var(--acid)}
+
+#zoom-val{font-family:var(--mono);font-size:9px;color:var(--acid);font-weight:700;letter-spacing:0.05em;text-align:center;min-width:42px}
+
+/* RECOGNITION DENSITY GRADIENT (bottom band) */
+#density-bar{
+  position:absolute;bottom:38px;left:50%;transform:translateX(-50%);
+  width:60%;max-width:480px;height:18px;
+  border:1px solid var(--border);background:rgba(0,0,0,0.5);
+  font-family:var(--mono);pointer-events:none;z-index:4;
+  display:flex;align-items:center;
+}
+.dens-seg{
+  flex:1;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:7px;letter-spacing:0.15em;color:var(--dim);border-right:1px solid var(--border2);
+  transition:background .15s, color .15s;
+}
+.dens-seg:last-child{border-right:none}
+.dens-seg.active{background:rgba(54,255,0,0.15);color:var(--acid);font-weight:700}
+
+/* PANEL */
+#panel{
+  border-left:1px solid var(--border);background:var(--panel);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+}
+#panel::-webkit-scrollbar{width:2px}
+#panel::-webkit-scrollbar-thumb{background:var(--acid)}
+.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+.psec:last-child{border-bottom:none}
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'//';color:var(--dim2)}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
+.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--acid);font-weight:700}
+.dv.warn{color:var(--hot)}.dv.ice{color:var(--ice)}.dv.neon{color:var(--neon)}
+
+.layer-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--border2);transition:color .15s}
+.layer-row:last-child{border-bottom:none}
+.layer-row.active{color:var(--ink)}
+.layer-row .swatch{width:10px;height:10px;flex-shrink:0;border:1px solid var(--dim2);transition:all .15s}
+.layer-row.active .swatch{border-color:var(--acid);background:rgba(54,255,0,0.3)}
+.layer-row .name{flex:1;letter-spacing:0.08em}
+.layer-row .vis{font-family:var(--mono);font-size:8px;color:var(--acid)}
+.layer-row .rng{color:var(--dim2);font-size:8px}
+
+.sl-row{margin-bottom:10px}
+.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:3px}
+.sl-label span{color:var(--acid);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
+
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
+  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+}
+.btn:hover{color:var(--acid);border-color:var(--acid)}
+.btn.active{color:var(--bg);background:var(--acid);border-color:var(--acid)}
+.btn.warn:hover{color:var(--hot);border-color:var(--hot)}
+.btn.warn.active{background:var(--hot);color:#fff;border-color:var(--hot)}
+
+.insight{background:rgba(54,255,0,0.04);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
+.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
+
+/* BOTTOMBAR */
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+}
+.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
+.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span class="sys-id">KINETIC_GEOMETRY // LEC_11</span>
+    <span class="title-tag">PRINCIPLE_11 // SOLID DRAWING</span>
+  </div>
+  <div class="right">
+    <span class="sys-id" id="topbar-state">RECOGNITION_LAYER: POINT // TOPOLOGY: SCATTERED</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="stage-bignum">11</div>
+
+  <div id="main-zone">
+    <canvas id="main-canvas"></canvas>
+
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div class="checker c1"></div><div class="checker c2"></div>
+
+    <div class="po">
+      <div class="po-num">PRINCIPLE // 11</div>
+      <div class="po-en">SOLID DRAWING</div>
+      <div class="po-jp">立体感</div>
+    </div>
+
+    <div id="phase-badge" class="POINT">LAYER: POINT</div>
+    <div id="big-form"></div>
+
+    <!-- ZOOM RAIL -->
+    <div id="zoom-rail">
+      <div class="rail-label">ZOOM ↕</div>
+      <div id="rail-track">
+        <div id="rail-marker"></div>
+        <div class="rail-tick" style="bottom:0%"><span>POINT</span></div>
+        <div class="rail-tick" style="bottom:33%"><span>EDGE</span></div>
+        <div class="rail-tick" style="bottom:66%"><span>FACE</span></div>
+        <div class="rail-tick" style="bottom:100%"><span>VOLUME</span></div>
+      </div>
+      <div id="zoom-val">0.00</div>
+    </div>
+
+    <!-- DENSITY BAR -->
+    <div id="density-bar">
+      <div class="dens-seg" id="seg-POINT">POINT</div>
+      <div class="dens-seg" id="seg-EDGE">EDGE</div>
+      <div class="dens-seg" id="seg-FACE">FACE</div>
+      <div class="dens-seg" id="seg-VOLUME">VOLUME</div>
+    </div>
+
+    <div id="main-hud">
+      <div>ZOOM&nbsp;<span class="val" id="h-zoom">0.00</span></div>
+      <div>LAYER&nbsp;<span class="val" id="h-layer">POINT</span></div>
+      <div>POINTS&nbsp;<span class="val" id="h-pt">000</span></div>
+      <div>EDGES&nbsp;<span class="val" id="h-eg">000</span></div>
+      <div>FACES&nbsp;<span class="val" id="h-fc">000</span></div>
+      <div>TOPOLOGY&nbsp;<span class="val" id="h-topo">SCATTERED</span></div>
+    </div>
+  </div>
+</main>
+
+<aside id="panel">
+
+  <!-- THEORY -->
+  <div class="psec">
+    <div class="sec-label">ATHEORY — 原則解説</div>
+    <div class="sec-title">SOLID<br>DRAWING</div>
+    <div class="body-text">
+      上手く描くことじゃない。<br>
+      平面の中に立体存在を感じる能力。<br>
+      空間そのものが自己組織化する体験。
+    </div>
+    <div class="body-en">
+      Not "drawing well" — the ability to feel<br>
+      a solid presence inside flat space.<br>
+      Space organizes itself.
+    </div>
+  </div>
+
+  <!-- WHEEL INSTR -->
+  <div class="psec">
+    <div class="sec-label">BCONTROL — 操作</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--dim);line-height:1.9;letter-spacing:0.04em">
+      <span style="color:var(--acid)">SCROLL UP</span> &nbsp;→ converge<br>
+      &nbsp;&nbsp;<span style="color:var(--dim2)">粒子収束 → edge → face → VOLUME</span><br>
+      <span style="color:var(--acid)">SCROLL DOWN</span> → disperse<br>
+      &nbsp;&nbsp;<span style="color:var(--dim2)">volume崩壊 → 線分離 → 粒子散乱</span><br>
+      <span style="color:var(--acid)">DRAG</span> &nbsp;→ rotate volume<br>
+      <span style="color:var(--acid)">[A] AUTO</span> &nbsp;→ オート遷移
+    </div>
+  </div>
+
+  <!-- LAYERS -->
+  <div class="psec">
+    <div class="sec-label">CRECOGNITION — 認識レイヤー</div>
+    <div class="layer-row" id="lay-POINT">
+      <span class="swatch"></span>
+      <span class="name">POINT</span>
+      <span class="rng">0–25%</span>
+      <span class="vis" id="vis-POINT">100%</span>
+    </div>
+    <div class="layer-row" id="lay-EDGE">
+      <span class="swatch"></span>
+      <span class="name">EDGE</span>
+      <span class="rng">15–60%</span>
+      <span class="vis" id="vis-EDGE">0%</span>
+    </div>
+    <div class="layer-row" id="lay-FACE">
+      <span class="swatch"></span>
+      <span class="name">FACE</span>
+      <span class="rng">45–85%</span>
+      <span class="vis" id="vis-FACE">0%</span>
+    </div>
+    <div class="layer-row" id="lay-VOLUME">
+      <span class="swatch"></span>
+      <span class="name">VOLUME</span>
+      <span class="rng">75–100%</span>
+      <span class="vis" id="vis-VOLUME">0%</span>
+    </div>
+  </div>
+
+  <!-- LIVE -->
+  <div class="psec">
+    <div class="sec-label">DLIVE — 構造分析</div>
+    <div class="data-row"><span class="dk">RECOGNITION</span><span class="dv" id="lv-rec">POINT</span></div>
+    <div class="data-row"><span class="dk">ZOOM_VAL</span><span class="dv" id="lv-zoom">0.000</span></div>
+    <div class="data-row"><span class="dk">POINT_DENSITY</span><span class="dv" id="lv-ptd">0.00</span></div>
+    <div class="data-row"><span class="dk">EDGE_COUNT</span><span class="dv" id="lv-egc">0</span></div>
+    <div class="data-row"><span class="dk">FACE_COUNT</span><span class="dv" id="lv-fcc">0</span></div>
+    <div class="data-row"><span class="dk">TOPOLOGY</span><span class="dv" id="lv-topo">SCATTERED</span></div>
+    <div class="data-row"><span class="dk">FORM_INTEGRITY</span><span class="dv" id="lv-int">0%</span></div>
+  </div>
+
+  <!-- TOPOLOGY MODES -->
+  <div class="psec">
+    <div class="sec-label">ETOPOLOGY — 構造</div>
+    <button class="btn active" id="btnGood" onclick="setTopo('good')">GOOD STRUCTURE</button>
+    <button class="btn warn" id="btnBad" onclick="setTopo('bad')">VOLUME COLLAPSE</button>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.7">
+      <strong style="color:var(--acid)">GOOD</strong> → volume安定 / perspective維持<br>
+      <strong style="color:var(--hot)">BAD</strong> → topology破綻が見える
+    </div>
+  </div>
+
+  <!-- PARAMS -->
+  <div class="psec">
+    <div class="sec-label">FPARAMS — パラメータ</div>
+    <div class="sl-row">
+      <div class="sl-label">POINT COUNT <span id="sl-pts-val">80</span></div>
+      <input type="range" id="sl-pts" min="30" max="200" value="80">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">ROTATION SPEED <span id="sl-rot-val">0.30</span></div>
+      <input type="range" id="sl-rot" min="0" max="200" value="30">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">EDGE THRESHOLD <span id="sl-thr-val">0.45</span></div>
+      <input type="range" id="sl-thr" min="20" max="80" value="45">
+    </div>
+  </div>
+
+  <!-- PLAYBACK -->
+  <div class="psec">
+    <div class="sec-label">GPLAYBACK</div>
+    <button class="btn" id="btnAuto" onclick="toggleAuto()">▶ AUTO TRANSITION</button>
+    <button class="btn" id="btnReset" onclick="resetView()">↺ RESET</button>
+  </div>
+
+  <!-- INSIGHT -->
+  <div class="psec">
+    <div class="sec-label">HINSIGHT</div>
+    <div class="insight">
+      <strong>// SOLID DRAWING</strong>
+      これはカメラズームじゃない。<br>
+      <span style="color:var(--acid)">認識レイヤー</span>の変化。<br><br>
+      点を見る → 構造を見る → volumeを感じる<br><br>
+      空間理解そのものを触って学ぶ。<br>
+      悪い構造はcollapseで見える。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div class="bl">
+    <span>LAYER: <span id="bb-layer">POINT</span></span>
+    <span>TOPOLOGY: <span id="bb-topo">SCATTERED</span></span>
+    <span>FORM: <span id="bb-form">—</span></span>
+  </div>
+  <div class="bc" id="bb-state">RECOGNITION ACTIVE</div>
+  <div class="br">
+    <span class="kbd">WHEEL</span>ZOOM
+    <span class="kbd">DRAG</span>ROTATE
+    <span class="kbd">A</span>AUTO
+    <span class="kbd">R</span>RESET
+    &nbsp;ID: SENTIENT-BP-2026-VLS.11
+  </div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// SOLID DRAWING — RECOGNITION LAYER ENGINE
+// ═══════════════════════════════════════════
+
+// Params
+let pointCount = 80;
+let rotSpeed = 0.30;
+let edgeThr = 0.45;
+let topoMode = 'good';
+let autoPlay = false;
+
+// State
+let zoom = 0;            // 0..1 — the recognition slider
+let targetZoom = 0;      // smoothed toward
+let rotY = 0, rotX = 0;
+let velRotY = 0, velRotX = 0;
+let dragging = false;
+let dragX = 0, dragY = 0;
+let autoT = 0;
+
+let frameTime = 0;
+let startTime = performance.now();
+
+// Point cloud — 3D positions on a sphere
+// Each point has a "target" (sphere position) and current displaced position
+let points = [];
+
+function generatePoints(n) {
+  points = [];
+  for (let i = 0; i < n; i++) {
+    // Fibonacci sphere distribution
+    const phi = Math.acos(1 - 2 * (i + 0.5) / n);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+    const x = Math.sin(phi) * Math.cos(theta);
+    const y = Math.sin(phi) * Math.sin(theta);
+    const z = Math.cos(phi);
+
+    // Scattered (faraway) position — random offset
+    const scatterDir = [
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
+    ];
+    const scatterMag = 2.5 + Math.random() * 2.5;
+
+    points.push({
+      // target sphere position
+      tx: x, ty: y, tz: z,
+      // scattered position
+      sx: scatterDir[0] * scatterMag,
+      sy: scatterDir[1] * scatterMag,
+      sz: scatterDir[2] * scatterMag,
+      // current (interpolated)
+      cx: 0, cy: 0, cz: 0,
+      // collapse offset (for "bad topology" mode)
+      collapse: Math.random() * 0.3,
+    });
+  }
+}
+generatePoints(pointCount);
+
+// ── INPUT ──
+const stage = document.getElementById('main-zone');
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+
+let W = 0, H = 0, DPR = devicePixelRatio || 1;
+function resize() {
+  W = stage.clientWidth;
+  H = stage.clientHeight;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Wheel: scroll up = converge (zoom in), scroll down = disperse
+stage.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  autoPlay = false;
+  document.getElementById('btnAuto').classList.remove('active');
+  const delta = -e.deltaY * 0.0014;
+  targetZoom = Math.max(0, Math.min(1, targetZoom + delta));
+}, { passive: false });
+
+// Drag: rotate
+stage.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  dragging = true;
+  dragX = e.clientX;
+  dragY = e.clientY;
+});
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - dragX;
+  const dy = e.clientY - dragY;
+  velRotY = dx * 0.005;
+  velRotX = dy * 0.005;
+  rotY += velRotY;
+  rotX += velRotX;
+  dragX = e.clientX;
+  dragY = e.clientY;
+});
+window.addEventListener('mouseup', () => { dragging = false; });
+
+// Keys
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyA') toggleAuto();
+  if (e.code === 'KeyR') resetView();
+});
+
+function toggleAuto() {
+  autoPlay = !autoPlay;
+  document.getElementById('btnAuto').classList.toggle('active', autoPlay);
+}
+
+function resetView() {
+  targetZoom = 0;
+  rotY = 0; rotX = 0;
+  velRotY = 0; velRotX = 0;
+  autoPlay = false;
+  document.getElementById('btnAuto').classList.remove('active');
+}
+
+window.setTopo = function(mode) {
+  topoMode = mode;
+  document.getElementById('btnGood').classList.toggle('active', mode === 'good');
+  document.getElementById('btnBad').classList.toggle('active', mode === 'bad');
+};
+
+// ── SLIDERS ──
+document.getElementById('sl-pts').addEventListener('input', (e) => {
+  pointCount = parseInt(e.target.value);
+  document.getElementById('sl-pts-val').textContent = pointCount;
+  generatePoints(pointCount);
+});
+document.getElementById('sl-rot').addEventListener('input', (e) => {
+  rotSpeed = e.target.value / 100;
+  document.getElementById('sl-rot-val').textContent = rotSpeed.toFixed(2);
+});
+document.getElementById('sl-thr').addEventListener('input', (e) => {
+  edgeThr = e.target.value / 100;
+  document.getElementById('sl-thr-val').textContent = edgeThr.toFixed(2);
+});
+
+// ── LAYER VISIBILITY (smooth crossfade based on zoom) ──
+function layerVis(zoom) {
+  // POINT: visible 0..0.45, fading out 0.30..0.45
+  // EDGE:  fading in 0.15..0.35, peak 0.35..0.55, fade 0.55..0.65
+  // FACE:  fading in 0.45..0.60, peak 0.60..0.80, fade 0.80..0.92
+  // VOLUME: fading in 0.75..0.92, peak 0.92..1.0
+  const pt = smoothFade(zoom, 0, 0, 0.30, 0.50);     // 1->1->1->0
+  const eg = smoothFade(zoom, 0.15, 0.35, 0.55, 0.70);
+  const fc = smoothFade(zoom, 0.45, 0.62, 0.80, 0.92);
+  const vol = smoothFade(zoom, 0.75, 0.92, 1.1, 1.2);
+  return { pt, eg, fc, vol };
+}
+
+// returns 1 between [b..c], fades in [a..b], fades out [c..d]
+function smoothFade(x, a, b, c, d) {
+  if (x <= a || x >= d) return 0;
+  if (x >= b && x <= c) return 1;
+  if (x < b) {
+    const t = (x - a) / (b - a);
+    return t * t * (3 - 2*t);
+  }
+  const t = (d - x) / (d - c);
+  return t * t * (3 - 2*t);
+}
+
+function recognitionLayer(zoom) {
+  if (zoom < 0.20) return 'POINT';
+  if (zoom < 0.55) return 'EDGE';
+  if (zoom < 0.82) return 'FACE';
+  return 'VOLUME';
+}
+
+function topologyState(zoom) {
+  if (topoMode === 'bad') {
+    if (zoom > 0.6) return 'COLLAPSED';
+    if (zoom > 0.3) return 'UNSTABLE';
+    return 'SCATTERED';
+  }
+  if (zoom < 0.15) return 'SCATTERED';
+  if (zoom < 0.40) return 'CONNECTING';
+  if (zoom < 0.70) return 'FORMING';
+  if (zoom < 0.92) return 'CONSOLIDATING';
+  return 'STABLE';
+}
+
+// ── STEP ──
+function step(dt) {
+  // Smooth zoom
+  zoom += (targetZoom - zoom) * Math.min(1, dt * 6);
+
+  // Auto playback
+  if (autoPlay) {
+    autoT += dt * 0.25;
+    targetZoom = 0.5 + 0.5 * Math.sin(autoT);
+  }
+
+  // Rotation: auto-rotate when at high zoom (volume visible)
+  const vis = layerVis(zoom);
+  if (vis.vol > 0.1 && !dragging) {
+    rotY += dt * rotSpeed * 0.6;
+  }
+  if (!dragging) {
+    rotY += velRotY * Math.pow(0.93, dt * 60) - velRotY;
+    rotX += velRotX * Math.pow(0.93, dt * 60) - velRotX;
+    velRotY *= Math.pow(0.93, dt * 60);
+    velRotX *= Math.pow(0.93, dt * 60);
+  }
+
+  // Update each point's current position
+  // Interpolate between scattered (sx,sy,sz) and target (tx,ty,tz) based on zoom
+  // Below 0.15 = pure scatter, above 0.85 = pure sphere, between = transitioning
+  const convergence = smoothFade(zoom, 0, 0.30, 1.2, 1.5); // ramps 0->1 from zoom 0..0.30 and stays
+  for (const p of points) {
+    let tx = p.tx, ty = p.ty, tz = p.tz;
+    // Bad topology: introduce noise into target positions
+    if (topoMode === 'bad' && zoom > 0.3) {
+      const distort = (zoom - 0.3) * 1.5;
+      tx += Math.sin(frameTime * 2 + p.collapse * 10) * distort * 0.4;
+      ty += Math.cos(frameTime * 1.7 + p.collapse * 12) * distort * 0.4;
+      tz += Math.sin(frameTime * 2.3 + p.collapse * 8) * distort * 0.3;
+    }
+    p.cx = p.sx + (tx - p.sx) * convergence;
+    p.cy = p.sy + (ty - p.sy) * convergence;
+    p.cz = p.sz + (tz - p.sz) * convergence;
+  }
+}
+
+// ── 3D PROJECTION ──
+function project(x, y, z) {
+  // Rotate around Y
+  let cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+  let x1 = x * cosY - z * sinY;
+  let z1 = x * sinY + z * cosY;
+  let y1 = y;
+  // Rotate around X
+  let cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+  let y2 = y1 * cosX - z1 * sinX;
+  let z2 = y1 * sinX + z1 * cosX;
+  let x2 = x1;
+  // Project
+  const fov = 5;
+  const distance = 4;
+  const scale = Math.min(W, H) * 0.30;
+  const persp = fov / (fov + z2 + distance);
+  return {
+    sx: W * 0.5 + x2 * scale * persp,
+    sy: H * 0.5 + y2 * scale * persp,
+    z: z2,
+    persp,
+  };
+}
+
+// ── DRAW ──
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  const vis = layerVis(zoom);
+  const recLayer = recognitionLayer(zoom);
+
+  // Project all points
+  const proj = points.map(p => {
+    const pr = project(p.cx, p.cy, p.cz);
+    return { ...pr, p };
+  });
+
+  // ── DRAW EDGES (connect nearby points in 3D) ──
+  // Build edge list: for each point, connect to k nearest neighbors (if they're close enough)
+  const edgeAlpha = vis.eg * 0.85;
+  let edgeCount = 0;
+  if (vis.eg > 0.01 || vis.fc > 0.01 || vis.vol > 0.01) {
+    const maxDist3D = 0.55; // threshold for "neighbor"
+    const edges = [];
+    // Use a simpler approach: each point connects to its 3-4 nearest based on 3D position
+    for (let i = 0; i < points.length; i++) {
+      const dists = [];
+      for (let j = 0; j < points.length; j++) {
+        if (i === j) continue;
+        const dx = points[i].cx - points[j].cx;
+        const dy = points[i].cy - points[j].cy;
+        const dz = points[i].cz - points[j].cz;
+        const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        if (d < maxDist3D) dists.push({ j, d });
+      }
+      dists.sort((a, b) => a.d - b.d);
+      const k = Math.min(4, dists.length);
+      for (let m = 0; m < k; m++) {
+        if (dists[m].j > i) {
+          edges.push({ a: i, b: dists[m].j, d: dists[m].d });
+        }
+      }
+    }
+    edgeCount = edges.length;
+
+    // Draw edges
+    for (const e of edges) {
+      const A = proj[e.a], B = proj[e.b];
+      const avgZ = (A.z + B.z) * 0.5;
+      const depthAlpha = 0.4 + Math.max(0, Math.min(1, (1 - (avgZ + 1) / 2))) * 0.6;
+      const a = edgeAlpha * depthAlpha;
+      // length-based fade
+      const lenFade = Math.max(0, 1 - e.d / maxDist3D);
+      ctx.strokeStyle = topoMode === 'bad' && zoom > 0.4
+        ? `rgba(255,79,79,${a * lenFade * 0.85})`
+        : `rgba(127,255,155,${a * lenFade})`;
+      ctx.lineWidth = 0.5 + lenFade * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(A.sx, A.sy);
+      ctx.lineTo(B.sx, B.sy);
+      ctx.stroke();
+    }
+
+    // ── DRAW FACES (triangles from triplets of close points) ──
+    if (vis.fc > 0.01) {
+      // For each edge, look for a 3rd point that completes a triangle
+      const faceAlpha = vis.fc * 0.18;
+      let faceCount = 0;
+      const seenTris = new Set();
+      for (let i = 0; i < edges.length; i++) {
+        const e1 = edges[i];
+        for (let j = i + 1; j < edges.length; j++) {
+          const e2 = edges[j];
+          // Check if they share a vertex
+          let shared = -1, third = -1, base = -1;
+          if (e1.a === e2.a) { shared = e1.a; third = e2.b; base = e1.b; }
+          else if (e1.a === e2.b) { shared = e1.a; third = e2.a; base = e1.b; }
+          else if (e1.b === e2.a) { shared = e1.b; third = e2.b; base = e1.a; }
+          else if (e1.b === e2.b) { shared = e1.b; third = e2.a; base = e1.a; }
+          if (shared === -1) continue;
+          // Check if base-third is also a close edge
+          const dx = points[base].cx - points[third].cx;
+          const dy = points[base].cy - points[third].cy;
+          const dz = points[base].cz - points[third].cz;
+          const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+          if (d > maxDist3D * 0.95) continue;
+          // Avoid duplicates
+          const key = [shared, third, base].sort().join('-');
+          if (seenTris.has(key)) continue;
+          seenTris.add(key);
+          faceCount++;
+          if (faceCount > 400) break; // perf cap
+
+          const A = proj[shared], B = proj[third], C = proj[base];
+          const avgZ = (A.z + B.z + C.z) / 3;
+          // back-face cull via signed area in 2D (approximate)
+          const sa = (B.sx - A.sx) * (C.sy - A.sy) - (B.sy - A.sy) * (C.sx - A.sx);
+          if (sa < 0) continue;
+          const depthAlpha = Math.max(0, Math.min(1, (1 - (avgZ + 1) / 2)));
+          const a = faceAlpha * (0.4 + depthAlpha * 0.6);
+          ctx.fillStyle = topoMode === 'bad' && zoom > 0.4
+            ? `rgba(255,79,79,${a * 0.6})`
+            : `rgba(159,246,255,${a})`;
+          ctx.beginPath();
+          ctx.moveTo(A.sx, A.sy);
+          ctx.lineTo(B.sx, B.sy);
+          ctx.lineTo(C.sx, C.sy);
+          ctx.closePath();
+          ctx.fill();
+        }
+        if (i > 200) break;
+      }
+      // store for HUD
+      window._faceCount = faceCount;
+    } else {
+      window._faceCount = 0;
+    }
+
+    window._edgeCount = edgeCount;
+  } else {
+    window._edgeCount = 0;
+    window._faceCount = 0;
+  }
+
+  // ── DRAW VOLUME WIREFRAME (center axis + cross contours) ──
+  if (vis.vol > 0.05) {
+    const a = vis.vol * 0.7;
+    // center axis (3 axes)
+    const pulse = 1 + Math.sin(frameTime * 3) * 0.08;
+    const axisL = 1.3 * pulse;
+    const xAx = [project(-axisL,0,0), project(axisL,0,0)];
+    const yAx = [project(0,-axisL,0), project(0,axisL,0)];
+    const zAx = [project(0,0,-axisL), project(0,0,axisL)];
+    ctx.save();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = `rgba(54,255,0,${a * 0.6})`;
+    ctx.setLineDash([3, 4]);
+    for (const ax of [xAx, yAx, zAx]) {
+      ctx.beginPath();
+      ctx.moveTo(ax[0].sx, ax[0].sy);
+      ctx.lineTo(ax[1].sx, ax[1].sy);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // cross contours (equator + 2 meridians)
+    const contourPts = 48;
+    for (let c = 0; c < 3; c++) {
+      ctx.strokeStyle = `rgba(54,255,0,${a * 0.5})`;
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      for (let i = 0; i <= contourPts; i++) {
+        const t = (i / contourPts) * Math.PI * 2;
+        let pt;
+        if (c === 0) pt = project(Math.cos(t), 0, Math.sin(t));
+        else if (c === 1) pt = project(Math.cos(t), Math.sin(t), 0);
+        else pt = project(0, Math.cos(t), Math.sin(t));
+        if (i === 0) ctx.moveTo(pt.sx, pt.sy);
+        else ctx.lineTo(pt.sx, pt.sy);
+      }
+      ctx.stroke();
+    }
+
+    // FORM DETECTED text appears briefly near volume center
+    if (vis.vol > 0.6 && topoMode === 'good') {
+      ctx.save();
+      ctx.font = 'bold 10px IBM Plex Mono, monospace';
+      ctx.fillStyle = `rgba(54,255,0,${vis.vol * 0.8})`;
+      ctx.fillText('▸ FORM DETECTED', W * 0.5 + 40, H * 0.5 - 60);
+      // small target box
+      ctx.strokeStyle = `rgba(54,255,0,${vis.vol * 0.5})`;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(W * 0.5 + 30, H * 0.5 - 75, 130, 22);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ── DRAW POINTS ──
+  // Sort by z for proper rendering
+  const sortedProj = [...proj].sort((a, b) => a.z - b.z);
+  const ptAlpha = Math.max(0.15, vis.pt) * 0.95;
+  for (const pr of sortedProj) {
+    const depthAlpha = Math.max(0.25, Math.min(1, (1 - (pr.z + 1) / 2)));
+    const baseSize = 1.2 + pr.persp * 1.3;
+    // Color shifts as we go up the zoom
+    let col;
+    if (topoMode === 'bad' && zoom > 0.4) {
+      col = `rgba(255,79,79,${ptAlpha * depthAlpha})`;
+    } else if (vis.vol > 0.3) {
+      col = `rgba(54,255,0,${ptAlpha * depthAlpha})`;
+    } else if (vis.fc > 0.3) {
+      col = `rgba(159,246,255,${ptAlpha * depthAlpha})`;
+    } else if (vis.eg > 0.3) {
+      col = `rgba(127,255,155,${ptAlpha * depthAlpha})`;
+    } else {
+      col = `rgba(220,255,224,${ptAlpha * depthAlpha})`;
+    }
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(pr.sx, pr.sy, baseSize, 0, Math.PI * 2);
+    ctx.fill();
+    // glow halo for VOLUME stage
+    if (vis.vol > 0.4) {
+      ctx.fillStyle = `rgba(54,255,0,${ptAlpha * depthAlpha * 0.15})`;
+      ctx.beginPath();
+      ctx.arc(pr.sx, pr.sy, baseSize * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── DENSITY FIELD overlay (subtle, when in transition) ──
+  // (skip — points + edges already convey it)
+}
+
+// ── HUD UPDATE ──
+let lastLayer = null;
+let bigFormTimeout = null;
+function showBigForm(txt) {
+  const el = document.getElementById('big-form');
+  el.textContent = txt;
+  el.classList.add('show');
+  if (bigFormTimeout) clearTimeout(bigFormTimeout);
+  bigFormTimeout = setTimeout(() => el.classList.remove('show'), 700);
+}
+
+function updateHUD() {
+  const vis = layerVis(zoom);
+  const layer = recognitionLayer(zoom);
+  const topo = topologyState(zoom);
+
+  // Zoom rail
+  document.getElementById('rail-marker').style.bottom = (zoom * 100) + '%';
+  document.getElementById('zoom-val').textContent = zoom.toFixed(2);
+  document.querySelectorAll('.rail-tick').forEach(t => t.classList.remove('active'));
+  // mark closest tick as active
+  const ticks = ['POINT','EDGE','FACE','VOLUME'];
+  document.querySelectorAll('.rail-tick').forEach((t, i) => {
+    if (ticks[i] === layer) t.classList.add('active');
+  });
+
+  // Density bar
+  ticks.forEach(name => {
+    document.getElementById('seg-' + name).classList.toggle('active', name === layer);
+  });
+
+  // Layer rows
+  ['POINT','EDGE','FACE','VOLUME'].forEach(name => {
+    document.getElementById('lay-' + name).classList.toggle('active',
+      (name === 'POINT' && vis.pt > 0.5) ||
+      (name === 'EDGE' && vis.eg > 0.5) ||
+      (name === 'FACE' && vis.fc > 0.5) ||
+      (name === 'VOLUME' && vis.vol > 0.5));
+    document.getElementById('vis-' + name).textContent = Math.round(({
+      POINT: vis.pt, EDGE: vis.eg, FACE: vis.fc, VOLUME: vis.vol
+    })[name] * 100) + '%';
+  });
+
+  // Phase badge
+  const badge = document.getElementById('phase-badge');
+  badge.className = layer;
+  badge.textContent = 'LAYER: ' + layer;
+
+  // Main HUD
+  document.getElementById('h-zoom').textContent = zoom.toFixed(2);
+  document.getElementById('h-layer').textContent = layer;
+  document.getElementById('h-pt').textContent = String(points.length).padStart(3,'0');
+  document.getElementById('h-eg').textContent = String(window._edgeCount || 0).padStart(3,'0');
+  document.getElementById('h-fc').textContent = String(window._faceCount || 0).padStart(3,'0');
+  document.getElementById('h-topo').textContent = topo;
+  document.getElementById('h-topo').className = 'val' + (topoMode === 'bad' && zoom > 0.3 ? ' warn' : '');
+
+  // Live panel
+  document.getElementById('lv-rec').textContent = layer;
+  document.getElementById('lv-zoom').textContent = zoom.toFixed(3);
+  document.getElementById('lv-ptd').textContent = (points.length * vis.pt / 100).toFixed(2);
+  document.getElementById('lv-egc').textContent = window._edgeCount || 0;
+  document.getElementById('lv-fcc').textContent = window._faceCount || 0;
+  document.getElementById('lv-topo').textContent = topo;
+  document.getElementById('lv-topo').className = 'dv' + (topoMode === 'bad' && zoom > 0.3 ? ' warn' : '');
+  const integrity = topoMode === 'bad' ? Math.max(0, 1 - zoom * 1.2) : zoom;
+  document.getElementById('lv-int').textContent = Math.round(integrity * 100) + '%';
+
+  // Bottombar
+  document.getElementById('bb-layer').textContent = layer;
+  document.getElementById('bb-topo').textContent = topo;
+  document.getElementById('bb-form').textContent = vis.vol > 0.5 && topoMode === 'good' ? 'DETECTED' : '—';
+  document.getElementById('bb-state').textContent = autoPlay ? 'AUTO TRANSITION' : 'RECOGNITION ACTIVE';
+
+  // Topbar state
+  document.getElementById('topbar-state').textContent =
+    `RECOGNITION_LAYER: ${layer} // TOPOLOGY: ${topo}`;
+
+  // Layer transition flash
+  if (layer !== lastLayer) {
+    if (lastLayer && layer === 'VOLUME' && topoMode === 'good') {
+      showBigForm('FORM DETECTED');
+    } else if (lastLayer && layer === 'EDGE' && vis.eg > 0.5) {
+      showBigForm('EDGE FORMATION');
+    } else if (lastLayer && layer === 'FACE') {
+      showBigForm('FACE FORMING');
+    }
+    lastLayer = layer;
+  }
+}
+
+// ── LOOP ──
+let lastT = performance.now();
+function loop(t) {
+  const dt = Math.min(0.05, (t - lastT) / 1000);
+  lastT = t;
+  frameTime = (t - startTime) / 1000;
+  step(dt);
+  draw();
+  updateHUD();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
