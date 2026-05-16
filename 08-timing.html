@@ -3,455 +3,988 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINETIC GEOMETRY — 08 TIMING</title>
+<title>tDR · 08 TIMING &amp; SPACING</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --acid:#36FF00;--neon:#F9FF47;--black:#000;--white:#fff;
-  --panel:#0C0C0C;--panel2:#0E0E0E;
-  --border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
-  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.25);
-  --mono:'IBM Plex Mono',monospace;
-  --cond:'Barlow Condensed',sans-serif;
-  --jp:'Noto Sans JP',sans-serif;
+@font-face{
+  font-family:"Bank Gothic";
+  src:url("fonts/bank-gothic-light-bt.ttf") format("truetype");
+  font-weight:300 700;
+  font-display:swap;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
 
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f2f2ef;
+  --plate:#ffffff;
+  --ink:#0a0a0a;
+  --ink-2:#1a1a1a;
+  --mute:#9a9a96;
+  --mute-2:#cfcfca;
+  --mute-3:#e6e6e1;
+  --line:#0a0a0a;
+  --acc:#c8ff1a;
+  --acc-ink:#0a0a0a;
+  --hatch:rgba(10,10,10,0.08);
+  --grid:rgba(10,10,10,0.035);
+  --grid-major:rgba(10,10,10,0.06);
+
+  --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,monospace;
+  --display:"Bank Gothic","JetBrains Mono",system-ui,sans-serif;
+  --jp:"IBM Plex Sans JP",system-ui,sans-serif;
+
+  --ez:cubic-bezier(0.2,0,0,1);
+}
+
+html,body{
+  height:100%;width:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:var(--mono);
+  font-feature-settings:"tnum","ss01";
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SHELL: header / plate / footer
+   ───────────────────────────────────────────────────────── */
 #app{
   display:grid;
-  grid-template-rows:44px 1fr 44px;
-  grid-template-columns:1fr 320px;
+  grid-template-rows:48px 1fr 28px;
   height:100vh;width:100vw;
 }
 
-/* ── TOPBAR ── */
+/* HEADER */
 #topbar{
-  grid-column:1/-1;display:flex;align-items:center;
-  justify-content:space-between;padding:0 16px;
-  border-bottom:1px solid var(--border);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
-  background:var(--panel);position:relative;z-index:10;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:stretch;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
 }
-#topbar .left{display:flex;align-items:center;gap:16px}
-#topbar .right{display:flex;align-items:center;gap:16px}
-.sys-id{color:var(--dim);font-size:9px}
-.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
-.esc-btn{
-  color:var(--dim);font-size:9px;cursor:pointer;text-decoration:none;
-  border:1px solid var(--border);padding:2px 8px;transition:all 0.15s;
+#topbar .brand{
+  display:flex;align-items:center;gap:12px;
+  padding:0 18px;border-right:1px solid var(--line);
 }
-.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+#topbar .brand .mk{width:14px;height:14px;background:var(--acc);display:block}
+#topbar .brand .name{
+  font-family:var(--display);font-size:12px;
+  letter-spacing:0.22em;text-transform:uppercase;font-weight:400;
+}
+#topbar .crumbs{
+  display:flex;align-items:center;gap:22px;padding:0 18px;
+  font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink);overflow:hidden;white-space:nowrap;
+}
+#topbar .crumbs .sep{color:var(--mute)}
+#topbar .crumbs .coord{color:var(--mute)}
+#topbar .tools{display:flex;align-items:stretch;border-left:1px solid var(--line)}
+#topbar .tools button,
+#topbar .tools a{
+  appearance:none;background:transparent;border:none;
+  border-right:1px solid var(--line);
+  padding:0 14px;
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;
+  text-decoration:none;
+}
+#topbar .tools button:last-child,
+#topbar .tools a:last-child{border-right:none}
+#topbar .tools button:hover,
+#topbar .tools a:hover{background:var(--ink);color:var(--bg)}
+#topbar .tools button:hover .dot{background:var(--bg)}
+#topbar .tools .dot{width:6px;height:6px;background:var(--ink);display:inline-block}
+#topbar .tools .tool-acc{background:var(--acc);color:var(--acc-ink)}
+#topbar .tools .tool-acc .dot{background:var(--acc-ink)}
 
-/* ── STAGE ── */
+/* MAIN PLATE */
 #stage{
-  position:relative;overflow:hidden;background:var(--black);
-  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  background:
+    linear-gradient(var(--grid-major) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(90deg,var(--grid-major) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    var(--bg);
 }
 
-.stage-grid{
-  position:absolute;inset:0;pointer-events:none;
+/* GHOST 08 numeral */
+.gh-08{
+  position:absolute;
+  font-family:var(--display);
+  font-size:clamp(380px,52vh,720px);
+  font-weight:300;
+  letter-spacing:-0.06em;
+  line-height:0.78;
+  color:var(--mute-2);
+  bottom:-6%;right:-2%;
+  pointer-events:none;user-select:none;
+  z-index:0;
+  opacity:0.55;
+}
+.gh-2B{
+  position:absolute;
+  top:38%;left:2%;
+  font-family:var(--mono);font-weight:700;
+  font-size:9vh;letter-spacing:0.02em;
+  color:var(--mute-2);opacity:0.5;
+  pointer-events:none;user-select:none;z-index:0;
+}
+
+/* tick rule along top of plate */
+.ticks-top{
+  position:absolute;top:14px;left:18px;right:18px;height:14px;
   background-image:
-    linear-gradient(var(--border2) 1px,transparent 1px),
-    linear-gradient(90deg,var(--border2) 1px,transparent 1px);
-  background-size:48px 48px;
+    linear-gradient(90deg,var(--mute-2) 1px,transparent 1px);
+  background-size:40px 100%;
+  opacity:0.5;pointer-events:none;
 }
-.stage-bignum{
-  position:absolute;font-family:var(--cond);font-weight:900;
-  font-size:clamp(180px,26vw,340px);color:rgba(54,255,0,0.025);
-  line-height:1;bottom:-30px;left:-10px;
-  pointer-events:none;user-select:none;letter-spacing:-0.05em;
+.ticks-top-major{
+  position:absolute;top:14px;left:18px;right:18px;height:18px;
+  background-image:
+    linear-gradient(90deg,var(--ink) 1px,transparent 1px);
+  background-size:200px 100%;
+  opacity:0.16;pointer-events:none;
 }
-.corner{position:absolute;width:16px;height:16px;pointer-events:none}
-.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
-.corner::before{width:1px;height:16px;top:0}
-.corner::after{width:16px;height:1px;top:0}
-.corner.tl{top:12px;left:12px}
-.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
-.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}
-.corner.br{bottom:12px;right:12px;transform:scale(-1)}
-.principle-overlay{
-  position:absolute;top:16px;right:16px;text-align:right;
-  font-family:var(--mono);pointer-events:none;
+.ticks-right{
+  position:absolute;right:6px;top:120px;bottom:120px;width:12px;
+  background-image:linear-gradient(0deg,var(--mute-2) 1px,transparent 1px);
+  background-size:100% 40px;opacity:0.5;pointer-events:none;
 }
-.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
-.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
-.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+
+/* corner registration crosses */
+.regmarks{position:absolute;inset:0;pointer-events:none;z-index:1}
+.regmarks .plus{
+  position:absolute;
+  font-family:var(--mono);font-size:14px;line-height:1;
+  color:var(--mute);
+}
+.regmarks .plus.tl{top:6px;left:24px}
+.regmarks .plus.tr{top:6px;right:24px}
+.regmarks .plus.bl{bottom:6px;left:24px}
+.regmarks .plus.br{bottom:6px;right:24px}
+.regmarks .plus.f1{top:18%;left:62%;color:var(--mute-2)}
+.regmarks .plus.f2{top:46%;left:18%;color:var(--mute-2)}
+.regmarks .plus.f3{bottom:22%;left:46%;color:var(--mute-2)}
+
+/* corner cross hairs — anchored to decor frame, not inside content */
+.corner{position:absolute;width:14px;height:14px;pointer-events:none;z-index:1}
+.corner::before,.corner::after{content:"";position:absolute;background:var(--ink)}
+.corner::before{width:1px;height:14px;top:0;left:0}
+.corner::after{width:14px;height:1px;top:0;left:0}
+.corner.ctl{top:8px;left:8px}
+.corner.ctr{top:8px;right:8px;transform:scaleX(-1)}
+.corner.cbl{bottom:8px;left:8px;transform:scaleY(-1)}
+.corner.cbr{bottom:8px;right:8px;transform:scale(-1)}
+
+/* axis labels */
+.axis{position:absolute;pointer-events:none;z-index:2;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;
+  color:var(--mute);text-transform:uppercase;
+}
+.axis b{
+  display:block;color:var(--ink);font-weight:600;
+  font-size:11px;letter-spacing:0.04em;margin-top:2px;
+}
+.axis.tl{top:28px;left:24px}
+.axis.tr{top:28px;right:24px;text-align:right}
+.axis.bl{bottom:24px;left:24px}
+.axis.br{bottom:24px;right:24px;text-align:right}
+
+/* yellow accent slab on right edge */
+.acc-rail{position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--acc);z-index:1}
+
+/* hatch slab */
+.hatch-slab{
+  position:absolute;
+  right:14%;bottom:18%;
+  width:200px;height:18px;
+  background:repeating-linear-gradient(-60deg,var(--ink) 0 2px,transparent 2px 7px);
+  opacity:0.45;pointer-events:none;z-index:1;
+}
+/* solid black bar */
+.blk-bar{
+  position:absolute;
+  background:var(--ink);
+  pointer-events:none;z-index:1;
+}
+.blk-bar.b1{top:14%;left:34%;width:72px;height:8px}
+.blk-bar.b2{bottom:9%;left:30%;width:10px;height:10px}
+
+/* small checker square */
 .checker{
   position:absolute;
-  background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;
+  width:42px;height:42px;
+  background:
+    conic-gradient(var(--ink) 0 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0)
+    0 0/10px 10px;
+  opacity:0.85;pointer-events:none;z-index:1;
+}
+.checker.cks1{top:1%;left:3%}
+.checker.cks2{bottom:3%;right:22%;width:32px;height:32px;background-size:8px 8px}
+
+/* ─────────────────────────────────────────────────────────
+   CONTENT GRID — sits on top of decor
+   ───────────────────────────────────────────────────────── */
+.content{
+  position:absolute;inset:0;
+  display:grid;
+  grid-template-columns:1fr 320px;
+  z-index:5;
+}
+
+/* MAIN COLUMN */
+.main{
+  position:relative;
+  padding:48px 40px 38px 44px;
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
+  min-height:0;
+  gap:12px;
+}
+
+/* TITLE BLOCK — compact specimen */
+.title-blk{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;gap:24px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--ink);
+  position:relative;
+}
+.title-blk .idx{
+  font-family:var(--display);
+  font-size:72px;font-weight:300;line-height:0.82;
+  letter-spacing:-0.04em;
+  color:var(--ink);
+}
+.title-blk .ttl{
+  display:flex;flex-direction:column;gap:3px;
+}
+.title-blk .ttl .kicker{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--mute);
+}
+.title-blk .ttl .name{
+  font-family:var(--display);
+  font-size:28px;font-weight:400;line-height:1;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.title-blk .ttl .jp{
+  font-family:var(--jp);font-size:10px;
+  letter-spacing:0.14em;color:var(--mute);font-weight:500;
+}
+.title-blk .specs{
+  display:flex;flex-direction:column;gap:2px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--mute);text-align:right;
+}
+.title-blk .specs .coord{color:var(--ink);font-weight:600;letter-spacing:0.06em;font-size:10px}
+.title-blk .specs .pt{color:var(--ink);font-weight:600;letter-spacing:0.04em;font-size:10px}
+
+/* "[1.6 / 3.3333]" small bracketed value under the index */
+.title-blk .ratio{
+  position:absolute;
+  left:0;bottom:-1px;
+  transform:translateY(100%);
+  padding-top:4px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;color:var(--mute);
+}
+
+/* SUBLABEL — INC_SET strip */
+.inc-set{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;gap:14px;
+}
+.inc-set .lbl{
+  font-family:var(--mono);font-weight:700;
+  font-size:11px;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--ink);
+}
+.inc-set .bar{
+  position:relative;height:6px;background:var(--mute-3);
+  overflow:hidden;
+}
+.inc-set .bar::before{
+  content:"";position:absolute;top:0;left:0;height:100%;
+  width:var(--p,0%);background:var(--ink);
+  transition:width 80ms linear;
+}
+.inc-set .bar::after{
+  content:"";position:absolute;top:0;left:var(--p,0%);height:100%;width:14%;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px);
+}
+.inc-set .frac{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;color:var(--mute);
+}
+
+/* STAGE PLATE — holds rail + spacing editor */
+.plate{
+  position:relative;
+  background:var(--plate);
+  border:1px solid var(--line);
+  display:grid;
+  grid-template-rows:minmax(0,52%) minmax(0,48%);
+  min-height:0;
+  /* cut top-left corner like the design system plate */
+  clip-path:polygon(28px 0,100% 0,100% 100%,0 100%,0 28px);
+}
+.plate::before{
+  /* faint internal grid */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(10,10,10,0.022) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,rgba(10,10,10,0.022) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(rgba(10,10,10,0.04) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(90deg,rgba(10,10,10,0.04) 1px,transparent 1px) 0 0/200px 200px;
+}
+/* the cut-corner diagonal hairline */
+.plate::after{
+  content:"";position:absolute;top:0;left:0;width:42px;height:42px;
+  background:linear-gradient(135deg,transparent 49.4%,var(--ink) 49.4%,var(--ink) 50.6%,transparent 50.6%);
   pointer-events:none;
 }
-.checker.c1{bottom:56px;right:0;width:48px;height:48px}
-.checker.c2{top:44px;left:0;width:24px;height:80px}
 
-/* ── BALL ZONE (top 55%) ── */
-#ball-zone{
-  position:relative;flex:0 0 55%;
-  display:flex;align-items:center;
-  border-bottom:1px solid var(--border);
+/* plate corner labels */
+.plate-lbl{
+  position:absolute;
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(10,10,10,0.55);z-index:6;
+  pointer-events:none;
+}
+.plate-lbl.pl-tc{top:10px;right:14px;color:var(--ink);font-weight:600;letter-spacing:0.08em}
+.plate-lbl.pl-tc::before{content:"TC ";color:var(--mute);font-weight:400}
+.plate-lbl.pl-rec{top:26px;right:14px;color:var(--mute)}
+.plate-lbl.pl-rec::before{
+  content:"";display:inline-block;width:6px;height:6px;
+  background:var(--acc);margin-right:6px;vertical-align:1px;
+  animation:blk 1.2s infinite;
+}
+.plate-lbl.pl-id{top:10px;left:48px}
+.plate-lbl.pl-sect{
+  right:6px;top:42%;writing-mode:vertical-rl;
+  letter-spacing:0.5em;font-size:8px;color:rgba(10,10,10,0.35);
+}
+
+/* ─── BALL ZONE (top half of plate) ─── */
+.ball-zone{
+  position:relative;
+  border-bottom:1px solid var(--mute-2);
   overflow:hidden;
 }
 
-/* Rail */
-#rail-line{
-  position:absolute;left:60px;right:40px;
-  height:1px;background:var(--border);
-  top:50%;
+.bz-label{
+  position:absolute;top:14px;left:18px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--ink);font-weight:600;z-index:6;
 }
-/* start / end tick */
+.bz-label .meta{color:var(--mute);font-weight:400;margin-left:10px;letter-spacing:0.08em}
+
+#rail-line{
+  position:absolute;left:64px;right:64px;
+  height:1px;background:var(--ink);
+  top:50%;opacity:0.65;
+}
 #rail-line::before,#rail-line::after{
-  content:'';position:absolute;top:-6px;
-  width:1px;height:13px;background:var(--dim2);
+  content:"";position:absolute;top:-8px;
+  width:1px;height:17px;background:var(--ink);
 }
 #rail-line::before{left:0}
 #rail-line::after{right:0}
 
-/* labels */
+/* secondary frame ticks along the rail */
+.rail-ticks{
+  position:absolute;left:64px;right:64px;
+  height:6px;background:transparent;top:calc(50% - 3px);
+  background-image:linear-gradient(90deg,var(--mute) 1px,transparent 1px);
+  background-size:calc(100%/12) 100%;
+  opacity:0.45;pointer-events:none;
+}
+
 #start-label,#end-label{
-  position:absolute;top:calc(50% + 12px);
-  font-family:var(--mono);font-size:8px;color:var(--dim2);letter-spacing:0.08em;
+  position:absolute;top:calc(50% + 14px);
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.16em;color:var(--mute);text-transform:uppercase;
 }
-#start-label{left:56px}
-#end-label{right:36px;text-align:right}
+#start-label{left:60px}
+#end-label{right:60px;text-align:right}
 
-/* trail canvas (behind ball) */
+/* coords on rail */
+.rail-coord-l,.rail-coord-r{
+  position:absolute;top:calc(50% - 26px);
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.08em;color:var(--mute);
+}
+.rail-coord-l{left:60px}
+.rail-coord-r{right:60px;text-align:right}
+
 #trail-canvas{
-  position:absolute;left:60px;right:40px;top:0;bottom:0;
+  position:absolute;left:64px;right:64px;top:0;bottom:0;
   pointer-events:none;
 }
 
-/* ball */
+/* ball — yellow square accent (tDR uses solid yellow slab) */
 #ball{
-  position:absolute;top:50%;left:60px;
-  width:26px;height:26px;
+  position:absolute;top:50%;left:64px;
+  width:22px;height:22px;
   transform:translate(-50%,-50%);
-  border-radius:50%;
-  border:1.5px solid var(--neon);
-  background:rgba(249,255,71,0.12);
+  background:var(--acc);
+  border:1px solid var(--ink);
   pointer-events:none;
-  transition:none;
   z-index:4;
 }
 #ball-core{
-  position:absolute;inset:5px;border-radius:50%;
-  background:var(--neon);opacity:0.9;
+  position:absolute;inset:5px;background:var(--ink);
 }
-/* velocity halo */
 #ball-halo{
-  position:absolute;inset:-8px;border-radius:50%;
-  border:1px solid rgba(249,255,71,0.15);
+  position:absolute;inset:-9px;
+  border:1px solid var(--ink);opacity:0.18;
   pointer-events:none;
 }
 
-/* frame label on ball */
 #ball-fr-label{
-  position:absolute;top:calc(50% - 28px);
-  font-family:var(--mono);font-size:8px;color:var(--dim);
-  letter-spacing:0.06em;pointer-events:none;
-  transform:translateX(-50%);
+  position:absolute;top:calc(50% - 32px);
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:0.08em;color:var(--ink);
+  transform:translateX(-50%);pointer-events:none;
+  background:var(--plate);padding:0 4px;
 }
 
-/* ghost frames drawn via canvas — so no DOM ghosts needed */
-
-/* current speed readout */
+/* speed HUD bottom-left of ball zone */
 #speed-hud{
-  position:absolute;bottom:12px;left:60px;
-  font-family:var(--mono);font-size:9px;color:var(--dim);
-  letter-spacing:0.06em;
-  display:flex;gap:20px;
+  position:absolute;bottom:14px;left:18px;
+  display:grid;grid-template-columns:repeat(3,auto);gap:16px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.08em;color:var(--mute);text-transform:uppercase;
+  z-index:6;
 }
-#speed-hud span{color:var(--acid)}
+#speed-hud .k{color:var(--mute);margin-right:6px}
+#speed-hud .v{color:var(--ink);font-weight:700;font-feature-settings:"tnum"}
 
-/* ── SPACING ZONE (bottom 45%) ── */
-#spacing-zone{
-  position:relative;flex:0 0 45%;
-  overflow:hidden;
+/* ─── SPACING ZONE (bottom half) ─── */
+.spacing-zone{position:relative;overflow:hidden}
+
+.sz-label{
+  position:absolute;top:14px;left:18px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--ink);font-weight:600;z-index:6;
+}
+.sz-label .meta{color:var(--mute);font-weight:400;margin-left:10px;letter-spacing:0.08em}
+.sz-label .jp{
+  display:block;font-family:var(--jp);font-size:9px;
+  letter-spacing:0.04em;font-weight:400;color:var(--mute);
+  text-transform:none;margin-top:2px;
 }
 
-#sz-label{
-  position:absolute;top:10px;left:16px;
-  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
-  color:var(--dim);
-}
-#sz-label strong{color:var(--acid)}
-
-/* spacing canvas */
 #spacing-canvas{
   position:absolute;left:0;right:0;top:0;bottom:0;
-  cursor:crosshair;
-  touch-action:none;
+  cursor:crosshair;touch-action:none;
 }
 
-/* mode label */
-#spacing-mode-label{
-  position:absolute;bottom:10px;right:16px;
-  font-family:var(--mono);font-size:8px;
-  color:var(--dim);letter-spacing:0.08em;
-}
-
-/* ── SIDE PANEL ── */
-#panel{
-  border-left:1px solid var(--border);background:var(--panel);
-  overflow-y:auto;overflow-x:hidden;
-  scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
-}
-#panel::-webkit-scrollbar{width:2px}
-#panel::-webkit-scrollbar-thumb{background:var(--acid)}
-
-.psec{border-bottom:1px solid var(--border);padding:14px 16px}
-.psec:last-child{border-bottom:none}
-.sec-label{
-  font-family:var(--mono);font-size:8px;letter-spacing:0.15em;
-  color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px;
-}
-.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
-.sec-title{
-  font-family:var(--cond);font-weight:900;font-size:24px;
-  letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px;
-}
-.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
-.body-en{
-  font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);
-  letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px;
-}
-.data-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:5px 0;border-bottom:1px solid var(--border2);
+.sz-mode{
+  position:absolute;bottom:14px;right:18px;
   font-family:var(--mono);font-size:9px;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--mute);
+  z-index:6;
 }
-.data-row:last-child{border-bottom:none}
-.dk{color:var(--dim);letter-spacing:0.05em}
-.dv{color:var(--acid);font-weight:700}
-.dv.neon{color:var(--neon)}
+.sz-mode .v{color:var(--ink);font-weight:700;padding:1px 6px;background:var(--acc);margin-left:6px}
+
+/* ─── BOTTOM STATUS STRIP (inside main col, below plate) ─── */
+.bottom-strip{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;gap:18px;
+  padding-top:6px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);
+}
+.bottom-strip .id{color:var(--ink);font-weight:600;letter-spacing:0.08em}
+.bottom-strip .bar2{
+  height:5px;position:relative;background:var(--mute-3);
+}
+.bottom-strip .bar2::before{
+  content:"";position:absolute;top:0;left:0;height:100%;
+  width:var(--p,0%);background:var(--ink);
+  transition:width 80ms linear;
+}
+.bottom-strip .frame{color:var(--ink);font-weight:700;letter-spacing:0.04em;font-size:10px}
+.bottom-strip .frame .acc{color:var(--acc-ink);background:var(--acc);padding:1px 6px;margin:0 4px}
+
+/* ─────────────────────────────────────────────────────────
+   SIDE PANEL
+   ───────────────────────────────────────────────────────── */
+.side{
+  border-left:1px solid var(--line);
+  background:var(--bg);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--ink) transparent;
+}
+.side::-webkit-scrollbar{width:3px}
+.side::-webkit-scrollbar-thumb{background:var(--ink)}
+
+.psec{padding:16px 18px;border-bottom:1px solid var(--mute-2)}
+.psec:last-child{border-bottom:none}
+
+.sec-lbl{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--mute);
+  margin-bottom:12px;
+}
+.sec-lbl .sq{width:8px;height:8px;background:var(--ink);display:inline-block}
+.sec-lbl .sq.acc{background:var(--acc)}
+.sec-lbl .num{
+  font-weight:700;color:var(--ink);letter-spacing:0.1em;
+  border:1px solid var(--ink);padding:1px 5px;font-size:8px;
+}
+
+.sec-ttl{
+  font-family:var(--display);font-size:22px;font-weight:400;
+  letter-spacing:0.08em;text-transform:uppercase;
+  line-height:1.05;color:var(--ink);margin-bottom:8px;
+}
+.body-jp{
+  font-family:var(--jp);font-size:11px;line-height:1.85;
+  color:var(--ink-2);margin-bottom:8px;font-weight:500;
+}
+.body-en{
+  font-family:var(--mono);font-size:9px;line-height:1.7;
+  letter-spacing:0.02em;color:var(--mute);
+  border-left:2px solid var(--ink);padding-left:8px;
+}
+
+/* data rows */
+.row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px dashed var(--mute-2);
+  font-family:var(--mono);font-size:9px;letter-spacing:0.04em;
+}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--mute);text-transform:uppercase;letter-spacing:0.08em}
+.row .v{color:var(--ink);font-weight:700;font-feature-settings:"tnum"}
+.row .v.acc{background:var(--acc);padding:0 6px}
 
 /* buttons */
 .btn{
-  display:inline-block;font-family:var(--mono);font-size:9px;
-  letter-spacing:0.1em;border:1px solid var(--border);
-  padding:5px 10px;cursor:pointer;color:var(--dim);background:transparent;
-  transition:all 0.15s;margin-right:3px;margin-bottom:3px;
+  appearance:none;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:5px 9px;border:1px solid var(--ink);
+  background:var(--plate);color:var(--ink);
+  cursor:pointer;margin:0;
+  display:inline-flex;align-items:center;gap:5px;
 }
-.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
-.btn.neon:hover,.btn.neon.active{background:var(--neon);border-color:var(--neon);color:var(--black)}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn.active{background:var(--ink);color:var(--bg)}
+.btn.acc.active,.btn.acc:hover{background:var(--acc);color:var(--acc-ink);border-color:var(--ink)}
 
-/* velocity graph */
-#vel-graph{width:100%;height:72px;display:block;margin-top:6px}
+.btn-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
 
-/* spacing pattern display */
-.pattern-row{
-  display:flex;align-items:center;gap:3px;
-  padding:6px 0;border-bottom:1px solid var(--border2);
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:2px;background:var(--ink);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:10px;height:14px;background:var(--acc);
+  border:1px solid var(--ink);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:10px;height:14px;background:var(--acc);
+  border:1px solid var(--ink);cursor:pointer;
+}
+
+/* presets */
+.pre-row{
+  display:grid;
+  grid-template-columns:78px 1fr 28px;
+  align-items:center;gap:8px;
+  padding:6px 0;border-bottom:1px dashed var(--mute-2);
   cursor:pointer;
 }
-.pattern-row:last-child{border-bottom:none}
-.pattern-row:hover .p-name{color:var(--acid)}
-.p-name{font-family:var(--mono);font-size:8px;color:var(--dim);width:72px;flex-shrink:0}
-.p-dots{display:flex;align-items:center;gap:0;flex:1;position:relative;height:12px}
-.p-dot{width:5px;height:5px;border-radius:50%;background:var(--dim2);flex-shrink:0}
+.pre-row:last-child{border-bottom:none}
+.pre-row:hover .pn{color:var(--ink)}
+.pre-row.active{background:var(--acc)}
+.pre-row.active .pn{color:var(--ink);font-weight:700}
+.pn{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);
+}
+.pdots{
+  position:relative;height:14px;border-bottom:1px solid var(--mute-2);
+}
+.pdot{
+  position:absolute;
+  width:5px;height:5px;background:var(--ink);
+  bottom:-2px;transform:translateX(-50%);border-radius:50%;
+}
+.pre-row.active .pdot{background:var(--ink)}
+.px{
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.06em;color:var(--mute);text-align:right;
+}
+.pre-row.active .px{color:var(--ink);font-weight:700}
 
-/* JSON output */
+/* vel graph */
+#vel-graph{width:100%;height:74px;display:block;
+  background:var(--plate);border:1px solid var(--mute-2);}
+
+/* JSON */
 #json-out{
-  font-family:var(--mono);font-size:7px;line-height:1.6;
-  color:rgba(54,255,0,0.5);word-break:break-all;
-  background:rgba(54,255,0,0.03);border:1px solid var(--border2);
-  padding:6px;max-height:80px;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--dim2) transparent;
+  font-family:var(--mono);font-size:8px;line-height:1.6;
+  color:var(--ink-2);word-break:break-all;
+  background:var(--plate);border:1px solid var(--mute-2);
+  padding:8px;max-height:90px;overflow-y:auto;
+  letter-spacing:0;
 }
+#json-out::-webkit-scrollbar{width:3px}
+#json-out::-webkit-scrollbar-thumb{background:var(--mute)}
 
-/* ── BOTTOM BAR ── */
+/* FOOTER */
 #bottombar{
-  grid-column:1/-1;display:flex;align-items:center;
-  justify-content:space-between;padding:0 16px;
-  border-top:1px solid var(--border);font-family:var(--mono);
-  font-size:9px;background:var(--panel);letter-spacing:0.06em;
+  border-top:1px solid var(--line);background:var(--bg);
+  display:grid;grid-template-columns:auto 1fr auto auto;
+  align-items:center;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);
 }
-#bottombar .bl{color:var(--dim);display:flex;gap:16px}
-#bottombar .bc{color:var(--acid);font-weight:700}
-#bottombar .br{color:var(--dim)}
+#bottombar > *{
+  padding:0 16px;height:100%;display:flex;align-items:center;gap:10px;
+  border-right:1px solid var(--mute-2);
+}
+#bottombar > *:last-child{border-right:none}
 .kbd{
-  display:inline-block;border:1px solid var(--border);
-  padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:14px;border:1px solid var(--ink);
+  font-size:8px;color:var(--ink);padding:0 4px;
 }
+#bottombar .blink{
+  width:6px;height:6px;background:var(--acc);display:inline-block;
+  animation:blk 1.2s infinite;
+}
+#bottombar .v{color:var(--ink);font-weight:700}
 
-/* drag highlight */
-.dot-hover{filter:brightness(2)}
+@keyframes blk{50%{opacity:0.2}}
+
+/* tiny mini map of frame index along bottom (decorative dotted track) */
+.frame-dots{
+  display:flex;gap:3px;
+}
+.frame-dots .fd{
+  width:4px;height:4px;background:var(--mute-2);border-radius:50%;
+}
+.frame-dots .fd.on{background:var(--ink)}
+.frame-dots .fd.cur{background:var(--acc);box-shadow:0 0 0 1px var(--ink)}
+
+/* responsive guards */
+@media (max-height:780px){
+  .title-blk .idx{font-size:58px}
+  .title-blk .ttl .name{font-size:24px}
+  .title-blk .ttl .kicker{font-size:8px}
+  .title-blk .ttl .jp{font-size:9px}
+  .main{padding:36px 32px 30px 36px;gap:10px}
+  .gh-08{font-size:clamp(280px,46vh,560px);bottom:-8%}
+  .axis{display:none}
+  .corner.ctl,.corner.ctr,.corner.cbl,.corner.cbr{display:none}
+  .regmarks .plus.tl,.regmarks .plus.tr,.regmarks .plus.bl,.regmarks .plus.br{display:none}
+  .checker.cks1,.checker.cks2,.hatch-slab,.blk-bar.b1,.blk-bar.b2{opacity:0.5}
+}
+@media (max-height:600px){
+  .title-blk .idx{font-size:44px}
+  .title-blk .ttl .name{font-size:20px}
+  .title-blk{gap:14px}
+  .main{padding:22px 24px 18px 28px;gap:8px;grid-template-rows:auto 1fr}
+  .inc-set{display:none}
+  .bottom-strip{display:none}
+  .gh-2B{display:none}
+  .checker,.hatch-slab,.blk-bar{display:none}
+  .regmarks{display:none}
+}
+@media (max-width:980px){
+  .content{grid-template-columns:1fr 280px}
+  .main{padding:36px 28px 28px 32px}
+  .axis.tl,.axis.tr,.axis.bl,.axis.br{font-size:8px}
+}
 </style>
 </head>
 <body>
+
 <div id="app">
 
-<!-- TOPBAR -->
-<header id="topbar">
-  <div class="left">
-    <span class="sys-id">KINETIC_GEOMETRY // LEC_08</span>
-    <span class="title-tag">PRINCIPLE_08 // TIMING &amp; SPACING</span>
-  </div>
-  <div class="right">
-    <span class="sys-id">SYS_ID:08 // SPACING_EDIT: ACTIVE</span>
-    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
-  </div>
-</header>
+  <!-- ─── TOP BAR ─── -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="mk"></span>
+      <span class="name">tDR ⁄ KINETIC GEOMETRY · v01.0 — 2026</span>
+    </div>
+    <div class="crumbs">
+      <span>INDEX</span><span class="sep">⁄</span>
+      <span>PRINCIPLE&nbsp;08</span><span class="sep">⁄</span>
+      <span class="coord">[ 55°36'??.2"N — 2°45'??4"W ]</span>
+      <span class="sep">⁄</span>
+      <span class="coord">170823 · AR ⁄ DAILY_SERIES</span>
+    </div>
+    <div class="tools">
+      <button id="btn-tweaks" class="tool-acc"><span class="dot"></span>TWEAKS</button>
+      <button id="btn-fit"><span class="dot"></span>FIT</button>
+      <button id="btn-export"><span class="dot"></span>EXPORT.JSON</button>
+      <a id="btn-esc" href="#"><span class="dot"></span>[ESC] INDEX</a>
+    </div>
+  </header>
 
-<!-- STAGE -->
-<main id="stage">
-  <div class="stage-grid"></div>
-  <div class="stage-bignum">08</div>
-  <div class="corner tl"></div><div class="corner tr"></div>
-  <div class="corner bl"></div><div class="corner br"></div>
-  <div class="checker c1"></div><div class="checker c2"></div>
-  <div class="principle-overlay">
-    <div class="po-num">PRINCIPLE // 08</div>
-    <div class="po-en">TIMING</div>
-    <div class="po-jp">タイミング</div>
-  </div>
+  <!-- ─── STAGE ─── -->
+  <main id="stage">
 
-  <!-- BALL ZONE -->
-  <div id="ball-zone">
-    <canvas id="trail-canvas"></canvas>
-    <div id="rail-line"></div>
-    <div id="start-label">START</div>
-    <div id="end-label">END</div>
-    <div id="ball"><div id="ball-core"></div><div id="ball-halo"></div></div>
-    <div id="ball-fr-label">F:00</div>
-    <div id="speed-hud">
-      <div>VEL&nbsp;<span id="hud-vel">0.00</span></div>
-      <div>FR&nbsp;<span id="hud-fr">00</span>&nbsp;/&nbsp;<span id="hud-total">12</span></div>
-      <div>POS&nbsp;<span id="hud-pos">0.0</span>%</div>
-    </div>
-  </div>
+    <!-- DECOR LAYER -->
+    <div class="gh-08">08</div>
+    <div class="gh-2B">2B</div>
+    <div class="ticks-top-major"></div>
+    <div class="ticks-top"></div>
+    <div class="ticks-right"></div>
 
-  <!-- SPACING ZONE -->
-  <div id="spacing-zone">
-    <div id="sz-label">// <strong>SPACING EDITOR</strong> — ドットをドラッグして動きを設計する</div>
-    <canvas id="spacing-canvas"></canvas>
-    <div id="spacing-mode-label">MODE: <span id="mode-name">CUSTOM</span></div>
-  </div>
-</main>
+    <div class="regmarks">
+      <span class="plus tl">+</span>
+      <span class="plus tr">+</span>
+      <span class="plus bl">+</span>
+      <span class="plus br">+</span>
+      <span class="plus f1">+</span>
+      <span class="plus f2">+</span>
+      <span class="plus f3">+</span>
+    </div>
+    <div class="corner ctl"></div>
+    <div class="corner ctr"></div>
+    <div class="corner cbl"></div>
+    <div class="corner cbr"></div>
 
-<!-- SIDE PANEL -->
-<aside id="panel">
+    <div class="hatch-slab"></div>
+    <div class="blk-bar b1"></div>
+    <div class="blk-bar b2"></div>
+    <div class="checker cks1"></div>
+    <div class="checker cks2"></div>
 
-  <!-- THEORY -->
-  <div class="psec">
-    <div class="sec-label">ATHEORY — 原則解説</div>
-    <div class="sec-title">TIMING<br>&amp; SPACING</div>
-    <div class="body-text">
-      ドットの<em>間隔</em>が速度を決める。<br>
-      広い→速い。狭い→遅い。<br>
-      直接触って、easingを「発生」させる。
-    </div>
-    <div class="body-en">
-      Drag dots to set frame positions.<br>
-      Wide gap = fast. Narrow = slow.<br>
-      Easing emerges. You don't choose it.
-    </div>
-  </div>
+    <div class="axis tl">[ 55°36'??.2"N — 2°45'??4"W ]<b>AR ⁄ DAILY_SERIES</b></div>
+    <div class="axis tr">170823 ⁄ A2<b>INC_SET ⁄ ISO 216</b></div>
+    <div class="axis bl">711×53 ⁄ 255×550<b>INTERFACE ⁄ BOLD</b></div>
+    <div class="axis br">01 ⁄ NUL<b>N1 · SET 2B</b></div>
 
-  <!-- LIVE DATA -->
-  <div class="psec">
-    <div class="sec-label">BLIVE — リアルタイム</div>
-    <div class="data-row"><span class="dk">CURRENT_VEL</span><span class="dv neon" id="lv-vel">—</span></div>
-    <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-fr">00 / 12</span></div>
-    <div class="data-row"><span class="dk">POSITION</span><span class="dv" id="lv-pos">0.0%</span></div>
-    <div class="data-row"><span class="dk">EASING_TYPE</span><span class="dv" id="lv-ease">—</span></div>
-    <div class="data-row"><span class="dk">SPACING_MODE</span><span class="dv" id="lv-mode">CUSTOM</span></div>
-  </div>
+    <div class="acc-rail"></div>
 
-  <!-- PLAYBACK -->
-  <div class="psec">
-    <div class="sec-label">CPLAYBACK — 再生コントロール</div>
-    <div style="margin-bottom:8px">
-      <button class="btn active" id="btnPlay">▶ PLAY</button>
-      <button class="btn" id="btnPause">⏸ PAUSE</button>
-      <button class="btn" id="btnReset">↺ RESET</button>
-      <button class="btn" id="btnReverse">⇄ REVERSE</button>
-    </div>
-    <div style="margin-bottom:8px">
-      <button class="btn" id="btnGhost">TRAIL: OFF</button>
-      <button class="btn" id="btnLoop">LOOP: ON</button>
-    </div>
-    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:4px">
-      PLAYBACK SPEED
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <input type="range" id="slSpd" min="1" max="40" value="10" style="flex:1;accent-color:var(--acid)">
-      <span style="font-family:var(--mono);font-size:9px;color:var(--acid);min-width:28px" id="slSpd-val">1.0x</span>
-    </div>
-  </div>
+    <!-- CONTENT GRID -->
+    <div class="content">
 
-  <!-- PRESETS -->
-  <div class="psec">
-    <div class="sec-label">DPRESETS — スペーシングプリセット</div>
-    <div class="pattern-row" onclick="applyPreset('linear')">
-      <span class="p-name">LINEAR</span>
-      <div class="p-dots" id="pd-linear"></div>
-    </div>
-    <div class="pattern-row" onclick="applyPreset('easein')">
-      <span class="p-name">EASE-IN</span>
-      <div class="p-dots" id="pd-easein"></div>
-    </div>
-    <div class="pattern-row" onclick="applyPreset('easeout')">
-      <span class="p-name">EASE-OUT</span>
-      <div class="p-dots" id="pd-easeout"></div>
-    </div>
-    <div class="pattern-row" onclick="applyPreset('easeinout')">
-      <span class="p-name">EASE IN-OUT</span>
-      <div class="p-dots" id="pd-easeinout"></div>
-    </div>
-    <div class="pattern-row" onclick="applyPreset('bounce')">
-      <span class="p-name">BOUNCE</span>
-      <div class="p-dots" id="pd-bounce"></div>
-    </div>
-    <div class="pattern-row" onclick="applyPreset('snappy')">
-      <span class="p-name">SNAPPY</span>
-      <div class="p-dots" id="pd-snappy"></div>
-    </div>
-  </div>
+      <!-- MAIN COLUMN -->
+      <div class="main">
 
-  <!-- VEL GRAPH -->
-  <div class="psec">
-    <div class="sec-label">EVELOCITY — 速度グラフ</div>
-    <canvas id="vel-graph"></canvas>
-    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:4px">
-      縦軸:速度 / 横軸:フレーム — スペーシングの傾き
+        <!-- TITLE BLOCK -->
+        <div class="title-blk">
+          <div class="idx">08</div>
+          <div class="ttl">
+            <div class="kicker">PRINCIPLE&nbsp;&nbsp;//&nbsp;&nbsp;KINETIC GEOMETRY · LEC_08</div>
+            <div class="name">TIMING &amp; SPACING</div>
+            <div class="jp">タイミング ／ スペーシング ― 速度はドットの間隔で決まる</div>
+          </div>
+          <div class="specs">
+            <span class="coord">[ 55°36'??.2"N — 2°45'??4"W ]</span>
+            <span>BANK GOTHIC · LIGHT</span>
+            <span class="pt">220 PT</span>
+            <span>SENTIENT-BP-2026-VLS.08</span>
+          </div>
+          <div class="ratio">[ 1.6 ⁄ 3.33333 ]</div>
+        </div>
+
+        <!-- INC_SET BAR -->
+        <div class="inc-set">
+          <span class="lbl">INC_SET</span>
+          <div class="bar" id="inc-bar"></div>
+          <span class="frac">[ <span id="masterFrTop">00</span> ⁄ 12 · 7114453 ⁄ 25565899 ]</span>
+        </div>
+
+        <!-- PLATE (interactive area) -->
+        <div class="plate">
+
+          <span class="plate-lbl pl-tc" id="tc">00:00:00:00</span>
+          <span class="plate-lbl pl-rec">REC · ACTIVE</span>
+          <span class="plate-lbl pl-id">ID · MM-08-N1 ⁄ TIMING.PLATE</span>
+          <span class="plate-lbl pl-sect">SECTOR · 08 ⁄ DAILY ⁄ SERIES</span>
+
+          <!-- BALL ZONE -->
+          <div class="ball-zone" id="ball-zone">
+            <div class="bz-label">
+              <span class="num">01A</span>&nbsp; FRAME_TRAVEL
+              <span class="meta">— 12 frames · variable spacing</span>
+            </div>
+
+            <span class="rail-coord-l">F:00 · POS 0.0%</span>
+            <span class="rail-coord-r">F:12 · POS 100%</span>
+
+            <canvas id="trail-canvas"></canvas>
+            <div id="rail-line"></div>
+            <div class="rail-ticks"></div>
+
+            <span id="start-label">[ START ]</span>
+            <span id="end-label">[ END ]</span>
+
+            <div id="ball"><div id="ball-core"></div><div id="ball-halo"></div></div>
+            <div id="ball-fr-label">F:00</div>
+
+            <div id="speed-hud">
+              <div><span class="k">VEL</span><span class="v" id="hud-vel">0.00</span></div>
+              <div><span class="k">FR</span><span class="v" id="hud-fr">00</span>&nbsp;⁄&nbsp;<span class="v" id="hud-total">12</span></div>
+              <div><span class="k">POS</span><span class="v" id="hud-pos">0.0</span><span class="k">%</span></div>
+            </div>
+          </div>
+
+          <!-- SPACING ZONE -->
+          <div class="spacing-zone" id="spacing-zone">
+            <div class="sz-label">
+              <span class="num">02B</span>&nbsp; SPACING_EDITOR — DRAG.DOT
+              <span class="meta">// ドットの間隔が速度を決める</span>
+              <span class="jp">広いほど速く、狭いほど遅い。Easing は結果として現れる。</span>
+            </div>
+            <canvas id="spacing-canvas"></canvas>
+            <div class="sz-mode">MODE <span class="v" id="mode-name">EASE-IN-OUT</span></div>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM STRIP -->
+        <div class="bottom-strip">
+          <span class="id">SET&nbsp;·&nbsp;<span id="set-id">SENTIENT-BP-2026-VLS.08</span></span>
+          <div class="bar2" id="prog-bar"></div>
+          <span class="frame">FR<span class="acc" id="masterFr">00</span>⁄&nbsp;12</span>
+        </div>
+
+      </div>
+
+      <!-- SIDE PANEL -->
+      <aside class="side">
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> A&nbsp;·&nbsp;THEORY <span class="num">08</span></div>
+          <div class="sec-ttl">TIMING<br>&amp; SPACING</div>
+          <div class="body-jp">
+            ドットの<em>間隔</em>が速度を決める。<br>
+            広い→速い。狭い→遅い。<br>
+            直接触って、Easing を「発生」させる。
+          </div>
+          <div class="body-en">
+            Drag dots on the spacing track.<br>
+            Wide gap = fast. Narrow = slow.<br>
+            Easing emerges. You don't pick it.
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq acc"></span> B&nbsp;·&nbsp;LIVE <span class="num">RT</span></div>
+          <div class="row"><span class="k">CURRENT_VEL</span><span class="v acc" id="lv-vel">—</span></div>
+          <div class="row"><span class="k">FRAME</span><span class="v" id="lv-fr">00 ⁄ 12</span></div>
+          <div class="row"><span class="k">POSITION</span><span class="v" id="lv-pos">0.0%</span></div>
+          <div class="row"><span class="k">EASING_TYPE</span><span class="v" id="lv-ease">—</span></div>
+          <div class="row"><span class="k">SPACING_MODE</span><span class="v" id="lv-mode">EASE-IN-OUT</span></div>
+        </div>
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> C&nbsp;·&nbsp;PLAYBACK <span class="num">CTL</span></div>
+          <div class="btn-row">
+            <button class="btn acc active" id="btnPlay">▶ PLAY</button>
+            <button class="btn" id="btnPause">⏸ PAUSE</button>
+            <button class="btn" id="btnReset">↺ RESET</button>
+            <button class="btn" id="btnReverse">⇄ REV</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnGhost">TRAIL · OFF</button>
+            <button class="btn" id="btnLoop">LOOP · ON</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 36px;gap:8px;align-items:center;margin-top:4px">
+            <div>
+              <div style="font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--mute);text-transform:uppercase;margin-bottom:4px">PLAYBACK SPEED</div>
+              <input type="range" id="slSpd" min="1" max="40" value="10">
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:700;text-align:right" id="slSpd-val">1.0×</div>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> D&nbsp;·&nbsp;PRESETS <span class="num">06</span></div>
+          <div id="presets-list">
+            <div class="pre-row" data-pre="linear">
+              <span class="pn">LINEAR</span><div class="pdots" id="pd-linear"></div><span class="px">L0</span>
+            </div>
+            <div class="pre-row" data-pre="easein">
+              <span class="pn">EASE_IN</span><div class="pdots" id="pd-easein"></div><span class="px">L1</span>
+            </div>
+            <div class="pre-row" data-pre="easeout">
+              <span class="pn">EASE_OUT</span><div class="pdots" id="pd-easeout"></div><span class="px">L2</span>
+            </div>
+            <div class="pre-row active" data-pre="easeinout">
+              <span class="pn">EASE_IN_OUT</span><div class="pdots" id="pd-easeinout"></div><span class="px">L3</span>
+            </div>
+            <div class="pre-row" data-pre="bounce">
+              <span class="pn">BOUNCE</span><div class="pdots" id="pd-bounce"></div><span class="px">L4</span>
+            </div>
+            <div class="pre-row" data-pre="snappy">
+              <span class="pn">SNAPPY</span><div class="pdots" id="pd-snappy"></div><span class="px">L5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> E&nbsp;·&nbsp;VELOCITY <span class="num">GR</span></div>
+          <canvas id="vel-graph"></canvas>
+          <div style="font-family:var(--mono);font-size:8px;letter-spacing:0.1em;color:var(--mute);margin-top:6px;text-transform:uppercase">Y · SPEED&nbsp;&nbsp;X · FRAME</div>
+        </div>
+
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> F&nbsp;·&nbsp;EXPORT <span class="num">JSON</span></div>
+          <div id="json-out"></div>
+          <button class="btn" style="margin-top:8px" id="btnCopy">COPY JSON ▸</button>
+        </div>
+
+      </aside>
     </div>
-  </div>
+  </main>
 
-  <!-- JSON OUTPUT -->
-  <div class="psec">
-    <div class="sec-label">FJSON — エクスポート</div>
-    <div id="json-out"></div>
-    <button class="btn" style="margin-top:6px" onclick="copyJSON()">COPY JSON</button>
-  </div>
+  <!-- ─── BOTTOM BAR ─── -->
+  <footer id="bottombar">
+    <div>
+      <span class="blink"></span>
+      <span>SPACING_EDIT · ACTIVE</span>
+    </div>
+    <div>
+      <span>FRAME_RATE · VARIABLE</span>
+      <span style="margin-left:18px">MASS_FACTOR · ACTIVE</span>
+      <span style="margin-left:18px">FR&nbsp;<span class="v" id="masterFrFt">00</span>&nbsp;⁄&nbsp;<span class="v">12</span></span>
+      <span class="frame-dots" id="frame-dots" style="margin-left:14px"></span>
+    </div>
+    <div>
+      <span class="kbd">SPC</span>PLAY
+      <span class="kbd">←&nbsp;→</span>STEP
+      <span class="kbd">R</span>REV
+      <span class="kbd">ESC</span>INDEX
+    </div>
+    <div>
+      <span>ID · <span class="v">MM-2026-08 ⁄ N1</span></span>
+    </div>
+  </footer>
 
-</aside>
-
-<!-- BOTTOMBAR -->
-<footer id="bottombar">
-  <div class="bl">
-    <span>SPACING_EDIT: ACTIVE</span>
-    <span>FRAME_RATE: VARIABLE</span>
-    <span>MASS_FACTOR: ACTIVE</span>
-  </div>
-  <div class="bc">FRAME: <span id="masterFr">00</span> / <span id="masterTotal2">12</span></div>
-  <div class="br">
-    <span class="kbd">SPC</span>PLAY
-    <span class="kbd">←→</span>STEP
-    <span class="kbd">R</span>REVERSE
-    <span class="kbd">ESC</span>INDEX
-    &nbsp;ID: SENTIENT-BP-2026-VLS.08
-  </div>
-</footer>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-// SPACING DATA
-// spacing[i] = position 0..1 of frame i
-// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// SPACING — same logic as source, only UI swapped
+// ════════════════════════════════════════════════════════════
 const PRESETS = {
   linear:    [0,0.0833,0.1667,0.25,0.3333,0.4167,0.5,0.5833,0.6667,0.75,0.8333,0.9167,1],
   easein:    [0,0.003,0.012,0.027,0.048,0.075,0.108,0.147,0.192,0.243,0.3,0.363,1],
@@ -466,322 +999,388 @@ let playing = true;
 let reversed = false;
 let loopMode = true;
 let trailOn = false;
-let masterT = 0; // 0..1 normalized time
+let masterT = 0;
 let playSpd = 1.0;
 let lastTime = null;
+let currentPreset = 'easeinout';
 
-// drag state
 let dragging = -1;
-let dragOffsetX = 0;
-
-// trail positions
 let trailPositions = [];
 
-// ── DOM refs ──
-const ballEl   = document.getElementById('ball');
-const ballFrLb = document.getElementById('ball-fr-label');
-const trailC   = document.getElementById('trail-canvas');
+const $ = id => document.getElementById(id);
+
+const ballEl   = $('ball');
+const ballFrLb = $('ball-fr-label');
+const trailC   = $('trail-canvas');
 const trailCtx = trailC.getContext('2d');
-const spacingC = document.getElementById('spacing-canvas');
+const spacingC = $('spacing-canvas');
 const spacingCtx = spacingC.getContext('2d');
-const velC     = document.getElementById('vel-graph');
+const velC     = $('vel-graph');
 const velCtx   = velC.getContext('2d');
 
+const COLOR_INK = '#0a0a0a';
+const COLOR_ACC = '#c8ff1a';
+const COLOR_MUTE = '#9a9a96';
+const COLOR_MUTE2 = '#cfcfca';
+
 // ── LAYOUT ──
-function getRailRect() {
-  const bz = document.getElementById('ball-zone');
+function getRailRect(){
+  const bz = $('ball-zone');
   const w = bz.offsetWidth;
-  const left = 60, right = 40;
-  return { x: left, width: w - left - right };
+  const left = 64, right = 64;
+  return {x:left, width:w-left-right};
+}
+function getSZRect(){
+  const sz = $('spacing-zone');
+  return {w:sz.offsetWidth, h:sz.offsetHeight};
 }
 
-function getSZRect() {
-  const sz = document.getElementById('spacing-zone');
-  return { w: sz.offsetWidth, h: sz.offsetHeight };
+// ── INTERP ──
+function interpolate(sp,t){
+  const n = sp.length-1;
+  const fi = t*n;
+  const lo = Math.min(n-1, Math.floor(fi));
+  const frac = fi-lo;
+  return sp[lo] + (sp[lo+1]-sp[lo])*frac;
 }
-
-// ── INTERPOLATION ──
-function interpolate(sp, t) {
-  // t = 0..1, sp = array of positions
-  const n = sp.length - 1;
-  const fi = t * n;
-  const lo = Math.min(n - 1, Math.floor(fi));
-  const frac = fi - lo;
-  return sp[lo] + (sp[lo + 1] - sp[lo]) * frac;
-}
-
-function currentPos() {
+function currentPos(){
   let t = masterT;
-  if (reversed) t = 1 - t;
-  return interpolate(spacing, t);
+  if(reversed) t = 1-t;
+  return interpolate(spacing,t);
 }
-
-function currentVel() {
+function currentVel(){
   const eps = 0.005;
-  const t0 = Math.max(0, masterT - eps);
-  const t1 = Math.min(1, masterT + eps);
-  let p0 = interpolate(spacing, reversed ? 1-t0 : t0);
-  let p1 = interpolate(spacing, reversed ? 1-t1 : t1);
-  return Math.abs((p1 - p0) / (2 * eps));
+  const t0 = Math.max(0,masterT-eps);
+  const t1 = Math.min(1,masterT+eps);
+  const p0 = interpolate(spacing, reversed?1-t0:t0);
+  const p1 = interpolate(spacing, reversed?1-t1:t1);
+  return Math.abs((p1-p0)/(2*eps));
 }
-
-// ── EASING CLASSIFIER ──
-function classifyEasing(sp) {
-  const mid = sp[Math.floor(sp.length / 2)];
-  const linear_mid = 0.5;
-  if (Math.abs(mid - linear_mid) < 0.04) return 'LINEAR';
-  if (mid < 0.35) return 'EASE-IN';
-  if (mid > 0.65) return 'EASE-OUT';
+function classifyEasing(sp){
+  const mid = sp[Math.floor(sp.length/2)];
+  if(Math.abs(mid-0.5)<0.04) return 'LINEAR';
+  if(mid<0.35) return 'EASE-IN';
+  if(mid>0.65) return 'EASE-OUT';
   return 'EASE IN-OUT';
 }
 
-// ── RENDER BALL ──
-function renderBall() {
+// ── BALL RENDER ──
+function renderBall(){
   const rail = getRailRect();
   const pos = currentPos();
-  const px = rail.x + pos * rail.width;
+  const px = rail.x + pos*rail.width;
   ballEl.style.left = px + 'px';
   ballFrLb.style.left = px + 'px';
 
-  const fr = Math.round(masterT * (spacing.length - 1));
+  const fr = Math.round(masterT * (spacing.length-1));
   ballFrLb.textContent = 'F:' + String(fr).padStart(2,'0');
 
   const vel = currentVel();
-  const velPct = Math.min(vel * 2, 1);
-  // color: low=dim, high=neon
-  const r = Math.round(54 + (249-54)*velPct);
-  const g = Math.round(255 + (255-255)*velPct);
-  const b = Math.round(0   + (71-0)*velPct);
-  ballEl.style.borderColor = `rgb(${r},${g},${b})`;
-  document.getElementById('ball-core').style.background = `rgb(${r},${g},${b})`;
 
-  // hud
-  document.getElementById('hud-vel').textContent = vel.toFixed(2);
-  const frIdx = Math.round(masterT * (spacing.length - 1));
-  document.getElementById('hud-fr').textContent = String(frIdx).padStart(2,'0');
-  document.getElementById('hud-total').textContent = spacing.length - 1;
-  document.getElementById('hud-pos').textContent = (pos * 100).toFixed(1);
+  // HUD
+  $('hud-vel').textContent = vel.toFixed(2);
+  const frIdx = fr;
+  $('hud-fr').textContent = String(frIdx).padStart(2,'0');
+  $('hud-total').textContent = spacing.length-1;
+  $('hud-pos').textContent = (pos*100).toFixed(1);
 
-  document.getElementById('lv-vel').textContent = vel.toFixed(3);
-  document.getElementById('lv-fr').textContent = frIdx + ' / ' + (spacing.length - 1);
-  document.getElementById('lv-pos').textContent = (pos * 100).toFixed(1) + '%';
-  document.getElementById('lv-ease').textContent = classifyEasing(spacing);
-  document.getElementById('lv-mode').textContent = document.getElementById('mode-name').textContent;
+  $('lv-vel').textContent = vel.toFixed(3);
+  $('lv-fr').textContent = frIdx + ' ⁄ ' + (spacing.length-1);
+  $('lv-pos').textContent = (pos*100).toFixed(1) + '%';
+  $('lv-ease').textContent = classifyEasing(spacing);
+  $('lv-mode').textContent = $('mode-name').textContent;
 
-  document.getElementById('masterFr').textContent = String(frIdx).padStart(2,'0');
-  document.getElementById('masterTotal2').textContent = spacing.length - 1;
+  $('masterFr').textContent = String(frIdx).padStart(2,'0');
+  $('masterFrTop').textContent = String(frIdx).padStart(2,'0');
+  $('masterFrFt').textContent = String(frIdx).padStart(2,'0');
+
+  // progress bars
+  $('prog-bar').style.setProperty('--p', (masterT*100).toFixed(1) + '%');
+  $('inc-bar').style.setProperty('--p', (masterT*100).toFixed(1) + '%');
+
+  // timecode HH:MM:SS:FF
+  const totalFrames = spacing.length-1;
+  const ff = String(frIdx).padStart(2,'0');
+  $('tc').textContent = '00:00:00:' + ff;
+
+  // frame dots
+  const fdots = $('frame-dots');
+  if(fdots.children.length !== totalFrames+1){
+    fdots.innerHTML = '';
+    for(let i=0;i<=totalFrames;i++){
+      const d = document.createElement('span');
+      d.className = 'fd';
+      fdots.appendChild(d);
+    }
+  }
+  [...fdots.children].forEach((d,i)=>{
+    d.classList.toggle('cur', i === frIdx);
+    d.classList.toggle('on', i < frIdx);
+  });
 }
 
-// ── TRAIL ──
-function renderTrail() {
-  const bz = document.getElementById('ball-zone');
-  trailC.width = bz.offsetWidth * devicePixelRatio;
-  trailC.height = bz.offsetHeight * devicePixelRatio;
-  trailC.style.width = bz.offsetWidth + 'px';
-  trailC.style.height = bz.offsetHeight + 'px';
-  trailCtx.clearRect(0, 0, trailC.width, trailC.height);
-
-  if (!trailOn || trailPositions.length < 2) return;
+// ── TRAIL (only spacing-dot scatter when on) ──
+function renderTrail(){
+  const bz = $('ball-zone');
+  trailC.width = bz.offsetWidth*devicePixelRatio;
+  trailC.height = bz.offsetHeight*devicePixelRatio;
+  trailC.style.width = bz.offsetWidth+'px';
+  trailC.style.height = bz.offsetHeight+'px';
+  trailCtx.clearRect(0,0,trailC.width,trailC.height);
+  if(!trailOn) return;
 
   const rail = getRailRect();
-  const cy = bz.offsetHeight / 2;
+  const cy = bz.offsetHeight/2;
+  const dpr = devicePixelRatio;
 
-  // draw spacing dots at each frame position
-  spacing.forEach((sp, i) => {
-    const x = (rail.x + sp * rail.width) * devicePixelRatio;
-    const y = cy * devicePixelRatio;
-    const alpha = 0.15 + 0.3 * (i / spacing.length);
+  spacing.forEach((sp,i)=>{
+    const x = (rail.x + sp*rail.width)*dpr;
+    const y = cy*dpr;
     trailCtx.beginPath();
-    trailCtx.arc(x, y, 3 * devicePixelRatio, 0, Math.PI * 2);
-    trailCtx.fillStyle = `rgba(249,255,71,${alpha})`;
+    trailCtx.arc(x,y,3*dpr,0,Math.PI*2);
+    trailCtx.fillStyle = (i===0 || i===spacing.length-1) ? COLOR_INK : '#0a0a0a';
+    trailCtx.globalAlpha = 0.18 + 0.45*(i/spacing.length);
     trailCtx.fill();
+    trailCtx.globalAlpha = 1;
   });
 }
 
 // ── SPACING CANVAS ──
-function renderSpacingCanvas() {
+function renderSpacingCanvas(){
   const sz = getSZRect();
-  spacingC.width = sz.w * devicePixelRatio;
-  spacingC.height = sz.h * devicePixelRatio;
-  spacingC.style.width = sz.w + 'px';
-  spacingC.style.height = sz.h + 'px';
-  const ctx = spacingCtx;
   const dpr = devicePixelRatio;
-  ctx.clearRect(0, 0, sz.w * dpr, sz.h * dpr);
+  spacingC.width = sz.w*dpr;
+  spacingC.height = sz.h*dpr;
+  spacingC.style.width = sz.w+'px';
+  spacingC.style.height = sz.h+'px';
+  const ctx = spacingCtx;
+  ctx.clearRect(0,0,spacingC.width,spacingC.height);
 
-  const PAD_L = 40, PAD_R = 20, PAD_T = 32, PAD_B = 28;
-  const W = (sz.w - PAD_L - PAD_R) * dpr;
-  const H = (sz.h - PAD_T - PAD_B) * dpr;
-  const OX = PAD_L * dpr, OY = PAD_T * dpr;
+  const PAD_L=48, PAD_R=24, PAD_T=44, PAD_B=44;
+  const W = (sz.w-PAD_L-PAD_R)*dpr;
+  const H = (sz.h-PAD_T-PAD_B)*dpr;
+  const OX = PAD_L*dpr, OY = PAD_T*dpr;
 
-  // baseline
-  ctx.strokeStyle = 'rgba(54,255,0,0.2)';
-  ctx.lineWidth = 0.5 * dpr;
-  ctx.beginPath();
-  ctx.moveTo(OX, OY + H);
-  ctx.lineTo(OX + W, OY + H);
-  ctx.stroke();
+  ctx.lineWidth = 1*dpr;
 
-  // top line (label)
-  ctx.strokeStyle = 'rgba(54,255,0,0.07)';
-  ctx.beginPath();
-  ctx.moveTo(OX, OY);
-  ctx.lineTo(OX + W, OY);
-  ctx.stroke();
+  // top hairline
+  ctx.strokeStyle = COLOR_MUTE2;
+  ctx.beginPath();ctx.moveTo(OX,OY);ctx.lineTo(OX+W,OY);ctx.stroke();
 
-  // axis labels
-  ctx.fillStyle = 'rgba(54,255,0,0.3)';
-  ctx.font = `${7 * dpr}px IBM Plex Mono, monospace`;
-  ctx.fillText('END', (OX + W - 14 * dpr), OY + H + 16 * dpr);
-  ctx.fillText('START', OX - 2 * dpr, OY + H + 16 * dpr);
-  ctx.fillText('POS', OX - 36 * dpr, OY + 4 * dpr);
+  // baseline (rail)
+  ctx.strokeStyle = COLOR_INK;
+  ctx.globalAlpha = 0.6;
+  ctx.beginPath();ctx.moveTo(OX,OY+H);ctx.lineTo(OX+W,OY+H);ctx.stroke();
+  ctx.globalAlpha = 1;
+  // baseline end ticks
+  ctx.strokeStyle = COLOR_INK;
+  ctx.beginPath();ctx.moveTo(OX,OY+H-7*dpr);ctx.lineTo(OX,OY+H+7*dpr);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(OX+W,OY+H-7*dpr);ctx.lineTo(OX+W,OY+H+7*dpr);ctx.stroke();
 
-  // connecting line
-  ctx.strokeStyle = 'rgba(54,255,0,0.18)';
-  ctx.lineWidth = 1 * dpr;
-  ctx.beginPath();
-  spacing.forEach((sp, i) => {
-    const x = OX + sp * W;
-    const y = OY + H; // all on baseline
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
+  // tnk axis labels
+  ctx.fillStyle = COLOR_MUTE;
+  ctx.font = `${8*dpr}px JetBrains Mono, monospace`;
+  ctx.textAlign = 'left';
+  ctx.fillText('START', OX, OY+H+22*dpr);
+  ctx.textAlign = 'right';
+  ctx.fillText('END',  OX+W, OY+H+22*dpr);
 
-  // velocity bars (height = gap between consecutive dots)
-  const maxGap = Math.max(...spacing.slice(1).map((v,i)=>v-spacing[i]));
-  for (let i = 0; i < spacing.length - 1; i++) {
-    const gap = spacing[i+1] - spacing[i];
-    const norm = maxGap > 0 ? gap / maxGap : 0;
-    const x1 = OX + spacing[i] * W;
-    const x2 = OX + spacing[i+1] * W;
-    const cx = (x1 + x2) / 2;
-    const barH = norm * H * 0.7;
-    // color by speed
-    const alpha = 0.08 + norm * 0.25;
-    ctx.fillStyle = norm > 0.6
-      ? `rgba(249,255,71,${alpha})`
-      : `rgba(54,255,0,${alpha})`;
-    ctx.fillRect(cx - 2*dpr, OY + H - barH, 4*dpr, barH);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = COLOR_INK;
+  ctx.fillText('[ POS ]', OX-38*dpr, OY-12*dpr);
+  ctx.fillStyle = COLOR_MUTE;
+  ctx.fillText('GAP→SPEED', OX+W*0.5-40*dpr, OY-12*dpr);
+
+  // velocity bars per gap (height proportional to gap)
+  const gaps = [];
+  for(let i=0;i<spacing.length-1;i++) gaps.push(spacing[i+1]-spacing[i]);
+  const maxGap = Math.max(...gaps, 1e-6);
+
+  for(let i=0;i<spacing.length-1;i++){
+    const gap = gaps[i];
+    const norm = gap/maxGap;
+    const x1 = OX+spacing[i]*W;
+    const x2 = OX+spacing[i+1]*W;
+    const cx = (x1+x2)/2;
+    const barH = norm*(H*0.78);
+    // fast = lime; slow = ink-gray fill
+    if(norm > 0.55){
+      ctx.fillStyle = COLOR_ACC;
+      ctx.globalAlpha = 0.85;
+    } else {
+      ctx.fillStyle = COLOR_INK;
+      ctx.globalAlpha = 0.08 + norm*0.25;
+    }
+    ctx.fillRect(cx-3*dpr, OY+H-barH, 6*dpr, barH);
+    ctx.globalAlpha = 1;
   }
 
-  // playhead
-  const playPos = interpolate(spacing, reversed ? 1-masterT : masterT);
-  const playX = OX + playPos * W;
-  ctx.strokeStyle = 'rgba(249,255,71,0.5)';
-  ctx.lineWidth = 1 * dpr;
-  ctx.setLineDash([3*dpr, 3*dpr]);
-  ctx.beginPath();
-  ctx.moveTo(playX, OY);
-  ctx.lineTo(playX, OY + H + 6*dpr);
-  ctx.stroke();
+  // playhead — vertical
+  const playPos = interpolate(spacing, reversed?1-masterT:masterT);
+  const playX = OX + playPos*W;
+  ctx.strokeStyle = COLOR_INK;
+  ctx.lineWidth = 1*dpr;
+  ctx.setLineDash([4*dpr,3*dpr]);
+  ctx.beginPath();ctx.moveTo(playX,OY-4*dpr);ctx.lineTo(playX,OY+H+8*dpr);ctx.stroke();
   ctx.setLineDash([]);
 
-  // DOTS
-  spacing.forEach((sp, i) => {
-    const x = OX + sp * W;
-    const y = OY + H;
-    const isActive = (Math.round(masterT * (spacing.length-1)) === i);
-    const isDrag = (dragging === i);
+  // playhead head — yellow triangle
+  ctx.fillStyle = COLOR_ACC;
+  ctx.strokeStyle = COLOR_INK;
+  ctx.beginPath();
+  ctx.moveTo(playX, OY-4*dpr);
+  ctx.lineTo(playX-5*dpr, OY-13*dpr);
+  ctx.lineTo(playX+5*dpr, OY-13*dpr);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
 
-    // gap indicator line to next
-    if (i < spacing.length - 1) {
-      const x2 = OX + spacing[i+1] * W;
-      const gap = spacing[i+1] - spacing[i];
-      const norm2 = maxGap > 0 ? gap / maxGap : 0;
-      ctx.strokeStyle = norm2 > 0.6
-        ? `rgba(249,255,71,0.5)`
-        : `rgba(54,255,0,0.3)`;
-      ctx.lineWidth = 1 * dpr;
-      ctx.beginPath();
-      ctx.moveTo(x, y - 6*dpr);
-      ctx.lineTo(x2, y - 6*dpr);
-      ctx.stroke();
-    }
+  // gap brackets above baseline
+  for(let i=0;i<spacing.length-1;i++){
+    const x1 = OX+spacing[i]*W;
+    const x2 = OX+spacing[i+1]*W;
+    const norm = gaps[i]/maxGap;
+    ctx.strokeStyle = norm > 0.55 ? COLOR_INK : COLOR_MUTE;
+    ctx.lineWidth = (norm > 0.55 ? 1.4 : 0.8)*dpr;
+    ctx.beginPath();
+    ctx.moveTo(x1, OY+H-3*dpr);
+    ctx.lineTo(x2, OY+H-3*dpr);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1*dpr;
 
-    // frame number
-    ctx.fillStyle = isActive ? '#F9FF47' : 'rgba(54,255,0,0.3)';
-    ctx.font = `${6 * dpr}px IBM Plex Mono, monospace`;
+  // dots + frame numbers
+  spacing.forEach((sp,i)=>{
+    const x = OX + sp*W;
+    const y = OY+H;
+    const isActive = (Math.round(masterT*(spacing.length-1)) === i);
+    const isDrag = (dragging===i);
+    const isEdge = (i===0 || i===spacing.length-1);
+
+    // frame label
+    ctx.fillStyle = isActive ? COLOR_INK : COLOR_MUTE;
+    ctx.font = `${(isActive?9:8)*dpr}px JetBrains Mono, monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText(i, x, OY + H - 12*dpr);
+    ctx.fillText(String(i).padStart(2,'0'), x, y-14*dpr);
 
     // dot
-    const r = isDrag ? 9*dpr : isActive ? 8*dpr : 6*dpr;
+    const r = isDrag ? 9*dpr : isActive ? 8*dpr : isEdge ? 6*dpr : 5*dpr;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = isDrag ? '#F9FF47' : isActive ? '#F9FF47' : 'rgba(54,255,0,0.6)';
-    ctx.fill();
-    if (isDrag || isActive) {
-      ctx.beginPath();
-      ctx.arc(x, y, r + 3*dpr, 0, Math.PI * 2);
-      ctx.strokeStyle = isDrag ? 'rgba(249,255,71,0.5)' : 'rgba(54,255,0,0.3)';
-      ctx.lineWidth = 1*dpr;
+    ctx.arc(x,y,r,0,Math.PI*2);
+    if(isDrag || isActive){
+      ctx.fillStyle = COLOR_ACC;
+      ctx.fill();
+      ctx.strokeStyle = COLOR_INK;
+      ctx.lineWidth = 1.4*dpr;
+      ctx.stroke();
+    } else if (isEdge){
+      ctx.fillStyle = COLOR_INK;
+      ctx.fill();
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = COLOR_INK;
+      ctx.lineWidth = 1.2*dpr;
       ctx.stroke();
     }
+    ctx.lineWidth = 1*dpr;
   });
 }
 
-// ── VELOCITY GRAPH ──
-function renderVelGraph() {
-  const W = velC.offsetWidth * devicePixelRatio;
-  const H = velC.offsetHeight * devicePixelRatio;
+// ── VEL GRAPH ──
+function renderVelGraph(){
+  const W = velC.offsetWidth*devicePixelRatio;
+  const H = velC.offsetHeight*devicePixelRatio;
   velC.width = W; velC.height = H;
   const ctx = velCtx;
   ctx.clearRect(0,0,W,H);
 
   // grid
-  ctx.strokeStyle = 'rgba(54,255,0,0.07)';
-  ctx.lineWidth = 0.5;
-  for (let i=0;i<=4;i++){
+  ctx.strokeStyle = 'rgba(10,10,10,0.07)';
+  ctx.lineWidth = 0.5*devicePixelRatio;
+  for(let i=0;i<=4;i++){
     const y = (i/4)*H;
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
   }
+  for(let i=0;i<=12;i++){
+    const x = (i/12)*W;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+  }
 
-  // compute velocity at each frame
+  // vels
   const n = spacing.length;
   const vels = [];
-  for (let i = 0; i < n; i++) {
-    if (i === 0) vels.push(spacing[1]-spacing[0]);
-    else if (i === n-1) vels.push(spacing[n-1]-spacing[n-2]);
+  for(let i=0;i<n;i++){
+    if(i===0) vels.push(spacing[1]-spacing[0]);
+    else if(i===n-1) vels.push(spacing[n-1]-spacing[n-2]);
     else vels.push((spacing[i+1]-spacing[i-1])/2);
   }
   const maxV = Math.max(...vels, 0.001);
 
-  ctx.strokeStyle = '#36FF00';
-  ctx.lineWidth = 1.5 * devicePixelRatio;
+  // filled area under curve
+  ctx.fillStyle = 'rgba(200,255,26,0.4)';
   ctx.beginPath();
-  vels.forEach((v, i) => {
-    const x = (i / (n-1)) * W;
-    const y = H - (v / maxV) * H * 0.85 - H * 0.05;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  vels.forEach((v,i)=>{
+    const x = (i/(n-1))*W;
+    const y = H - (v/maxV)*H*0.82 - H*0.05;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fill();
+
+  // line
+  ctx.strokeStyle = COLOR_INK;
+  ctx.lineWidth = 1.4*devicePixelRatio;
+  ctx.beginPath();
+  vels.forEach((v,i)=>{
+    const x = (i/(n-1))*W;
+    const y = H - (v/maxV)*H*0.82 - H*0.05;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   });
   ctx.stroke();
 
-  // playhead
-  const px = masterT * W;
-  ctx.strokeStyle = 'rgba(249,255,71,0.6)';
-  ctx.lineWidth = 1 * devicePixelRatio;
+  // points
+  vels.forEach((v,i)=>{
+    const x = (i/(n-1))*W;
+    const y = H - (v/maxV)*H*0.82 - H*0.05;
+    const isCur = (Math.round(masterT*(spacing.length-1)) === i);
+    ctx.beginPath();
+    ctx.arc(x,y,(isCur?3.4:2.2)*devicePixelRatio,0,Math.PI*2);
+    ctx.fillStyle = isCur ? COLOR_ACC : COLOR_INK;
+    ctx.fill();
+    if(isCur){
+      ctx.strokeStyle = COLOR_INK;
+      ctx.lineWidth = 1*devicePixelRatio;
+      ctx.stroke();
+    }
+  });
+
+  // playhead vertical line
+  const px = masterT*W;
+  ctx.strokeStyle = COLOR_INK;
+  ctx.lineWidth = 1*devicePixelRatio;
+  ctx.setLineDash([3*devicePixelRatio, 3*devicePixelRatio]);
   ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();
+  ctx.setLineDash([]);
 }
 
-// ── ANIMATION LOOP ──
-function loop(ts) {
-  if (!lastTime) lastTime = ts;
-  const dt = (ts - lastTime) / 1000;
+// ── LOOP ──
+function loop(ts){
+  if(!lastTime) lastTime = ts;
+  const dt = (ts-lastTime)/1000;
   lastTime = ts;
 
-  if (playing) {
-    const dur = 1.2 / playSpd;
-    masterT += dt / dur;
-    if (masterT >= 1) {
-      if (loopMode) masterT = masterT % 1;
+  if(playing){
+    const dur = 1.2/playSpd;
+    masterT += dt/dur;
+    if(masterT >= 1){
+      if(loopMode) masterT = masterT % 1;
       else { masterT = 1; playing = false; }
     }
   }
 
-  // trail record
-  if (trailOn && playing) {
+  if(trailOn && playing){
     trailPositions.push(currentPos());
-    if (trailPositions.length > 200) trailPositions.shift();
+    if(trailPositions.length > 200) trailPositions.shift();
   }
 
   renderBall();
@@ -793,162 +1392,273 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
-// ── SPACING CANVAS DRAG ──
-function getSpacingCoords(e) {
+// ── DRAG SPACING ──
+function getSpacingCoords(e){
   const rect = spacingC.getBoundingClientRect();
   const ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
   const sz = getSZRect();
-  const PAD_L = 40, PAD_R = 20;
-  const W = sz.w - PAD_L - PAD_R;
-  return (ex - PAD_L) / W; // 0..1 normalized
+  const PAD_L = 48, PAD_R = 24;
+  const W = sz.w-PAD_L-PAD_R;
+  return (ex-PAD_L)/W;
 }
-
-function getDotHitRadius() {
+function getDotHitRadius(){
   const sz = getSZRect();
-  return 18 / sz.w; // normalized hit radius
+  return 18/sz.w;
 }
-
-spacingC.addEventListener('pointerdown', e => {
-  const normX = getSpacingCoords(e);
+spacingC.addEventListener('pointerdown', e=>{
+  const nx = getSpacingCoords(e);
   const hitR = getDotHitRadius();
-  // find closest dot (skip first and last)
-  let best = -1, bestD = Infinity;
-  spacing.forEach((sp, i) => {
-    if (i === 0 || i === spacing.length - 1) return;
-    const d = Math.abs(sp - normX);
-    if (d < bestD && d < hitR) { bestD = d; best = i; }
+  let best=-1, bestD=Infinity;
+  spacing.forEach((sp,i)=>{
+    if(i===0 || i===spacing.length-1) return;
+    const d = Math.abs(sp-nx);
+    if(d<bestD && d<hitR){ bestD=d; best=i; }
   });
-  if (best !== -1) {
+  if(best!==-1){
     dragging = best;
     spacingC.setPointerCapture(e.pointerId);
     playing = false;
-    document.getElementById('btnPlay').classList.remove('active');
-    document.getElementById('btnPause').classList.add('active');
+    setPlayState(false);
   }
   e.preventDefault();
 });
-
-spacingC.addEventListener('pointermove', e => {
-  if (dragging === -1) return;
-  let normX = Math.max(0, Math.min(1, getSpacingCoords(e)));
-  // clamp between neighbors
-  const lo = dragging > 0 ? spacing[dragging-1] + 0.01 : 0;
-  const hi = dragging < spacing.length-1 ? spacing[dragging+1] - 0.01 : 1;
-  spacing[dragging] = Math.max(lo, Math.min(hi, normX));
-  document.getElementById('mode-name').textContent = 'CUSTOM';
-  document.getElementById('lv-mode').textContent = 'CUSTOM';
+spacingC.addEventListener('pointermove', e=>{
+  if(dragging===-1) return;
+  let nx = Math.max(0, Math.min(1, getSpacingCoords(e)));
+  const lo = dragging>0 ? spacing[dragging-1]+0.01 : 0;
+  const hi = dragging<spacing.length-1 ? spacing[dragging+1]-0.01 : 1;
+  spacing[dragging] = Math.max(lo, Math.min(hi, nx));
+  setMode('CUSTOM');
+  currentPreset = null;
+  refreshPresetUI();
   e.preventDefault();
 });
-
-spacingC.addEventListener('pointerup', e => {
+spacingC.addEventListener('pointerup', ()=>{
   dragging = -1;
   playing = true;
-  document.getElementById('btnPlay').classList.add('active');
-  document.getElementById('btnPause').classList.remove('active');
+  setPlayState(true);
+});
+spacingC.addEventListener('pointercancel', ()=>{
+  dragging = -1;
 });
 
-// ── PRESET DOTS VISUALIZATION ──
-function buildPresetDots() {
-  Object.keys(PRESETS).forEach(key => {
-    const el = document.getElementById('pd-' + key);
-    if (!el) return;
+// ── PRESET DOT VIS ──
+function buildPresetDots(){
+  Object.keys(PRESETS).forEach(key=>{
+    const el = $('pd-'+key);
+    if(!el) return;
     el.innerHTML = '';
     const sp = PRESETS[key];
-    const W = el.offsetWidth || 180;
-    // draw relative dot positions
-    sp.forEach((v, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'p-dot';
-      dot.style.position = 'absolute';
-      dot.style.left = (v * 100) + '%';
-      dot.style.transform = 'translateX(-50%)';
-      el.appendChild(dot);
+    sp.forEach(v=>{
+      const d = document.createElement('div');
+      d.className = 'pdot';
+      d.style.left = (v*100)+'%';
+      el.appendChild(d);
     });
   });
 }
+function refreshPresetUI(){
+  document.querySelectorAll('.pre-row').forEach(r=>{
+    r.classList.toggle('active', r.dataset.pre === currentPreset);
+  });
+}
 
-// ── APPLY PRESET ──
-function applyPreset(name) {
+function applyPreset(name){
   spacing = [...PRESETS[name]];
   masterT = 0; trailPositions = [];
-  document.getElementById('mode-name').textContent = name.toUpperCase();
-  document.getElementById('lv-mode').textContent = name.toUpperCase();
+  currentPreset = name;
+  setMode(name.toUpperCase().replace(/EASE(IN|OUT)/g,'EASE_$1').replace(/EASE_IN_OUT/,'EASE_IN_OUT').replace(/EASEINOUT/,'EASE_IN_OUT'));
+  refreshPresetUI();
   playing = true;
-  document.getElementById('btnPlay').classList.add('active');
-  document.getElementById('btnPause').classList.remove('active');
+  setPlayState(true);
+}
+function setMode(name){
+  // canonicalize names
+  const map = {
+    'LINEAR':'LINEAR','EASEIN':'EASE-IN','EASEOUT':'EASE-OUT',
+    'EASEINOUT':'EASE-IN-OUT','BOUNCE':'BOUNCE','SNAPPY':'SNAPPY',
+    'EASE_IN':'EASE-IN','EASE_OUT':'EASE-OUT','EASE_IN_OUT':'EASE-IN-OUT',
+    'CUSTOM':'CUSTOM'
+  };
+  const out = map[name] || name;
+  $('mode-name').textContent = out;
+  $('lv-mode').textContent = out;
 }
 
-// ── JSON ──
-function updateJSON() {
+document.querySelectorAll('.pre-row').forEach(r=>{
+  r.addEventListener('click', ()=> applyPreset(r.dataset.pre));
+});
+
+function updateJSON(){
   const arr = spacing.map(v => +v.toFixed(4));
-  document.getElementById('json-out').textContent =
-    'spacing: ' + JSON.stringify(arr);
+  $('json-out').textContent = '{ "spacing": ' + JSON.stringify(arr) + ' }';
 }
 
-function copyJSON() {
-  const arr = spacing.map(v => +v.toFixed(4));
-  navigator.clipboard.writeText(JSON.stringify(arr))
-    .catch(() => {});
-}
+$('btnCopy').addEventListener('click', ()=>{
+  const arr = spacing.map(v=>+v.toFixed(4));
+  navigator.clipboard.writeText(JSON.stringify(arr)).catch(()=>{});
+  $('btnCopy').textContent = 'COPIED ✓';
+  setTimeout(()=>{ $('btnCopy').textContent = 'COPY JSON ▸'; },1100);
+});
 
-// ── CONTROLS ──
-document.getElementById('btnPlay').addEventListener('click', () => {
-  playing = true;
-  document.getElementById('btnPlay').classList.add('active');
-  document.getElementById('btnPause').classList.remove('active');
-});
-document.getElementById('btnPause').addEventListener('click', () => {
-  playing = false;
-  document.getElementById('btnPause').classList.add('active');
-  document.getElementById('btnPlay').classList.remove('active');
-});
-document.getElementById('btnReset').addEventListener('click', () => {
-  masterT = 0; trailPositions = [];
-});
-document.getElementById('btnReverse').addEventListener('click', function() {
+// ── PLAYBACK CONTROLS ──
+function setPlayState(p){
+  playing = p;
+  $('btnPlay').classList.toggle('active', p);
+  $('btnPause').classList.toggle('active', !p);
+}
+$('btnPlay').addEventListener('click', ()=> setPlayState(true));
+$('btnPause').addEventListener('click', ()=> setPlayState(false));
+$('btnReset').addEventListener('click', ()=>{ masterT = 0; trailPositions = []; });
+$('btnReverse').addEventListener('click', function(){
   reversed = !reversed;
   this.classList.toggle('active', reversed);
   masterT = 0; trailPositions = [];
 });
-document.getElementById('btnGhost').addEventListener('click', function() {
+$('btnGhost').addEventListener('click', function(){
   trailOn = !trailOn;
   this.classList.toggle('active', trailOn);
-  this.textContent = trailOn ? 'TRAIL: ON' : 'TRAIL: OFF';
-  if (!trailOn) trailPositions = [];
+  this.textContent = trailOn ? 'TRAIL · ON' : 'TRAIL · OFF';
+  if(!trailOn) trailPositions = [];
 });
-document.getElementById('btnLoop').addEventListener('click', function() {
+$('btnLoop').addEventListener('click', function(){
   loopMode = !loopMode;
   this.classList.toggle('active', loopMode);
-  this.textContent = loopMode ? 'LOOP: ON' : 'LOOP: OFF';
+  this.textContent = loopMode ? 'LOOP · ON' : 'LOOP · OFF';
 });
-document.getElementById('slSpd').addEventListener('input', function() {
-  playSpd = this.value / 10;
-  document.getElementById('slSpd-val').textContent = playSpd.toFixed(1) + 'x';
+$('slSpd').addEventListener('input', function(){
+  playSpd = this.value/10;
+  $('slSpd-val').textContent = playSpd.toFixed(1) + '×';
 });
+$('btn-export').addEventListener('click', ()=> $('btnCopy').click());
 
 // ── KEYBOARD ──
-document.addEventListener('keydown', e => {
-  if (e.code === 'Space') {
-    e.preventDefault();
-    playing = !playing;
-    document.getElementById('btnPlay').classList.toggle('active', playing);
-    document.getElementById('btnPause').classList.toggle('active', !playing);
-  }
-  if (e.code === 'ArrowRight') { masterT = Math.min(1, masterT + 1/(spacing.length-1)); }
-  if (e.code === 'ArrowLeft')  { masterT = Math.max(0, masterT - 1/(spacing.length-1)); }
-  if (e.code === 'KeyR') {
+document.addEventListener('keydown', e=>{
+  if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+  if(e.code === 'Space'){ e.preventDefault(); setPlayState(!playing); }
+  if(e.code === 'ArrowRight'){ masterT = Math.min(1, masterT + 1/(spacing.length-1)); setPlayState(false); }
+  if(e.code === 'ArrowLeft'){  masterT = Math.max(0, masterT - 1/(spacing.length-1)); setPlayState(false); }
+  if(e.code === 'KeyR'){
     reversed = !reversed; masterT = 0;
-    document.getElementById('btnReverse').classList.toggle('active', reversed);
+    $('btnReverse').classList.toggle('active', reversed);
   }
-  if (e.code === 'Escape') { window.location.href = 'index.html'; }
 });
 
 // ── INIT ──
-window.addEventListener('load', () => {
-  setTimeout(buildPresetDots, 100);
+function init(){
+  setTimeout(buildPresetDots, 60);
+  refreshPresetUI();
+  setPlayState(true);
   requestAnimationFrame(loop);
-});
-window.addEventListener('resize', buildPresetDots);
+}
+if(document.readyState === 'complete' || document.readyState === 'interactive'){
+  init();
+} else {
+  window.addEventListener('load', init);
+}
+window.addEventListener('resize', ()=> setTimeout(buildPresetDots, 60));
+// ESC → index
+document.addEventListener('keydown', e=>{ if(e.code==='Escape') window.location.href='index.html'; }, true);
+$('btn-esc').addEventListener('click', e=>{ e.preventDefault(); window.location.href='index.html'; });
+</script>
+
+<!-- ── TWEAKS PANEL ── -->
+<div id="tweaks-panel">
+  <div class="tw-hd"><span>TWEAKS</span><button id="tw-close">✕</button></div>
+  <div class="tw-sec">
+    <div class="tw-lbl">ACCENT</div>
+    <div class="tw-swatches" id="tw-acc"></div>
+  </div>
+  <div class="tw-sec">
+    <div class="tw-lbl">BACKGROUND</div>
+    <div class="tw-swatches" id="tw-bg"></div>
+  </div>
+  <div class="tw-sec tw-sec-last">
+    <div class="tw-lbl">DECORATION</div>
+    <div class="tw-pills">
+      <button class="tw-pill active" data-deco="full">FULL</button>
+      <button class="tw-pill" data-deco="minimal">MINI</button>
+      <button class="tw-pill" data-deco="off">OFF</button>
+    </div>
+  </div>
+</div>
+<style>
+#tweaks-panel{
+  display:none;position:fixed;bottom:36px;right:16px;width:220px;
+  background:var(--bg);border:1px solid var(--line);
+  box-shadow:3px 3px 0 var(--ink);font-family:var(--mono);font-size:9px;z-index:9999;
+}
+.tw-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--line);
+  letter-spacing:0.16em;text-transform:uppercase;font-weight:700;color:var(--ink);
+}
+.tw-hd button{
+  appearance:none;background:transparent;border:1px solid transparent;
+  font-family:var(--mono);font-size:11px;color:var(--ink);cursor:pointer;padding:0 3px;
+}
+.tw-hd button:hover{background:var(--ink);color:var(--bg)}
+.tw-sec{padding:10px 12px;border-bottom:1px solid var(--mute-2)}
+.tw-sec-last{border-bottom:none}
+.tw-lbl{font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--mute);margin-bottom:7px}
+.tw-swatches{display:flex;gap:5px}
+.tw-swatch{
+  width:24px;height:24px;border:1px solid var(--mute-2);cursor:pointer;
+  position:relative;transition:border-color 100ms;
+}
+.tw-swatch:hover{border-color:var(--ink)}
+.tw-swatch.active::after{
+  content:"";position:absolute;inset:3px;border:1.5px solid var(--ink);pointer-events:none;
+}
+.tw-pills{display:flex;gap:3px}
+.tw-pill{
+  appearance:none;flex:1;font-family:var(--mono);font-size:8px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:5px 4px;border:1px solid var(--ink);
+  background:var(--plate);color:var(--ink);cursor:pointer;
+}
+.tw-pill:hover,.tw-pill.active{background:var(--ink);color:var(--bg)}
+</style>
+<script>
+(function(){
+  const ACC=[{c:'#c8ff1a',n:'LIME'},{c:'#1affea',n:'CYAN'},{c:'#ffb81a',n:'AMBER'},{c:'#ff4fe0',n:'FUCHSIA'}];
+  const BG=[{c:'#f2f2ef',n:'CREAM'},{c:'#f5f0e6',n:'WARM'},{c:'#eef0f2',n:'COOL'}];
+  const DECO='.gh-08,.gh-2B,.regmarks,.checker,.hatch-slab,.blk-bar,.ticks-top,.ticks-top-major,.ticks-right,.axis';
+  function makeSw(arr,id,cb){
+    const w=document.getElementById(id);
+    arr.forEach((o,i)=>{
+      const s=document.createElement('div');
+      s.className='tw-swatch'+(i===0?' active':'');
+      s.title=o.n;s.style.background=o.c;
+      s.addEventListener('click',()=>{w.querySelectorAll('.tw-swatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');cb(o.c);});
+      w.appendChild(s);
+    });
+  }
+  makeSw(ACC,'tw-acc',c=>document.documentElement.style.setProperty('--acc',c));
+  makeSw(BG,'tw-bg',c=>document.documentElement.style.setProperty('--bg',c));
+  document.querySelectorAll('.tw-pill[data-deco]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.tw-pill[data-deco]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const v=b.dataset.deco;
+      document.querySelectorAll(DECO).forEach(el=>{el.style.opacity=v==='off'?'0':v==='minimal'?'0.12':'';});
+    });
+  });
+  const panel=document.getElementById('tweaks-panel');
+  document.getElementById('tw-close').addEventListener('click',()=>{
+    panel.style.display='none';
+    window.parent&&window.parent.postMessage({type:'__edit_mode_dismissed'},'*');
+  });
+  document.getElementById('btn-tweaks').addEventListener('click',()=>{
+    panel.style.display=panel.style.display==='none'?'block':'none';
+  });
+  window.addEventListener('message',e=>{
+    if(!e.data)return;
+    if(e.data.type==='__activate_edit_mode')panel.style.display='block';
+    if(e.data.type==='__deactivate_edit_mode')panel.style.display='none';
+  });
+  window.parent&&window.parent.postMessage({type:'__edit_mode_available'},'*');
+})();
 </script>
 </body>
 </html>

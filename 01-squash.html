@@ -1,802 +1,1166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINETIC GEOMETRY — 01 SQUASH & STRETCH</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<title>tDR · 01 SQUASH &amp; STRETCH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --acid:  #CCFF00;
-  --black: #000;
-  --white: #fff;
-  --mid:   #888;
-  --panel: #0E0E0E;
-  --border:rgba(204,255,0,0.15);
-  --red:   #FF3B3B;
-  --blue:  #3BAAFF;
-  --mono:  'IBM Plex Mono', monospace;
-  --disp:  'Barlow Condensed', sans-serif;
-  --jp:    'Noto Sans JP', sans-serif;
+@font-face{
+  font-family:"Bank Gothic";
+  src:url("fonts/bank-gothic-light-bt.ttf") format("truetype");
+  font-weight:300 700;
+  font-display:swap;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-html,body { width:100%; height:100%; background:var(--black); color:var(--white); font-family:var(--mono); overflow:hidden; user-select:none; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-body::after {
-  content:''; position:fixed; inset:0;
-  background-image:radial-gradient(rgba(0,0,0,0.25) 1px,transparent 1px);
-  background-size:4px 4px; pointer-events:none; z-index:9999; opacity:0.5;
+:root{
+  --bg:#f2f2ef;
+  --plate:#ffffff;
+  --ink:#0a0a0a;
+  --ink-2:#1a1a1a;
+  --mute:#9a9a96;
+  --mute-2:#cfcfca;
+  --mute-3:#e6e6e1;
+  --line:#0a0a0a;
+  --acc:#c8ff1a;
+  --acc-ink:#0a0a0a;
+  --warn:#c8231a;
+  --grid:rgba(10,10,10,0.035);
+  --grid-major:rgba(10,10,10,0.06);
+
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --display:"Bank Gothic","JetBrains Mono",system-ui,sans-serif;
+  --jp:"IBM Plex Sans JP",system-ui,sans-serif;
+
+  --ez:cubic-bezier(0.2,0,0,1);
 }
 
-/* ── LAYOUT ── */
-#app {
+html,body{
+  height:100%;width:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:var(--mono);
+  font-feature-settings:"tnum","ss01";
+  -webkit-font-smoothing:antialiased;
+}
+
+#app{
   display:grid;
-  grid-template-rows:44px 1fr 44px;
-  grid-template-columns:1fr 320px;
-  height:100vh;
+  grid-template-rows:48px 1fr 28px;
+  height:100vh;width:100vw;
 }
 
-#topbar {
-  grid-column:1/-1;
-  border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 16px; font-size:10px; color:rgba(204,255,0,0.5); letter-spacing:0.25em;
+/* ── TOP BAR ── */
+#topbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:stretch;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
 }
+#topbar .brand{
+  display:flex;align-items:center;gap:12px;
+  padding:0 18px;border-right:1px solid var(--line);
+}
+#topbar .brand .mk{width:14px;height:14px;background:var(--acc);display:block}
+#topbar .brand .name{
+  font-family:var(--display);font-size:12px;
+  letter-spacing:0.22em;text-transform:uppercase;font-weight:400;
+}
+#topbar .crumbs{
+  display:flex;align-items:center;gap:22px;padding:0 18px;
+  font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink);overflow:hidden;white-space:nowrap;
+}
+#topbar .crumbs .sep{color:var(--mute)}
+#topbar .crumbs .coord{color:var(--mute)}
+#topbar .crumbs a{color:var(--ink);text-decoration:none}
+#topbar .crumbs a:hover{background:var(--ink);color:var(--bg);padding:2px 6px}
+#topbar .tools{display:flex;align-items:stretch;border-left:1px solid var(--line)}
+#topbar .tools button,
+#topbar .tools a{
+  appearance:none;background:transparent;border:none;
+  border-right:1px solid var(--line);padding:0 14px;
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+}
+#topbar .tools button:last-child,
+#topbar .tools a:last-child{border-right:none}
+#topbar .tools button:hover,
+#topbar .tools a:hover{background:var(--ink);color:var(--bg)}
+#topbar .tools button:hover .dot{background:var(--bg)}
+#topbar .tools .dot{width:6px;height:6px;background:var(--ink);display:inline-block}
+#topbar .tools .tool-acc{background:var(--acc);color:var(--acc-ink)}
+#topbar .tools .tool-acc .dot{background:var(--acc-ink)}
 
-#main-stage {
-  position:relative; overflow:hidden; background:var(--black);
-  border-right:1px solid var(--border);
+/* ── STAGE ── */
+#stage{
+  position:relative;overflow:hidden;
+  background:
+    linear-gradient(var(--grid-major) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(90deg,var(--grid-major) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/40px 40px,
+    var(--bg);
 }
-
-.stage-grid {
-  position:absolute; inset:0;
-  background-image:
-    linear-gradient(rgba(204,255,0,0.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(204,255,0,0.03) 1px,transparent 1px);
-  background-size:48px 48px; pointer-events:none;
-}
-.stage-bignum {
-  position:absolute; font-family:var(--disp); font-weight:900; font-style:italic;
-  font-size:clamp(200px,35vw,460px); color:rgba(255,255,255,0.025);
-  top:-60px; left:-20px; letter-spacing:-0.05em; line-height:1; pointer-events:none;
-}
-.checker {
+.gh-01{
   position:absolute;
-  background-image:repeating-conic-gradient(rgba(204,255,0,0.06) 0% 25%,transparent 0% 50%);
-  background-size:18px 18px; pointer-events:none;
+  font-family:var(--display);font-weight:300;
+  font-size:clamp(380px,52vh,720px);
+  letter-spacing:-0.06em;line-height:0.78;
+  color:var(--mute-2);
+  bottom:-6%;right:-2%;
+  pointer-events:none;user-select:none;
+  z-index:0;opacity:0.55;
 }
-.accent-line { position:absolute; background:rgba(204,255,0,0.12); pointer-events:none; }
-
-.corner { position:absolute; width:16px; height:16px; pointer-events:none; }
-.corner::before,.corner::after { content:''; position:absolute; background:var(--acid); }
-.corner::before { width:100%; height:1px; top:0; left:0; }
-.corner::after  { width:1px; height:100%; top:0; left:0; }
-.corner.tl { top:10px; left:10px; }
-.corner.tr { top:10px; right:10px; transform:scaleX(-1); }
-.corner.bl { bottom:10px; left:10px; transform:scaleY(-1); }
-.corner.br { bottom:10px; right:10px; transform:scale(-1); }
-
-.principle-overlay {
-  position:absolute; top:12px; right:14px; text-align:right; pointer-events:none;
+.gh-N1{
+  position:absolute;
+  top:38%;left:2%;
+  font-family:var(--mono);font-weight:700;
+  font-size:9vh;letter-spacing:0.02em;
+  color:var(--mute-2);opacity:0.5;
+  pointer-events:none;user-select:none;z-index:0;
 }
-.po-num { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(40px,6vw,80px); color:var(--acid); line-height:1; letter-spacing:-0.03em; }
-.po-en  { font-family:var(--disp); font-weight:900; font-style:italic; font-size:clamp(14px,2vw,22px); color:var(--white); line-height:1; }
-.po-jp  { font-family:var(--jp); font-size:10px; color:var(--mid); margin-top:3px; }
-
-/* ── DEMO AREA ── */
-#demo-area {
-  position:absolute; inset:60px 20px 80px 20px;
-  display:grid; grid-template-columns:1fr 1fr; gap:2px;
+.ticks-top{
+  position:absolute;top:14px;left:18px;right:18px;height:14px;
+  background-image:linear-gradient(90deg,var(--mute-2) 1px,transparent 1px);
+  background-size:40px 100%;opacity:0.5;pointer-events:none;
 }
-.compare-panel {
-  position:relative; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  border:1px solid rgba(255,255,255,0.05); overflow:hidden;
+.ticks-top-major{
+  position:absolute;top:14px;left:18px;right:18px;height:18px;
+  background-image:linear-gradient(90deg,var(--ink) 1px,transparent 1px);
+  background-size:200px 100%;opacity:0.16;pointer-events:none;
 }
-.compare-panel.correct { border-color:rgba(204,255,0,0.2); }
-.compare-panel.wrong   { border-color:rgba(255,59,59,0.2); }
-
-.panel-label {
-  position:absolute; top:10px; left:12px;
-  font-size:9px; letter-spacing:0.4em; color:rgba(255,255,255,0.3);
+.ticks-right{
+  position:absolute;right:6px;top:120px;bottom:120px;width:12px;
+  background-image:linear-gradient(0deg,var(--mute-2) 1px,transparent 1px);
+  background-size:100% 40px;opacity:0.5;pointer-events:none;
 }
-.panel-label.good { color:var(--acid); }
-.panel-label.bad  { color:var(--red); }
-
-/* フレーム番号 — ラベルの1行下・左詰め */
-.frame-counter {
-  position:absolute; top:26px; left:12px;
-  font-size:9px; color:rgba(204,255,0,0.35); letter-spacing:0.2em;
-  pointer-events:none; display:none; white-space:nowrap;
+.regmarks{position:absolute;inset:0;pointer-events:none;z-index:1}
+.regmarks .plus{
+  position:absolute;font-family:var(--mono);font-size:14px;line-height:1;color:var(--mute);
 }
-.frame-counter.show { display:block; }
+.regmarks .plus.tl{top:6px;left:24px}
+.regmarks .plus.tr{top:6px;right:24px}
+.regmarks .plus.bl{bottom:6px;left:24px}
+.regmarks .plus.br{bottom:6px;right:24px}
+.regmarks .plus.f1{top:18%;left:62%;color:var(--mute-2)}
+.regmarks .plus.f2{top:46%;left:18%;color:var(--mute-2)}
+.regmarks .plus.f3{bottom:22%;left:46%;color:var(--mute-2)}
+.corner{position:absolute;width:14px;height:14px;pointer-events:none;z-index:1}
+.corner::before,.corner::after{content:"";position:absolute;background:var(--ink)}
+.corner::before{width:1px;height:14px;top:0;left:0}
+.corner::after{width:14px;height:1px;top:0;left:0}
+.corner.ctl{top:8px;left:8px}
+.corner.ctr{top:8px;right:8px;transform:scaleX(-1)}
+.corner.cbl{bottom:8px;left:8px;transform:scaleY(-1)}
+.corner.cbr{bottom:8px;right:8px;transform:scale(-1)}
+.axis{position:absolute;pointer-events:none;z-index:2;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;
+  color:var(--mute);text-transform:uppercase;}
+.axis b{display:block;color:var(--ink);font-weight:600;font-size:11px;letter-spacing:0.04em;margin-top:2px;}
+.axis.tl{top:28px;left:24px}
+.axis.tr{top:28px;right:24px;text-align:right}
+.axis.bl{bottom:24px;left:24px}
+.axis.br{bottom:24px;right:24px;text-align:right}
+.acc-rail{position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--acc);z-index:1}
+.hatch-slab{
+  position:absolute;right:14%;bottom:18%;width:200px;height:18px;
+  background:repeating-linear-gradient(-60deg,var(--ink) 0 2px,transparent 2px 7px);
+  opacity:0.45;pointer-events:none;z-index:1;}
+.blk-bar{position:absolute;background:var(--ink);pointer-events:none;z-index:1}
+.blk-bar.b1{top:14%;left:32%;width:72px;height:8px}
+.blk-bar.b2{bottom:9%;left:30%;width:10px;height:10px}
+.checker{
+  position:absolute;width:42px;height:42px;
+  background:conic-gradient(var(--ink) 0 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0) 0 0/10px 10px;
+  opacity:0.85;pointer-events:none;z-index:1;}
+.checker.cks1{top:1%;left:3%}
+.checker.cks2{bottom:3%;right:22%;width:32px;height:32px;background-size:8px 8px}
 
-.ball-stage { position:relative; width:100%; flex:1; display:flex; align-items:center; justify-content:center; }
-.render-svg { width:100%; height:100%; overflow:visible; }
-
-.diff-flash { position:absolute; inset:0; border:2px solid transparent; pointer-events:none; transition:border-color 0.3s; }
-.diff-flash.highlight-good { border-color:rgba(204,255,0,0.5); }
-.diff-flash.highlight-bad  { border-color:rgba(255,59,59,0.5); }
-
-.hazard-bar {
-  position:absolute; bottom:0; left:0; right:0; height:6px;
-  background:repeating-linear-gradient(-45deg,var(--acid),var(--acid) 5px,var(--black) 5px,var(--black) 14px);
-  opacity:0.5;
+/* ── CONTENT ── */
+.content{
+  position:absolute;inset:0;
+  display:grid;
+  grid-template-columns:1fr 320px;
+  z-index:5;
 }
+.main{
+  position:relative;
+  padding:48px 40px 38px 44px;
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
+  min-height:0;gap:12px;
+}
+
+/* TITLE */
+.title-blk{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:24px;
+  padding-bottom:10px;border-bottom:1px solid var(--ink);
+  position:relative;
+}
+.title-blk .idx{
+  font-family:var(--display);font-size:72px;font-weight:300;line-height:0.82;
+  letter-spacing:-0.04em;color:var(--ink);
+}
+.title-blk .ttl{display:flex;flex-direction:column;gap:3px}
+.title-blk .ttl .kicker{
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--mute);
+}
+.title-blk .ttl .name{
+  font-family:var(--display);font-size:28px;font-weight:400;line-height:1;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.title-blk .ttl .jp{
+  font-family:var(--jp);font-size:10px;letter-spacing:0.14em;color:var(--mute);font-weight:500;
+}
+.title-blk .specs{
+  display:flex;flex-direction:column;gap:2px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);text-align:right;
+}
+.title-blk .specs .coord{color:var(--ink);font-weight:600;letter-spacing:0.06em;font-size:10px}
+.title-blk .specs .pt{color:var(--ink);font-weight:600;letter-spacing:0.04em;font-size:10px}
+.title-blk .ratio{
+  position:absolute;left:0;bottom:-1px;transform:translateY(100%);
+  padding-top:4px;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--mute);
+}
+
+/* INC_SET */
+.inc-set{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}
+.inc-set .lbl{
+  font-family:var(--mono);font-weight:700;
+  font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink);}
+.inc-set .bar{position:relative;height:6px;background:var(--mute-3);overflow:hidden;}
+.inc-set .bar::before{
+  content:"";position:absolute;top:0;left:0;height:100%;
+  width:var(--p,8%);background:var(--ink);transition:width 80ms linear;}
+.inc-set .bar::after{
+  content:"";position:absolute;top:0;left:var(--p,8%);height:100%;width:14%;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px);}
+.inc-set .frac{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--mute);}
+
+/* PLATE */
+.plate{
+  position:relative;background:var(--plate);border:1px solid var(--line);
+  min-height:0;clip-path:polygon(28px 0,100% 0,100% 100%,0 100%,0 28px);
+  overflow:hidden;
+}
+.plate::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(10,10,10,0.022) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,rgba(10,10,10,0.022) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(rgba(10,10,10,0.04) 1px,transparent 1px) 0 0/200px 200px,
+    linear-gradient(90deg,rgba(10,10,10,0.04) 1px,transparent 1px) 0 0/200px 200px;
+}
+.plate::after{
+  content:"";position:absolute;top:0;left:0;width:42px;height:42px;
+  background:linear-gradient(135deg,transparent 49.4%,var(--ink) 49.4%,var(--ink) 50.6%,transparent 50.6%);
+  pointer-events:none;
+}
+.plate-lbl{
+  position:absolute;font-family:var(--mono);font-size:8px;
+  letter-spacing:0.12em;text-transform:uppercase;color:rgba(10,10,10,0.55);z-index:6;pointer-events:none;}
+.plate-lbl.pl-tc{top:10px;right:14px;color:var(--ink);font-weight:600;letter-spacing:0.08em}
+.plate-lbl.pl-tc::before{content:"TC ";color:var(--mute);font-weight:400}
+.plate-lbl.pl-rec{top:26px;right:14px;color:var(--mute)}
+.plate-lbl.pl-rec::before{
+  content:"";display:inline-block;width:6px;height:6px;
+  background:var(--acc);margin-right:6px;vertical-align:1px;
+  animation:blk 1.2s infinite;
+}
+.plate-lbl.pl-id{top:10px;left:48px}
+.plate-lbl.pl-sect{
+  right:6px;top:42%;writing-mode:vertical-rl;
+  letter-spacing:0.5em;font-size:8px;color:rgba(10,10,10,0.35);
+}
+
+/* COMPARE PANELS */
+.compare-zone{
+  position:absolute;
+  inset:42px 26px 70px 26px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--mute-2);
+  border:1px solid var(--mute-2);
+  z-index:5;
+}
+.compare-panel{
+  position:relative;background:var(--plate);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.panel-label{
+  position:absolute;top:10px;left:12px;z-index:6;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:0.16em;text-transform:uppercase;color:var(--ink);
+}
+.panel-label .stamp{
+  display:inline-block;padding:1px 6px;margin-right:6px;
+  background:var(--acc);color:var(--ink);font-weight:700;
+}
+.panel-label.bad .stamp{background:var(--warn);color:var(--bg);}
+.frame-counter{
+  position:absolute;top:28px;left:12px;z-index:6;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.16em;
+  color:var(--mute);pointer-events:none;display:none;
+}
+.frame-counter.show{display:block}
+.panel-tc{
+  position:absolute;top:10px;right:12px;z-index:6;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;
+  color:var(--mute);
+}
+.panel-tc b{color:var(--ink);font-weight:600;letter-spacing:0.05em}
+.ball-stage{position:relative;width:100%;flex:1;display:flex;align-items:center;justify-content:center}
+.render-svg{width:100%;height:100%;overflow:visible}
+.diff-flash{
+  position:absolute;inset:0;border:1px solid transparent;pointer-events:none;
+  transition:border-color 200ms var(--ez), box-shadow 200ms var(--ez);
+}
+.diff-flash.hi-good{border-color:var(--acc);box-shadow:inset 0 0 0 3px rgba(200,255,26,0.18)}
+.diff-flash.hi-bad{border-color:var(--warn);box-shadow:inset 0 0 0 3px rgba(200,35,26,0.14)}
+
+/* hazard strip at panel bottom */
+.hazard{
+  position:absolute;bottom:0;left:0;right:0;height:6px;
+  background:repeating-linear-gradient(-45deg,var(--ink) 0 6px,var(--acc) 6px 12px);
+  opacity:0.7;
+}
+.hazard.bad{background:repeating-linear-gradient(-45deg,var(--ink) 0 6px,var(--warn) 6px 12px)}
 
 /* ── PLAYBAR ── */
-#playbar {
-  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-  display:flex; gap:8px; align-items:center; z-index:50;
+.playbar{
+  position:absolute;left:0;right:0;bottom:14px;z-index:8;
+  display:flex;gap:10px;align-items:center;justify-content:center;
+  pointer-events:none;
 }
-.play-btn {
-  width:28px; height:28px; border:1px solid rgba(204,255,0,0.4);
-  background:rgba(0,0,0,0.6); color:var(--acid);
-  font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition:all 0.15s;
+.playbar > *{pointer-events:auto}
+.pbtn{
+  width:30px;height:24px;border:1px solid var(--ink);background:var(--plate);
+  font-family:var(--mono);font-size:10px;color:var(--ink);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background 120ms var(--ez), color 120ms var(--ez);
 }
-.play-btn:hover { background:rgba(204,255,0,0.15); border-color:var(--acid); }
-.play-btn.active { background:rgba(204,255,0,0.2); border-color:var(--acid); }
-.scrub-wrap { width:140px; display:flex; align-items:center; gap:6px; }
-.scrub-label { font-size:9px; color:rgba(204,255,0,0.4); letter-spacing:0.2em; white-space:nowrap; }
-input[type=range] {
-  -webkit-appearance:none; width:100%; height:2px;
-  background:rgba(255,255,255,0.1); outline:none; cursor:pointer;
+.pbtn:hover{background:var(--ink);color:var(--bg)}
+.pbtn.active{background:var(--acc);color:var(--ink);border-color:var(--ink)}
+.scrub-wrap{
+  width:200px;display:flex;align-items:center;gap:8px;
+  padding:0 8px;border:1px solid var(--ink);background:var(--plate);height:24px;
 }
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
-  background:var(--acid); cursor:pointer; transition:background 0.15s,transform 0.15s;
-}
-input[type=range]::-webkit-slider-thumb:hover { background:var(--white); transform:scale(1.2); }
-input[type=range].break-range::-webkit-slider-thumb { background:var(--red); }
+.scrub-wrap .lab{font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:var(--mute);}
+.scrub-wrap input[type=range]{flex:1;height:2px}
 
-/* ── SIDE PANEL ── */
-#side-panel {
-  display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; background:var(--panel);
+/* BOTTOM STRIP */
+.bottom-strip{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:18px;
+  padding-top:6px;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);
 }
-#side-panel::-webkit-scrollbar { width:2px; }
-#side-panel::-webkit-scrollbar-thumb { background:var(--acid); }
+.bottom-strip .id{color:var(--ink);font-weight:600;letter-spacing:0.08em}
+.bottom-strip .bar2{height:5px;position:relative;background:var(--mute-3);}
+.bottom-strip .bar2::before{
+  content:"";position:absolute;top:0;left:0;height:100%;
+  width:var(--p,0%);background:var(--ink);transition:width 60ms linear;
+}
+.bottom-strip .frame{color:var(--ink);font-weight:700;letter-spacing:0.04em;font-size:10px}
+.bottom-strip .frame .acc{color:var(--acc-ink);background:var(--acc);padding:1px 6px;margin:0 4px}
 
-.sp-section { border-bottom:1px solid rgba(255,255,255,0.06); padding:14px 16px; flex-shrink:0; }
-.sp-label {
-  font-size:9px; letter-spacing:0.4em; color:rgba(204,255,0,0.4); margin-bottom:10px;
-  display:flex; align-items:center; gap:8px;
+/* ── SIDE ── */
+.side{
+  border-left:1px solid var(--line);background:var(--bg);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--ink) transparent;
 }
-.sp-label .ltr {
-  font-size:11px; font-weight:700; color:var(--acid); background:rgba(204,255,0,0.1);
-  width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;
-  letter-spacing:0; flex-shrink:0;
+.side::-webkit-scrollbar{width:3px}
+.side::-webkit-scrollbar-thumb{background:var(--ink)}
+.psec{padding:16px 18px;border-bottom:1px solid var(--mute-2)}
+.psec:last-child{border-bottom:none}
+.sec-lbl{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:8px;
+  letter-spacing:0.18em;text-transform:uppercase;color:var(--mute);
+  margin-bottom:12px;
+}
+.sec-lbl .sq{width:8px;height:8px;background:var(--ink);display:inline-block}
+.sec-lbl .sq.acc{background:var(--acc)}
+.sec-lbl .sq.warn{background:var(--warn)}
+.sec-lbl .num{
+  font-weight:700;color:var(--ink);letter-spacing:0.1em;
+  border:1px solid var(--ink);padding:1px 5px;font-size:8px;margin-left:auto;
+}
+.sec-ttl{
+  font-family:var(--display);font-size:20px;font-weight:400;
+  letter-spacing:0.08em;text-transform:uppercase;
+  line-height:1.05;color:var(--ink);margin-bottom:8px;
+}
+.body-jp{
+  font-family:var(--jp);font-size:11px;line-height:1.85;
+  color:var(--ink-2);margin-bottom:8px;font-weight:500;
+}
+.body-en{
+  font-family:var(--mono);font-size:9px;line-height:1.7;letter-spacing:0.02em;
+  color:var(--mute);border-left:2px solid var(--ink);padding-left:8px;
 }
 
-/* pills */
-.demo-status { display:flex; gap:8px; flex-wrap:wrap; }
-.status-pill {
-  font-size:9px; letter-spacing:0.2em; padding:3px 8px; border:1px solid; cursor:pointer; transition:all 0.15s;
+/* row */
+.row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px dashed var(--mute-2);
+  font-family:var(--mono);font-size:9px;letter-spacing:0.04em;
 }
-.status-pill.active-pill { background:var(--acid); border-color:var(--acid); color:var(--black); }
-.status-pill.inactive    { border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); }
-.status-pill:hover { border-color:var(--acid); color:var(--acid); }
+.row:last-child{border-bottom:none}
+.row .k{color:var(--mute);text-transform:uppercase;letter-spacing:0.08em}
+.row .v{color:var(--ink);font-weight:700;font-feature-settings:"tnum"}
+.row .v.acc{background:var(--acc);padding:0 6px}
+.row .v.warn{color:var(--warn)}
 
-/* toggle */
-.toggle-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:10px; letter-spacing:0.1em; color:rgba(255,255,255,0.6); }
-.toggle-switch { width:36px; height:18px; background:rgba(255,255,255,0.1); border-radius:9px; position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
-.toggle-switch.on { background:var(--acid); }
-.toggle-switch::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:var(--white); top:2px; left:2px; transition:left 0.2s; }
-.toggle-switch.on::after { left:20px; background:var(--black); }
+/* BTN */
+.btn{
+  appearance:none;font-family:var(--mono);font-size:9px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:5px 9px;border:1px solid var(--ink);
+  background:var(--plate);color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn.active{background:var(--ink);color:var(--bg)}
+.btn.acc.active,.btn.acc:hover{background:var(--acc);color:var(--ink);border-color:var(--ink)}
+.btn.warn{border-color:var(--warn);color:var(--warn);background:var(--plate)}
+.btn.warn:hover{background:var(--warn);color:var(--bg)}
+.btn.warn.active{background:var(--warn);color:var(--bg)}
+.btn-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.btn-row.split .btn{flex:1;text-align:center;justify-content:center}
 
-/* slider */
-.slider-row { margin-bottom:12px; }
-.slider-header { display:flex; justify-content:space-between; margin-bottom:5px; font-size:10px; }
-.slider-name { color:rgba(255,255,255,0.6); letter-spacing:0.1em; }
-.slider-val  { color:var(--acid); font-weight:700; letter-spacing:0.05em; }
-.slider-val.break-val { color:var(--red); }
+/* TOGGLE */
+.tog-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 0;
+  font-family:var(--mono);font-size:9px;
+  letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);
+}
+.tog-row .lab{color:var(--ink-2);text-transform:none;font-size:10px;font-family:var(--jp);letter-spacing:0.04em}
+.tog{
+  width:28px;height:14px;background:var(--mute-2);border:1px solid var(--ink);
+  position:relative;cursor:pointer;flex-shrink:0;
+  transition:background 160ms var(--ez);
+}
+.tog::after{
+  content:"";position:absolute;top:1px;left:1px;
+  width:10px;height:10px;background:var(--ink);
+  transition:left 160ms var(--ez), background 160ms var(--ez);
+}
+.tog.on{background:var(--acc)}
+.tog.on::after{left:15px;background:var(--ink)}
 
-/* vertical slider wrapper */
-.vslider-wrap {
-  display:flex; gap:10px; align-items:flex-start; margin-top:4px;
+/* SLIDER */
+.sl-row{margin-bottom:10px}
+.sl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.sl-name{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);}
+.sl-val{font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:700;letter-spacing:0.04em}
+.sl-val.warn{color:var(--warn)}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:2px;background:var(--ink);outline:none;cursor:pointer;margin:4px 0;
 }
-.vslider-col {
-  display:flex; flex-direction:column; align-items:center; gap:4px;
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:10px;height:14px;background:var(--acc);border:1px solid var(--ink);cursor:pointer;
 }
-.vslider-col label { font-size:8px; color:rgba(204,255,0,0.4); letter-spacing:0.2em; writing-mode:horizontal-tb; }
-
-input[type=range].vertical {
-  -webkit-appearance:slider-vertical;
-  writing-mode:vertical-lr; direction:rtl;
-  width:18px; height:120px; padding:0;
-  background:rgba(255,255,255,0.1); cursor:pointer; outline:none;
+input[type=range]::-moz-range-thumb{
+  width:10px;height:14px;background:var(--acc);border:1px solid var(--ink);cursor:pointer;
 }
-/* Chromeで縦スライダーが効かない場合のfallback */
-.vslider-rotated {
-  transform:rotate(-90deg);
-  transform-origin:center center;
-  width:120px; height:18px;
-  margin:51px -51px; /* 中央補正 */
-}
+input[type=range].warn::-webkit-slider-thumb{background:var(--warn)}
+input[type=range].warn::-moz-range-thumb{background:var(--warn)}
 
 /* ease gauge */
-#ease-gauge-wrap {
-  display:flex; gap:6px; margin-top:6px; align-items:flex-start;
+#ease-gauge-wrap{display:flex;gap:10px;margin-top:4px;align-items:flex-start}
+#ease-gauge-svg{flex-shrink:0;background:var(--plate);border:1px solid var(--mute-2)}
+.gauge-lab{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;color:var(--mute);line-height:1.9}
+.gauge-lab b{color:var(--ink);font-weight:700;letter-spacing:0.04em}
+
+/* def block */
+.def-block{
+  background:var(--plate);border:1px solid var(--ink);
+  border-left:3px solid var(--acc);
+  padding:10px 12px;margin-bottom:8px;
 }
-#ease-gauge-svg { flex-shrink:0; }
-.ease-gauge-label { font-size:8px; color:rgba(204,255,0,0.35); letter-spacing:0.1em; line-height:2; }
-
-/* break */
-.break-btn {
-  width:100%; padding:10px; background:rgba(255,59,59,0.08); border:1px solid rgba(255,59,59,0.3);
-  color:var(--red); font-family:var(--mono); font-size:10px; letter-spacing:0.3em; cursor:pointer; transition:all 0.15s; text-align:left;
+.def-en{
+  font-family:var(--display);font-weight:400;
+  font-size:18px;color:var(--ink);line-height:1.15;letter-spacing:0.04em;
+  text-transform:uppercase;
 }
-.break-btn:hover { background:rgba(255,59,59,0.15); border-color:var(--red); }
-.break-btn.active-break { background:rgba(255,59,59,0.25); border-color:var(--red); color:var(--white); }
-.break-warning { font-size:9px; color:rgba(255,59,59,0.5); margin-top:6px; letter-spacing:0.1em; line-height:1.6; }
+.def-jp{
+  font-family:var(--jp);font-size:11px;color:var(--ink-2);margin-top:5px;line-height:1.7;font-weight:500;
+}
+.def-core{
+  margin-top:8px;font-family:var(--jp);font-size:10px;
+  color:var(--ink-2);letter-spacing:0.04em;line-height:1.8;
+  border-top:1px dashed var(--mute-2);padding-top:8px;font-weight:500;
+}
 
-/* def */
-.def-block { background:rgba(204,255,0,0.05); border-left:3px solid var(--acid); padding:10px 12px; margin-bottom:8px; }
-.def-en { font-family:var(--disp); font-weight:700; font-style:italic; font-size:16px; color:var(--white); line-height:1.2; }
-.def-jp { font-family:var(--jp); font-size:11px; color:var(--mid); margin-top:4px; line-height:1.6; }
-.def-core { margin-top:8px; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.1em; line-height:1.7; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; }
-
-/* apply デモ */
-.apply-dot {
-  width:10px; height:10px; border-radius:50%;
-  background:var(--acid);
+/* APPLY block items */
+.apply-grp{margin-bottom:12px}
+.apply-grp .h{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--mute);margin-bottom:5px;
+}
+.apply-grp .hint{
+  font-family:var(--jp);font-size:9px;letter-spacing:0.02em;color:var(--mute);margin-top:4px;font-weight:500;
+}
+#apply-btn{
+  background:var(--acc);border:1px solid var(--ink);color:var(--ink);
+  font-family:var(--display);font-size:12px;letter-spacing:0.18em;text-transform:uppercase;
+  padding:10px 20px;cursor:pointer;
+  transform-origin:center bottom;transition:none;display:block;width:100%;
+}
+#apply-notif{
+  background:var(--plate);border:1px solid var(--ink);border-left:3px solid var(--acc);
+  font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:var(--ink);
+  padding:8px 12px;transform:scaleY(0);transform-origin:top;
+  transition:none;position:absolute;width:100%;
+}
+.apply-dots{display:flex;gap:8px;align-items:flex-end;height:28px}
+.apply-dot{
+  width:10px;height:10px;background:var(--ink);
   animation:applyBounce 0.8s cubic-bezier(0.36,0.07,0.19,0.97) infinite;
-  transform-origin:center bottom;
-  flex-shrink:0;
+  transform-origin:center bottom;flex-shrink:0;
 }
-@keyframes applyBounce {
-  0%,100%{ transform:scaleX(1)   scaleY(1)   translateY(0); }
-  30%    { transform:scaleX(1.4) scaleY(0.6) translateY(4px); }
-  50%    { transform:scaleX(0.7) scaleY(1.4) translateY(-8px); }
-  70%    { transform:scaleX(1.4) scaleY(0.6) translateY(4px); }
-}
-#apply-btn:active {
-  transform:scaleX(1.08) scaleY(0.82) !important;
+.apply-dot:nth-child(odd){background:var(--acc);border:1px solid var(--ink)}
+@keyframes applyBounce{
+  0%,100%{transform:scaleX(1) scaleY(1) translateY(0)}
+  30%{transform:scaleX(1.4) scaleY(0.6) translateY(4px)}
+  50%{transform:scaleX(0.7) scaleY(1.4) translateY(-8px)}
+  70%{transform:scaleX(1.4) scaleY(0.6) translateY(4px)}
 }
 
-/* bottombar */
-#bottombar {
-  grid-column:1/-1; border-top:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 16px; font-size:9px; color:rgba(204,255,0,0.3); letter-spacing:0.2em;
+/* break warn */
+.break-warn{
+  font-family:var(--jp);font-size:10px;color:var(--warn);
+  margin-top:6px;line-height:1.6;border:1px solid var(--warn);padding:6px 8px;
+  background:rgba(200,35,26,0.05);font-weight:500;
+}
+
+/* FOOTER */
+#bottombar{
+  border-top:1px solid var(--line);background:var(--bg);
+  display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);
+}
+#bottombar > *{padding:0 16px;height:100%;display:flex;align-items:center;gap:10px;border-right:1px solid var(--mute-2);}
+#bottombar > *:last-child{border-right:none}
+.kbd{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:14px;border:1px solid var(--ink);
+  font-size:8px;color:var(--ink);padding:0 4px;
+}
+#bottombar .blink{
+  width:6px;height:6px;background:var(--acc);display:inline-block;
+  animation:blk 1.2s infinite;
+}
+#bottombar .v{color:var(--ink);font-weight:700}
+.frame-dots{display:flex;gap:2px}
+.frame-dots .fd{width:3px;height:3px;background:var(--mute-2);border-radius:50%}
+.frame-dots .fd.on{background:var(--ink)}
+.frame-dots .fd.cur{background:var(--acc);box-shadow:0 0 0 1px var(--ink)}
+
+@keyframes blk{50%{opacity:0.2}}
+
+/* responsive guards */
+@media (max-height:780px){
+  .title-blk .idx{font-size:58px}
+  .title-blk .ttl .name{font-size:24px}
+  .title-blk .ttl .kicker{font-size:8px}
+  .main{padding:36px 32px 30px 36px;gap:10px}
+  .gh-01{font-size:clamp(280px,46vh,560px);bottom:-8%}
+  .axis{display:none}
+  .corner.ctl,.corner.ctr,.corner.cbl,.corner.cbr{display:none}
+  .regmarks .plus.tl,.regmarks .plus.tr,.regmarks .plus.bl,.regmarks .plus.br{display:none}
+}
+@media (max-height:640px){
+  .title-blk .idx{font-size:44px}
+  .title-blk .ttl .name{font-size:20px}
+  .title-blk{gap:14px}
+  .main{padding:22px 24px 18px 28px;gap:8px;grid-template-rows:auto 1fr}
+  .inc-set{display:none}
+  .bottom-strip{display:none}
+  .gh-N1{display:none}
+  .checker,.hatch-slab,.blk-bar{display:none}
+  .regmarks{display:none}
+}
+@media (max-width:980px){
+  .content{grid-template-columns:1fr 280px}
+  .main{padding:36px 28px 28px 32px}
+  .axis.tl,.axis.tr,.axis.bl,.axis.br{font-size:8px}
 }
 </style>
 </head>
 <body>
+
 <div id="app">
 
-  <div id="topbar">
-    <div style="display:flex;gap:32px;">
-      <span>KINETIC_GEOMETRY // LEC_08</span>
-      <span>PRINCIPLE_01 // SQUASH_AND_STRETCH</span>
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="mk"></span>
+      <span class="name">tDR ⁄ KINETIC GEOMETRY · v01.0 — 2026</span>
     </div>
-    <div style="display:flex;gap:24px;">
-      <span>SYS_ID:08 // A1B2.XY</span>
-      <span id="clock">00:00:00</span>
+    <div class="crumbs">
+      <a href="index.html">INDEX</a><span class="sep">⁄</span>
+      <span>PRINCIPLE&nbsp;01</span><span class="sep">⁄</span>
+      <span class="coord">[ 55°36'??.2"N — 2°45'??4"W ]</span>
+      <span class="sep">⁄</span>
+      <span class="coord">170823 · AR ⁄ DAILY_SERIES</span>
     </div>
-  </div>
-
-  <!-- MAIN STAGE -->
-  <div id="main-stage">
-    <div class="stage-grid"></div>
-    <div class="stage-bignum">01</div>
-    <div class="checker" style="right:4%;top:8%;width:120px;height:120px;"></div>
-    <div class="checker" style="left:3%;bottom:14%;width:90px;height:90px;opacity:0.5;"></div>
-    <div class="accent-line" style="top:38%;left:8%;right:8%;height:1px;"></div>
-    <div class="accent-line" style="top:62%;left:8%;right:8%;height:1px;"></div>
-    <div class="corner tl"></div><div class="corner tr"></div>
-    <div class="corner bl"></div><div class="corner br"></div>
-
-    <div class="principle-overlay">
-      <div class="po-num">01</div>
-      <div class="po-en">SQUASH &amp; STRETCH</div>
-      <div class="po-jp">潰しと伸ばし</div>
+    <div class="tools">
+      <button id="btn-tweaks" class="tool-acc"><span class="dot"></span>TWEAKS</button>
+      <button id="btn-fit"><span class="dot"></span>FIT</button>
+      <button id="btn-export"><span class="dot"></span>EXPORT.JSON</button>
+      <a href="index.html"><span class="dot"></span>[ESC] INDEX</a>
     </div>
+  </header>
 
-    <div id="demo-area">
-      <!-- CORRECT -->
-      <div class="compare-panel correct" id="panel-correct">
-        <div class="panel-label good">// CORRECT — WITH S&amp;S</div>
-        <div class="frame-counter" id="frame-correct"></div>
-        <div class="diff-flash" id="diff-correct"></div>
-        <div class="ball-stage">
-          <svg class="render-svg" id="svg-correct" viewBox="0 0 260 320"></svg>
+  <!-- STAGE -->
+  <main id="stage">
+
+    <div class="gh-01">01</div>
+    <div class="gh-N1">N1</div>
+    <div class="ticks-top-major"></div>
+    <div class="ticks-top"></div>
+    <div class="ticks-right"></div>
+
+    <div class="regmarks">
+      <span class="plus tl">+</span><span class="plus tr">+</span>
+      <span class="plus bl">+</span><span class="plus br">+</span>
+      <span class="plus f1">+</span><span class="plus f2">+</span><span class="plus f3">+</span>
+    </div>
+    <div class="corner ctl"></div>
+    <div class="corner ctr"></div>
+    <div class="corner cbl"></div>
+    <div class="corner cbr"></div>
+
+    <div class="hatch-slab"></div>
+    <div class="blk-bar b1"></div>
+    <div class="blk-bar b2"></div>
+    <div class="checker cks1"></div>
+    <div class="checker cks2"></div>
+
+    <div class="axis tl">[ 55°36'??.2"N — 2°45'??4"W ]<b>AR ⁄ DAILY_SERIES</b></div>
+    <div class="axis tr">170823 ⁄ A2<b>INC_SET ⁄ ISO 216</b></div>
+    <div class="axis bl">711×53 ⁄ 255×550<b>INTERFACE ⁄ S&amp;S</b></div>
+    <div class="axis br">01 ⁄ NUL<b>N1 · SET 1A</b></div>
+
+    <div class="acc-rail"></div>
+
+    <div class="content">
+
+      <!-- MAIN -->
+      <div class="main">
+
+        <div class="title-blk">
+          <div class="idx">01</div>
+          <div class="ttl">
+            <div class="kicker">PRINCIPLE&nbsp;&nbsp;//&nbsp;&nbsp;KINETIC GEOMETRY · LEC_01</div>
+            <div class="name">SQUASH &amp; STRETCH</div>
+            <div class="jp">潰しと伸ばし ― 形は変わる、体積は変わらない</div>
+          </div>
+          <div class="specs">
+            <span class="coord">[ 55°36'??.2"N — 2°45'??4"W ]</span>
+            <span>BANK GOTHIC · LIGHT</span>
+            <span class="pt">220 PT</span>
+            <span>SENTIENT-BP-2026-VLS.01</span>
+          </div>
+          <div class="ratio">[ 1.50 ⁄ 1.60 ]</div>
         </div>
-        <div class="hazard-bar"></div>
-      </div>
-      <!-- WRONG -->
-      <div class="compare-panel wrong" id="panel-wrong">
-        <div class="panel-label bad">// WRONG — WITHOUT S&amp;S</div>
-        <div class="frame-counter" id="frame-wrong"></div>
-        <div class="diff-flash" id="diff-wrong"></div>
-        <div class="ball-stage">
-          <svg class="render-svg" id="svg-wrong" viewBox="0 0 260 320"></svg>
+
+        <div class="inc-set">
+          <span class="lbl">INC_SET</span>
+          <div class="bar" id="inc-bar"></div>
+          <span class="frac">[ FR <span id="masterFrTop">000</span> ⁄ 120 · MASS_CONS · TRUE ]</span>
         </div>
-        <div class="hazard-bar"></div>
-      </div>
-    </div>
 
-    <div id="playbar">
-      <div class="play-btn active" id="btn-play" onclick="togglePlay()">▶</div>
-      <div class="play-btn" onclick="stepFrame(-1)">|◁</div>
-      <div class="play-btn" onclick="stepFrame(1)">▷|</div>
-      <div class="scrub-wrap">
-        <span class="scrub-label">SCR</span>
-        <input type="range" id="scrubber" min="0" max="119" value="0" oninput="scrubTo(this.value)">
-      </div>
-      <div class="play-btn" onclick="resetPlay()">↺</div>
-    </div>
-  </div>
+        <!-- PLATE -->
+        <div class="plate">
+          <span class="plate-lbl pl-tc" id="tc">00:00:00:00</span>
+          <span class="plate-lbl pl-rec">REC · ACTIVE</span>
+          <span class="plate-lbl pl-id">ID · MM-01-N1 ⁄ S&amp;S.PLATE</span>
+          <span class="plate-lbl pl-sect">SECTOR · 01 ⁄ DAILY ⁄ SERIES</span>
 
-  <!-- SIDE PANEL -->
-  <div id="side-panel">
+          <div class="compare-zone" id="compare-zone">
 
-    <!-- A DEMO -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">A</span>DEMO — 比較表示</div>
-      <div class="demo-status">
-        <div class="status-pill active-pill" id="pill-compare" onclick="setMode('compare')">COMPARE</div>
-        <div class="status-pill inactive"    id="pill-correct" onclick="setMode('correct')">CORRECT</div>
-        <div class="status-pill inactive"    id="pill-wrong"   onclick="setMode('wrong')">WRONG</div>
-      </div>
-    </div>
+            <div class="compare-panel" id="panel-correct">
+              <div class="panel-label">
+                <span class="stamp">CORRECT</span>WITH&nbsp;S&amp;S
+              </div>
+              <div class="frame-counter" id="frame-correct">F:000</div>
+              <div class="panel-tc">VOL · <b id="vol-correct">1.00×</b></div>
+              <div class="diff-flash" id="diff-correct"></div>
+              <div class="ball-stage">
+                <svg class="render-svg" id="svg-correct" viewBox="0 0 260 320"></svg>
+              </div>
+              <div class="hazard"></div>
+            </div>
 
-    <!-- B TOGGLE -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">B</span>TOGGLE — 差分ON/OFF</div>
-      <div class="toggle-row"><span>差分ハイライト</span><div class="toggle-switch" id="tog-diff" onclick="toggleFeature('diff')"></div></div>
-      <div class="toggle-row"><span>影</span><div class="toggle-switch on" id="tog-shadow" onclick="toggleFeature('shadow')"></div></div>
-      <div class="toggle-row"><span>体積インジケーター</span><div class="toggle-switch" id="tog-volume" onclick="toggleFeature('volume')"></div></div>
-      <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0 10px;"></div>
-      <div style="font-size:9px;color:rgba(204,255,0,0.5);letter-spacing:0.3em;margin-bottom:8px;">STRETCH MODE</div>
-      <div style="display:flex;gap:6px;margin-bottom:6px;">
-        <div class="status-pill active-pill" id="pill-ss-full"   onclick="setSSMode('full')"   style="flex:1;text-align:center;font-size:8px;padding:5px 4px;line-height:1.4;">SQUASH<br>+STRETCH</div>
-        <div class="status-pill inactive"    id="pill-ss-squash" onclick="setSSMode('squash')" style="flex:1;text-align:center;font-size:8px;padding:5px 4px;line-height:1.4;">SQUASH<br>ONLY</div>
-      </div>
-      <div style="font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.08em;line-height:1.7;">
-        ONLY: 落下中は丸 → 着地でつぶれのみ<br>
-        FULL: 離地後にストレッチも加わる
-      </div>
-    </div>
+            <div class="compare-panel" id="panel-wrong">
+              <div class="panel-label bad">
+                <span class="stamp">WRONG</span>WITHOUT&nbsp;S&amp;S
+              </div>
+              <div class="frame-counter" id="frame-wrong">F:000</div>
+              <div class="panel-tc">VOL · <b id="vol-wrong">1.00×</b></div>
+              <div class="diff-flash" id="diff-wrong"></div>
+              <div class="ball-stage">
+                <svg class="render-svg" id="svg-wrong" viewBox="0 0 260 320"></svg>
+              </div>
+              <div class="hazard bad"></div>
+            </div>
 
-    <!-- C DEBUG -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">C</span>DEBUG — ガイド表示</div>
-      <div class="toggle-row"><span>Bounding Box</span><div class="toggle-switch" id="tog-bbox" onclick="toggleFeature('bbox')"></div></div>
-      <div class="toggle-row"><span>軌道ガイド</span><div class="toggle-switch" id="tog-arc" onclick="toggleFeature('arc')"></div></div>
-      <div class="toggle-row"><span>接地ライン</span><div class="toggle-switch on" id="tog-ground" onclick="toggleFeature('ground')"></div></div>
-      <div class="toggle-row"><span>重心マーカー</span><div class="toggle-switch" id="tog-cog" onclick="toggleFeature('cog')"></div></div>
-      <div class="toggle-row"><span>フレーム番号</span><div class="toggle-switch" id="tog-frame" onclick="toggleFeature('frame')"></div></div>
-    </div>
+          </div>
 
-    <!-- D CONTROLS -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">D</span>CONTROLS — パラメータ</div>
-
-      <div class="slider-row">
-        <div class="slider-header"><span class="slider-name">SQUASH RATIO</span><span class="slider-val" id="val-squash">1.50</span></div>
-        <input type="range" id="sl-squash" min="100" max="300" value="150" oninput="updateParam('squash',this.value)">
-      </div>
-      <div class="slider-row">
-        <div class="slider-header"><span class="slider-name">STRETCH RATIO</span><span class="slider-val" id="val-stretch">1.60</span></div>
-        <input type="range" id="sl-stretch" min="100" max="300" value="160" oninput="updateParam('stretch',this.value)">
-      </div>
-      <div class="slider-row">
-        <div class="slider-header"><span class="slider-name">BOUNCE HEIGHT</span><span class="slider-val" id="val-height">140px</span></div>
-        <input type="range" id="sl-height" min="60" max="240" value="140" oninput="updateParam('height',this.value)">
-      </div>
-      <div class="slider-row">
-        <div class="slider-header"><span class="slider-name">SPEED</span><span class="slider-val" id="val-speed">1.0x</span></div>
-        <input type="range" id="sl-speed" min="25" max="300" value="100" oninput="updateParam('speed',this.value)">
-      </div>
-
-      <!-- イージングゲージ -->
-      <div style="margin-top:8px;">
-        <div style="font-size:9px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:8px;">EASING GAUGE</div>
-        <div id="ease-gauge-wrap">
-          <svg id="ease-gauge-svg" width="32" height="120" viewBox="0 0 32 120"></svg>
-          <div class="ease-gauge-label">
-            ← 減速（枚数多）<br><br><br><br>→ 加速（枚数少）
+          <div class="playbar">
+            <button class="pbtn active" id="btn-play">▶</button>
+            <button class="pbtn" id="btn-prev">◁|</button>
+            <button class="pbtn" id="btn-next">|▷</button>
+            <div class="scrub-wrap">
+              <span class="lab">SCR</span>
+              <input type="range" id="scrubber" min="0" max="119" value="0">
+              <span class="lab" id="scrub-lab">F:000</span>
+            </div>
+            <button class="pbtn" id="btn-reset">↺</button>
           </div>
         </div>
-        <div style="margin-top:8px;">
-          <div class="slider-header"><span class="slider-name">EASING POWER</span><span class="slider-val" id="val-ease">2.0</span></div>
-          <input type="range" id="sl-ease" min="10" max="50" value="20" oninput="updateParam('ease',this.value)">
-        </div>
-      </div>
-    </div>
 
-    <!-- E BREAK -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">E</span>BREAK — 破綻体験</div>
-      <button class="break-btn" id="break-btn" onclick="toggleBreak()">⚠ OVERDRIVE MODE</button>
-      <div class="break-warning" id="break-warning" style="display:none;">
-        SYSTEM_GAIN: 310% // 体積が崩壊している。<br>これが「やりすぎ」の感覚。
-      </div>
-    </div>
-
-    <!-- F TEXT -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">F</span>TEXT — 言語化</div>
-      <div class="def-block">
-        <div class="def-en">Shape changes.<br>Volume does not.</div>
-        <div class="def-jp">形は変わるが、量は変わらない。</div>
-        <div class="def-core">
-          物体がつぶれるとき、横に広がる。<br>
-          伸びるとき、横は細くなる。<br>
-          この「体積の保存」が重さとリアリティを生む。
+        <div class="bottom-strip">
+          <span class="id">SET&nbsp;·&nbsp;SENTIENT-BP-2026-VLS.01</span>
+          <div class="bar2" id="prog-bar"></div>
+          <span class="frame">FR<span class="acc" id="masterFr">000</span>⁄&nbsp;120</span>
         </div>
-      </div>
-    </div>
 
-    <!-- G APPLY -->
-    <div class="sp-section">
-      <div class="sp-label"><span class="ltr">G</span>APPLY — 応用例（クリックして体験）</div>
-      <!-- UI BUTTON -->
-      <div style="margin-bottom:10px;">
-        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">UI BUTTON</div>
-        <button id="apply-btn" onclick="applyDemo('button')"
-          style="background:#CCFF00;border:none;color:#000;font-family:'IBM Plex Mono',monospace;
-                 font-size:11px;letter-spacing:0.2em;padding:10px 20px;cursor:pointer;
-                 transform-origin:center bottom;transition:none;display:block;width:100%;">
-          CLICK ME
-        </button>
-        <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.1em;">
-          → 押す=Squash / 離す=Stretch
-        </div>
       </div>
-      <!-- NOTIFICATION -->
-      <div style="margin-bottom:10px;">
-        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">NOTIFICATION</div>
-        <div style="position:relative;height:36px;overflow:hidden;">
-          <div id="apply-notif"
-            style="background:rgba(204,255,0,0.12);border:1px solid rgba(204,255,0,0.3);
-                   font-size:9px;letter-spacing:0.15em;color:#CCFF00;
-                   padding:8px 12px;transform:scaleY(0);transform-origin:top;
-                   transition:none;position:absolute;width:100%;">
-            ✓ SYSTEM_MESSAGE
+
+      <!-- SIDE -->
+      <aside class="side">
+
+        <!-- F TEXT moved up — define first -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> A · THEORY <span class="num">01</span></div>
+          <div class="def-block">
+            <div class="def-en">Shape changes.<br>Volume does not.</div>
+            <div class="def-jp">形は変わるが、量は変わらない。</div>
+            <div class="def-core">
+              つぶれるとき、横に広がる。<br>
+              伸びるとき、横は細くなる。<br>
+              この「体積の保存」が、重さとリアリティを生む。
+            </div>
           </div>
         </div>
-        <button onclick="applyDemo('notif')"
-          style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);
-                 font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.2em;
-                 padding:5px 10px;cursor:pointer;margin-top:4px;width:100%;">
-          TRIGGER
-        </button>
-      </div>
-      <!-- LOADING DOT -->
-      <div>
-        <div style="font-size:8px;color:rgba(204,255,0,0.4);letter-spacing:0.3em;margin-bottom:6px;">LOADING</div>
-        <div style="display:flex;gap:6px;align-items:flex-end;height:24px;">
-          <div class="apply-dot" style="animation-delay:0s"></div>
-          <div class="apply-dot" style="animation-delay:0.15s"></div>
-          <div class="apply-dot" style="animation-delay:0.3s"></div>
-          <div class="apply-dot" style="animation-delay:0.45s"></div>
-          <div class="apply-dot" style="animation-delay:0.6s"></div>
+
+        <!-- B LIVE -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq acc"></span> B · LIVE <span class="num">RT</span></div>
+          <div class="row"><span class="k">FRAME</span><span class="v" id="lv-fr">000 ⁄ 120</span></div>
+          <div class="row"><span class="k">PHASE</span><span class="v" id="lv-phase">0.000</span></div>
+          <div class="row"><span class="k">VELOCITY</span><span class="v" id="lv-vel">0.00</span></div>
+          <div class="row"><span class="k">VOLUME</span><span class="v acc" id="lv-vol">1.00×</span></div>
+          <div class="row"><span class="k">RX ⁄ RY</span><span class="v" id="lv-rxry">26.0 ⁄ 26.0</span></div>
         </div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.1em;">
-          → 各ドットが独立してSquash&Stretch
+
+        <!-- C PLAYBACK / DEMO MODE -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> C · DEMO_MODE <span class="num">03</span></div>
+          <div class="btn-row split" id="mode-row">
+            <button class="btn active" data-mode="compare">COMPARE</button>
+            <button class="btn" data-mode="correct">CORRECT</button>
+            <button class="btn" data-mode="wrong">WRONG</button>
+          </div>
+          <div class="btn-row split">
+            <button class="btn active" id="ss-full">S+S · FULL</button>
+            <button class="btn" id="ss-squash">SQUASH&nbsp;ONLY</button>
+          </div>
+          <div style="font-family:var(--jp);font-size:9px;color:var(--mute);letter-spacing:0.02em;line-height:1.6;margin-top:6px;font-weight:500">
+            ONLY · 落下中は丸、着地でつぶれのみ<br>
+            FULL · 離地後にストレッチも加わる
+          </div>
         </div>
-      </div>
+
+        <!-- D PARAMETERS -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> D · PARAMETERS <span class="num">05</span></div>
+
+          <div class="sl-row">
+            <div class="sl-head"><span class="sl-name">SQUASH&nbsp;RATIO</span><span class="sl-val" id="val-squash">1.50</span></div>
+            <input type="range" id="sl-squash" min="100" max="300" value="150">
+          </div>
+          <div class="sl-row">
+            <div class="sl-head"><span class="sl-name">STRETCH&nbsp;RATIO</span><span class="sl-val" id="val-stretch">1.60</span></div>
+            <input type="range" id="sl-stretch" min="100" max="300" value="160">
+          </div>
+          <div class="sl-row">
+            <div class="sl-head"><span class="sl-name">BOUNCE&nbsp;HEIGHT</span><span class="sl-val" id="val-height">140 PX</span></div>
+            <input type="range" id="sl-height" min="60" max="240" value="140">
+          </div>
+          <div class="sl-row">
+            <div class="sl-head"><span class="sl-name">SPEED</span><span class="sl-val" id="val-speed">1.0×</span></div>
+            <input type="range" id="sl-speed" min="25" max="300" value="100">
+          </div>
+          <div class="sl-row">
+            <div class="sl-head"><span class="sl-name">EASING&nbsp;POWER</span><span class="sl-val" id="val-ease">2.0</span></div>
+            <input type="range" id="sl-ease" min="10" max="50" value="20">
+          </div>
+
+          <div style="margin-top:6px">
+            <div class="sl-name" style="margin-bottom:6px">EASING&nbsp;GAUGE</div>
+            <div id="ease-gauge-wrap">
+              <svg id="ease-gauge-svg" width="36" height="120" viewBox="0 0 36 120"></svg>
+              <div class="gauge-lab">
+                <b>TOP</b><br>↑ 減速 ⁄ 枚数多<br><br>
+                <b>GND</b><br>↓ 加速 ⁄ 枚数少
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- E DEBUG -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> E · DEBUG_GUIDES <span class="num">08</span></div>
+          <div class="tog-row"><span class="lab">差分ハイライト</span><div class="tog" data-feat="diff"></div></div>
+          <div class="tog-row"><span class="lab">影</span><div class="tog on" data-feat="shadow"></div></div>
+          <div class="tog-row"><span class="lab">体積インジケーター</span><div class="tog" data-feat="volume"></div></div>
+          <div class="tog-row"><span class="lab">Bounding Box</span><div class="tog" data-feat="bbox"></div></div>
+          <div class="tog-row"><span class="lab">軌道ガイド</span><div class="tog" data-feat="arc"></div></div>
+          <div class="tog-row"><span class="lab">接地ライン</span><div class="tog on" data-feat="ground"></div></div>
+          <div class="tog-row"><span class="lab">重心マーカー</span><div class="tog" data-feat="cog"></div></div>
+          <div class="tog-row"><span class="lab">フレーム番号</span><div class="tog" data-feat="frame"></div></div>
+        </div>
+
+        <!-- F BREAK -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq warn"></span> F · BREAK <span class="num">!</span></div>
+          <button class="btn warn" id="break-btn" style="width:100%;justify-content:space-between">
+            <span>⚠ OVERDRIVE&nbsp;MODE</span><span>▸</span>
+          </button>
+          <div class="break-warn" id="break-warn" style="display:none">
+            SYSTEM_GAIN · 310%<br>
+            体積が崩壊している。これが「やりすぎ」の感覚。
+          </div>
+        </div>
+
+        <!-- G APPLY -->
+        <div class="psec">
+          <div class="sec-lbl"><span class="sq"></span> G · APPLY <span class="num">UI</span></div>
+
+          <div class="apply-grp">
+            <div class="h">UI BUTTON</div>
+            <button id="apply-btn">CLICK ME</button>
+            <div class="hint">→ 押す=Squash ／ 離す=Stretch</div>
+          </div>
+
+          <div class="apply-grp">
+            <div class="h">NOTIFICATION</div>
+            <div style="position:relative;height:36px;overflow:hidden;">
+              <div id="apply-notif">✓ SYSTEM_MESSAGE</div>
+            </div>
+            <button class="btn" style="width:100%;justify-content:center;margin-top:4px" id="trigger-notif">TRIGGER</button>
+          </div>
+
+          <div class="apply-grp">
+            <div class="h">LOADING</div>
+            <div class="apply-dots">
+              <div class="apply-dot" style="animation-delay:0s"></div>
+              <div class="apply-dot" style="animation-delay:0.15s"></div>
+              <div class="apply-dot" style="animation-delay:0.3s"></div>
+              <div class="apply-dot" style="animation-delay:0.45s"></div>
+              <div class="apply-dot" style="animation-delay:0.6s"></div>
+            </div>
+            <div class="hint">→ 各ドットが独立して Squash&amp;Stretch</div>
+          </div>
+        </div>
+
+      </aside>
+
     </div>
+  </main>
 
-  </div><!-- /side-panel -->
-
-  <div id="bottombar">
-    <span>MASS_CONSERVATION: TRUE // DEFORMATION_INDEX: 0.85</span>
-    <span id="bottom-frame">FRAME: 000 / 120</span>
-    <span>ID: SENTIENT-BP-2026-VLS.01</span>
-  </div>
+  <!-- BOTTOM BAR -->
+  <footer id="bottombar">
+    <div><span class="blink"></span><span>S&amp;S · ACTIVE</span></div>
+    <div>
+      <span>MASS_CONSERVATION · TRUE</span>
+      <span style="margin-left:18px">DEFORMATION_INDEX · <span class="v" id="ft-def">0.85</span></span>
+      <span style="margin-left:18px">FR&nbsp;<span class="v" id="masterFrFt">000</span>&nbsp;⁄&nbsp;<span class="v">120</span></span>
+      <span class="frame-dots" id="frame-dots" style="margin-left:14px"></span>
+    </div>
+    <div>
+      <span class="kbd">SPC</span>PLAY
+      <span class="kbd">←&nbsp;→</span>STEP
+      <span class="kbd">R</span>RESET
+      <span class="kbd">ESC</span>INDEX
+    </div>
+    <div><span>ID · <span class="v">MM-2026-01 ⁄ N1</span></span></div>
+  </footer>
 
 </div>
 
 <script>
-/* ══════════════════════════
-   CONSTANTS
-══════════════════════════ */
-const SVG_W = 260, SVG_H = 320;
-const BALL_R  = 26;
-const GROUND_Y = SVG_H - 20;   // 地面のY座標（底辺がここに接地）
-const GAUGE_SAMPLES = 24;        // ゲージの刻み数
+// ════════════════════════════════════════════════════════════
+// COLORS (for inline SVG fills — match tDR palette)
+// ════════════════════════════════════════════════════════════
+const C_INK  = '#0a0a0a';
+const C_MUTE = '#9a9a96';
+const C_MUTE2= '#cfcfca';
+const C_ACC  = '#c8ff1a';
+const C_WARN = '#c8231a';
 
-/* ══════════════════════════
-   STATE
-══════════════════════════ */
+// ════════════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════════════
+const SVG_W = 260, SVG_H = 320;
+const BALL_R = 26;
+const GROUND_Y = SVG_H - 20;
+const GAUGE_SAMPLES = 24;
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
 const state = {
   playing: true,
   frame: 0,
   totalFrames: 120,
-  mode: 'compare',
+  mode: 'compare',       // compare | correct | wrong
+  ssMode: 'full',        // full | squash
   breakMode: false,
-  ssMode: 'full',   // 'full' | 'squash' — ストレッチモード
   params: {
-    squash:  1.50,
-    stretch: 1.60,
-    height:  140,
-    speed:   1.0,
-    ease:    2.0,
+    squash: 1.50, stretch: 1.60, height: 140, speed: 1.0, ease: 2.0,
   },
   features: {
-    diff:   false,
-    shadow: true,
-    volume: false,
-    bbox:   false,
-    arc:    false,
-    ground: true,
-    cog:    false,
-    frame:  false,
+    diff:false, shadow:true, volume:false, bbox:false,
+    arc:false, ground:true, cog:false, frame:false,
   },
 };
 
-/* ══════════════════════════
-   PHYSICS
-   
-   ボールの中心Y: 地面から上方向へheight
-   ─ 頂点: GROUND_Y - BALL_R - height
-   ─ 着地: GROUND_Y - BALL_R  （底辺が地面に接触）
-   
-   t=0: 頂点にいる状態からスタート
-   
-   Squash & Stretch の適用ルール：
-   ─ 離地〜下降中：横に伸び（Stretch）縦に縮む
-   ─ 着地前後：縦につぶれ（Squash）横に広がる
-   ─ 頂点：ほぼ真円に戻る
-   ─ 底辺は常にGROUND_Yに固定（地面基点）
-══════════════════════════ */
+// ════════════════════════════════════════════════════════════
+// PHYSICS (preserved logic)
+// ════════════════════════════════════════════════════════════
+function easePow(u, power){ return Math.pow(u, power); }
 
-// イージング: t^power でゆっくり加速
-// 0=頂点, 1=着地 を往復する
-function easePow(u, power) {
-  return Math.pow(u, power);
-}
-
-// フレームtからボール状態を計算
-function getBallState(frame, params) {
-  const t      = frame / state.totalFrames;
-  const power  = params.ease;
-
-  // 0→1→0 の往復サイクル（1=着地）
-  const cycle  = t % 1.0;
-  let phase;   // 0=頂点, 1=着地
-  let eased;
-  if (cycle < 0.5) {
-    // 前半: 頂点→着地（加速=ease-in）
+function getBallState(frame, params){
+  const t = frame / state.totalFrames;
+  const power = params.ease;
+  const cycle = t % 1.0;
+  let phase, eased;
+  if(cycle < 0.5){
     const u = cycle / 0.5;
     eased = easePow(u, power);
     phase = eased;
   } else {
-    // 後半: 着地→頂点（減速=ease-out）
     const u = (cycle - 0.5) / 0.5;
     eased = easePow(1 - u, power);
     phase = eased;
   }
-
-  // 実際のY（中心点）: phase=0→頂点, phase=1→着地
-  const topY    = GROUND_Y - BALL_R - params.height;   // 頂点中心Y
-  const bottomY = GROUND_Y - BALL_R;                    // 着地中心Y
-  const cy      = topY + (bottomY - topY) * phase;
-
-  // 速度（phase差分で近似）
+  const topY = GROUND_Y - BALL_R - params.height;
+  const bottomY = GROUND_Y - BALL_R;
+  const cy = topY + (bottomY - topY) * phase;
   const dPhase = (cycle < 0.5)
     ? easePow((cycle/0.5)+0.01, power) - phase
     : phase - easePow(1-((cycle-0.5)/0.5)+0.01, power);
   const vel = Math.abs(dPhase) * 100;
-
   return { cy, phase, vel, cycle };
 }
 
-/* Squash & Stretch の rx/ry 計算
-   ssMode='squash': 着地時のみSquash、それ以外は真円
-   ssMode='full':   離地後にStretchも付加
-*/
-function getSS(bs, params, isBreak) {
+function getSS(bs, params, isBreak){
   const mul = isBreak ? 3.1 : 1.0;
-  const sq  = params.squash  * mul;
-  const st  = params.stretch * mul;
-  const ph  = bs.phase;
-
-  // 着地付近のSquash重み（両モード共通）
+  const sq = params.squash * mul;
+  const st = params.stretch * mul;
+  const ph = bs.phase;
   const squashW = Math.max(0, (ph - 0.82) / 0.18);
-
-  // StretchはFULLモードのみ
   const stretchW = (state.ssMode === 'full')
-    ? Math.max(0, Math.min(1, (ph - 0.10) / 0.35))
-      * Math.max(0, Math.min(1, (0.82 - ph) / 0.35))
+    ? Math.max(0, Math.min(1, (ph - 0.10) / 0.35)) *
+      Math.max(0, Math.min(1, (0.82 - ph) / 0.35))
     : 0;
-
   let rx, ry;
-  if (squashW > 0.01) {
+  if(squashW > 0.01){
     rx = BALL_R * (1 + (sq - 1) * squashW);
     ry = BALL_R / (1 + (sq - 1) * squashW);
-  } else if (stretchW > 0.01) {
+  } else if(stretchW > 0.01){
     ry = BALL_R * (1 + (st - 1) * stretchW);
     rx = BALL_R / (1 + (st - 1) * stretchW);
   } else {
     rx = ry = BALL_R;
   }
-
   return { rx, ry, squashW, stretchW };
 }
 
-/* ボールのCY: Squash時は底辺がGROUND_Yに固定
-   cy_center = GROUND_Y - ry  （着地時）
-   それ以外は計算値のcy
-*/
-function getAdjustedCY(bs, ry, params) {
-  // 着地モードかどうか
+function getAdjustedCY(bs, ry){
   const squashW = Math.max(0, (bs.phase - 0.82) / 0.18);
-  if (squashW > 0.01) {
-    // 底辺固定: 中心Y = GROUND_Y - ry
+  if(squashW > 0.01){
     const groundCY = GROUND_Y - ry;
-    const freeCY   = bs.cy;
-    // squashWで補間
+    const freeCY = bs.cy;
     return freeCY + (groundCY - freeCY) * squashW;
   }
   return bs.cy;
 }
 
-/* ══════════════════════════
-   RENDER
-══════════════════════════ */
-function renderPanel(svgEl, withSS, params, features, isBreak) {
-  const bs  = getBallState(state.frame, params);
-  const cx  = SVG_W / 2;
+// ════════════════════════════════════════════════════════════
+// RENDER PANEL (tDR palette)
+// ════════════════════════════════════════════════════════════
+function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
+  const bs = getBallState(state.frame, params);
+  const cx = SVG_W / 2;
 
   let rx, ry, squashW = 0, stretchW = 0;
-  if (withSS) {
+  if(withSS){
     const ss = getSS(bs, params, isBreak);
     rx = ss.rx; ry = ss.ry;
-    squashW  = ss.squashW;
-    stretchW = ss.stretchW;
+    squashW = ss.squashW; stretchW = ss.stretchW;
   } else {
     rx = ry = BALL_R;
   }
-
-  // 底辺固定の補正
-  const cy = withSS ? getAdjustedCY(bs, ry, params) : bs.cy;
+  const cy = withSS ? getAdjustedCY(bs, ry) : bs.cy;
 
   const parts = [];
 
-  // ── 軌道ガイド ──
-  if (features.arc) {
-    const topY    = GROUND_Y - BALL_R - params.height;
-    const midY    = (topY + GROUND_Y - BALL_R) / 2;
-    const arcH    = (GROUND_Y - BALL_R - topY) / 2;
+  // arc
+  if(features.arc){
+    const topY = GROUND_Y - BALL_R - params.height;
+    const midY = (topY + GROUND_Y - BALL_R) / 2;
+    const arcH = (GROUND_Y - BALL_R - topY) / 2;
     parts.push(`<ellipse cx="${cx}" cy="${midY}" rx="${SVG_W*0.18}" ry="${arcH}"
-      fill="none" stroke="rgba(59,170,255,0.3)" stroke-width="1" stroke-dasharray="4 4"/>`);
+      fill="none" stroke="${C_INK}" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="4 4"/>`);
   }
 
-  // ── 接地ライン ──
-  if (features.ground) {
+  // ground
+  if(features.ground){
     parts.push(`<line x1="0" y1="${GROUND_Y}" x2="${SVG_W}" y2="${GROUND_Y}"
-      stroke="rgba(204,255,0,0.35)" stroke-width="1" stroke-dasharray="6 3"/>`);
-    parts.push(`<text x="${SVG_W-6}" y="${GROUND_Y-3}" font-family="IBM Plex Mono,monospace" 
-      font-size="8" fill="rgba(204,255,0,0.4)" text-anchor="end">GROUND</text>`);
+      stroke="${C_INK}" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="6 3"/>`);
+    parts.push(`<text x="${SVG_W-6}" y="${GROUND_Y-4}" font-family="JetBrains Mono,monospace"
+      font-size="8" fill="${C_INK}" fill-opacity="0.55" text-anchor="end" letter-spacing="1">GROUND</text>`);
+    // tDR scale ticks under the ground line
+    for(let i=0;i<=12;i++){
+      const x = (i/12)*SVG_W;
+      parts.push(`<line x1="${x}" y1="${GROUND_Y}" x2="${x}" y2="${GROUND_Y+5}"
+        stroke="${C_INK}" stroke-opacity="${i%3===0?0.55:0.25}" stroke-width="1"/>`);
+    }
   }
 
-  // ── 影 ──
-  if (features.shadow) {
+  // shadow
+  if(features.shadow){
     const shadowScale = 0.4 + bs.phase * 0.7;
-    const shadowOp    = 0.08 + bs.phase * 0.28;
+    const shadowOp = 0.10 + bs.phase * 0.30;
     parts.push(`<ellipse cx="${cx}" cy="${GROUND_Y}" rx="${BALL_R * shadowScale * 1.4}" ry="5"
-      fill="rgba(0,0,0,0.7)" opacity="${shadowOp}"/>`);
-    parts.push(`<ellipse cx="${cx}" cy="${GROUND_Y}" rx="${BALL_R * shadowScale}" ry="3"
-      fill="rgba(204,255,0,${(shadowOp*0.5).toFixed(2)})"/>`);
+      fill="${C_INK}" opacity="${shadowOp.toFixed(2)}"/>`);
   }
 
-  // ── Bounding Box ──
-  if (features.bbox) {
-    // 底辺は実際のGROUND_Yに接するよう表示
+  // bbox
+  if(features.bbox){
     const bboxBottom = cy + ry;
     parts.push(`<rect x="${cx-rx}" y="${cy-ry}" width="${rx*2}" height="${ry*2}"
-      fill="none" stroke="rgba(255,59,59,0.6)" stroke-width="1" stroke-dasharray="3 3"/>`);
-    // 底辺の強調
+      fill="none" stroke="${C_WARN}" stroke-opacity="0.8" stroke-width="1" stroke-dasharray="3 3"/>`);
     parts.push(`<line x1="${cx-rx}" y1="${bboxBottom}" x2="${cx+rx}" y2="${bboxBottom}"
-      stroke="rgba(255,59,59,0.9)" stroke-width="1.5"/>`);
+      stroke="${C_WARN}" stroke-width="1.6"/>`);
     const vol = (rx*ry/(BALL_R*BALL_R)).toFixed(2);
-    parts.push(`<text x="${cx}" y="${cy+ry+14}" font-family="IBM Plex Mono,monospace"
-      font-size="8" fill="rgba(255,59,59,0.7)" text-anchor="middle">VOL:${vol}×</text>`);
+    parts.push(`<text x="${cx}" y="${cy+ry+14}" font-family="JetBrains Mono,monospace"
+      font-size="8" fill="${C_WARN}" text-anchor="middle" letter-spacing="1">VOL · ${vol}×</text>`);
   }
 
-  // ── ボール本体 ──
-  const ballColor = isBreak
-    ? (squashW > 0.5 ? '#FF3B3B' : stretchW > 0.5 ? '#FF7B3B' : '#FF3B3B')
-    : '#CCFF00';
-  parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${ballColor}"/>`);
+  // BALL
+  let ballFill, ballStroke;
+  if(panelKey === 'wrong'){
+    ballFill = C_INK; ballStroke = C_INK;
+  } else if(isBreak){
+    ballFill = C_WARN; ballStroke = C_INK;
+  } else {
+    ballFill = C_ACC; ballStroke = C_INK;
+  }
+  parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+    fill="${ballFill}" stroke="${ballStroke}" stroke-width="1.2"/>`);
 
-  // ハイライト
-  parts.push(`<ellipse cx="${cx-rx*0.28}" cy="${cy-ry*0.3}" rx="${rx*0.28}" ry="${ry*0.2}"
-    fill="rgba(255,255,255,0.35)"/>`);
+  // ink core square (tDR ball signature)
+  const coreR = Math.min(rx, ry) * 0.32;
+  parts.push(`<rect x="${cx-coreR}" y="${cy-coreR}" width="${coreR*2}" height="${coreR*2}"
+    fill="${panelKey==='wrong' ? C_ACC : C_INK}" opacity="0.95"/>`);
 
-  // ── 重心マーカー ──
-  if (features.cog) {
-    parts.push(`<line x1="${cx-9}" y1="${cy}" x2="${cx+9}" y2="${cy}" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
-    parts.push(`<line x1="${cx}" y1="${cy-9}" x2="${cx}" y2="${cy+9}" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
-    parts.push(`<circle cx="${cx}" cy="${cy}" r="3" fill="none" stroke="rgba(59,170,255,0.9)" stroke-width="1.5"/>`);
+  // halo ring (tDR signature)
+  const haloR = Math.max(rx,ry) + 8;
+  parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx+8}" ry="${ry+8}"
+    fill="none" stroke="${C_INK}" stroke-opacity="0.15" stroke-width="1"/>`);
+
+  // cog
+  if(features.cog){
+    parts.push(`<line x1="${cx-10}" y1="${cy}" x2="${cx+10}" y2="${cy}" stroke="${C_INK}" stroke-width="1.4"/>`);
+    parts.push(`<line x1="${cx}" y1="${cy-10}" x2="${cx}" y2="${cy+10}" stroke="${C_INK}" stroke-width="1.4"/>`);
+    parts.push(`<circle cx="${cx}" cy="${cy}" r="3" fill="${C_ACC}" stroke="${C_INK}" stroke-width="1"/>`);
   }
 
-  // ── 体積インジケーター ──
-  if (features.volume) {
-    const vol  = (rx*ry/(BALL_R*BALL_R)).toFixed(2);
+  // volume hud (in-panel)
+  if(features.volume){
+    const vol = (rx*ry/(BALL_R*BALL_R)).toFixed(2);
     const diff = Math.abs(parseFloat(vol) - 1);
-    const vc   = diff < 0.05 ? '#CCFF00' : diff < 0.15 ? '#3BAAFF' : '#FF3B3B';
-    parts.push(`<text x="6" y="${SVG_H-6}" font-family="IBM Plex Mono,monospace"
-      font-size="9" fill="${vc}" letter-spacing="1">VOL: ${vol}×</text>`);
-    const barW = Math.min(56, parseFloat(vol)*28);
-    parts.push(`<rect x="6" y="${SVG_H-22}" width="28" height="3" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`);
-    parts.push(`<rect x="6" y="${SVG_H-22}" width="${barW}" height="3" fill="${vc}" opacity="0.8"/>`);
+    const vc = diff < 0.05 ? C_INK : diff < 0.15 ? C_INK : C_WARN;
+    const vBg = diff < 0.05 ? C_ACC : '#fff';
+    parts.push(`<rect x="6" y="${SVG_H-26}" width="76" height="18" fill="${vBg}" stroke="${C_INK}" stroke-width="1"/>`);
+    parts.push(`<text x="10" y="${SVG_H-13}" font-family="JetBrains Mono,monospace"
+      font-size="9" fill="${vc}" font-weight="700" letter-spacing="1">VOL · ${vol}×</text>`);
   }
 
   svgEl.innerHTML = parts.join('');
 }
 
-/* ══════════════════════════
-   EASE GAUGE（縦ゲージ）
-   上ほど間隔が狭い（=減速・枚数多）
-   下ほど間隔が広い（=加速・枚数少）
-══════════════════════════ */
-function updateEaseGauge(power) {
-  const gw = 32, gh = 120;
+// ════════════════════════════════════════════════════════════
+// EASE GAUGE
+// ════════════════════════════════════════════════════════════
+function updateEaseGauge(power){
+  const gw = 36, gh = 120;
   const lineCount = GAUGE_SAMPLES;
   const svg = document.getElementById('ease-gauge-svg');
   const parts = [];
 
-  // 背景
-  parts.push(`<rect width="${gw}" height="${gh}" fill="rgba(204,255,0,0.04)" rx="2"/>`);
-
-  // 中心の軸線
+  parts.push(`<rect x="0.5" y="0.5" width="${gw-1}" height="${gh-1}" fill="#fff" stroke="${C_MUTE2}"/>`);
   const ax = gw/2;
-  parts.push(`<line x1="${ax}" y1="0" x2="${ax}" y2="${gh}" stroke="rgba(204,255,0,0.15)" stroke-width="1"/>`);
+  parts.push(`<line x1="${ax}" y1="0" x2="${ax}" y2="${gh}" stroke="${C_INK}" stroke-opacity="0.18" stroke-width="1"/>`);
 
-  // 現在フレームの位置（アニメ中）
   const bs = getBallState(state.frame, state.params);
   const cursorY = bs.phase * gh;
 
-  // ゲージ刻み線
-  for (let i = 0; i <= lineCount; i++) {
-    const phase = i / lineCount; // 0=頂点, 1=着地
-    // easeを適用: 均等フレームt→phaseへ変換
-    // ゲージはphase軸（Y）にframeをプロット
-    // 実際には「同じ時間間隔でどこにいるか」を示す
+  for(let i=0;i<=lineCount;i++){
     const frameUnit = i / lineCount;
     let u;
-    if (frameUnit < 0.5) {
-      u = easePow(frameUnit / 0.5, power);
-    } else {
-      u = easePow(1 - (frameUnit - 0.5) / 0.5, power);
-    }
+    if(frameUnit < 0.5){ u = easePow(frameUnit/0.5, power); }
+    else { u = easePow(1 - (frameUnit-0.5)/0.5, power); }
     const y = u * gh;
-
-    // 刻み線の長さ：密なほど短め
-    const lineW = 8 + Math.random() * 0; // 固定幅、位置で密度表現
-    parts.push(`<line x1="${ax-6}" y1="${y.toFixed(1)}" x2="${ax+6}" y2="${y.toFixed(1)}"
-      stroke="rgba(204,255,0,0.5)" stroke-width="1"/>`);
+    parts.push(`<line x1="${ax-7}" y1="${y.toFixed(1)}" x2="${ax+7}" y2="${y.toFixed(1)}"
+      stroke="${C_INK}" stroke-width="1"/>`);
   }
 
-  // カーソル（現在位置）
-  parts.push(`<rect x="${ax-8}" y="${cursorY-1.5}" width="16" height="3" fill="#CCFF00"/>`);
-
-  // ラベル
-  parts.push(`<text x="${ax}" y="10" font-family="IBM Plex Mono,monospace" font-size="7"
-    fill="rgba(204,255,0,0.4)" text-anchor="middle">TOP</text>`);
-  parts.push(`<text x="${ax}" y="${gh-2}" font-family="IBM Plex Mono,monospace" font-size="7"
-    fill="rgba(204,255,0,0.4)" text-anchor="middle">GND</text>`);
+  parts.push(`<rect x="${ax-9}" y="${cursorY-1.5}" width="18" height="3" fill="${C_ACC}" stroke="${C_INK}" stroke-width="0.6"/>`);
+  parts.push(`<text x="${ax}" y="9" font-family="JetBrains Mono,monospace" font-size="7"
+    fill="${C_MUTE}" text-anchor="middle" letter-spacing="0.6">TOP</text>`);
+  parts.push(`<text x="${ax}" y="${gh-2}" font-family="JetBrains Mono,monospace" font-size="7"
+    fill="${C_MUTE}" text-anchor="middle" letter-spacing="0.6">GND</text>`);
 
   svg.innerHTML = parts.join('');
 }
 
-/* ══════════════════════════
-   LOOP
-══════════════════════════ */
+// ════════════════════════════════════════════════════════════
+// LOOP
+// ════════════════════════════════════════════════════════════
 let lastTime = null, accumMs = 0;
 
-function loop(now) {
-  if (state.playing) {
-    if (lastTime !== null) accumMs += (now - lastTime) * state.params.speed;
+function loop(now){
+  if(state.playing){
+    if(lastTime !== null) accumMs += (now - lastTime) * state.params.speed;
     lastTime = now;
-    const mspf = 1000 / 60;
-    while (accumMs >= mspf) {
+    const mspf = 1000/60;
+    while(accumMs >= mspf){
       state.frame = (state.frame + 1) % state.totalFrames;
       accumMs -= mspf;
     }
@@ -808,192 +1172,325 @@ function loop(now) {
   const m = state.mode;
   const svgC = document.getElementById('svg-correct');
   const svgW = document.getElementById('svg-wrong');
+  const pC = document.getElementById('panel-correct');
+  const pW = document.getElementById('panel-wrong');
 
-  if (m === 'compare' || m === 'correct') {
-    renderPanel(svgC, true, state.params, state.features, state.breakMode);
-    document.getElementById('panel-correct').style.display = '';
-  } else {
-    document.getElementById('panel-correct').style.display = 'none';
-  }
-  if (m === 'compare' || m === 'wrong') {
-    renderPanel(svgW, false, state.params, state.features, false);
-    document.getElementById('panel-wrong').style.display = '';
-  } else {
-    document.getElementById('panel-wrong').style.display = 'none';
-  }
+  if(m === 'compare' || m === 'correct'){
+    renderPanel(svgC, true, state.params, state.features, state.breakMode, 'correct');
+    pC.style.display = '';
+  } else { pC.style.display = 'none'; }
 
-  // diff highlight
-  document.getElementById('diff-correct').className = 'diff-flash' + (state.features.diff ? ' highlight-good' : '');
-  document.getElementById('diff-wrong').className   = 'diff-flash' + (state.features.diff ? ' highlight-bad'  : '');
+  if(m === 'compare' || m === 'wrong'){
+    renderPanel(svgW, false, state.params, state.features, false, 'wrong');
+    pW.style.display = '';
+  } else { pW.style.display = 'none'; }
 
-  // フレームカウンター
+  document.getElementById('compare-zone').style.gridTemplateColumns =
+    m === 'compare' ? '1fr 1fr' : '1fr';
+
+  // diff flash
+  document.getElementById('diff-correct').className = 'diff-flash' + (state.features.diff ? ' hi-good' : '');
+  document.getElementById('diff-wrong').className   = 'diff-flash' + (state.features.diff ? ' hi-bad' : '');
+
+  // frame counters
   const f = String(state.frame).padStart(3,'0');
   document.getElementById('frame-correct').textContent = `F:${f}`;
-  document.getElementById('frame-wrong').textContent   = `F:${f}`;
-  document.getElementById('bottom-frame').textContent  = `FRAME: ${f} / ${state.totalFrames}`;
+  document.getElementById('frame-wrong').textContent = `F:${f}`;
+  document.getElementById('scrub-lab').textContent = `F:${f}`;
+  document.getElementById('masterFr').textContent = f;
+  document.getElementById('masterFrTop').textContent = f;
+  document.getElementById('masterFrFt').textContent = f;
+  document.getElementById('lv-fr').textContent = f + ' ⁄ 120';
 
-  // ゲージ更新
+  // live values
+  const bs = getBallState(state.frame, state.params);
+  const ss = getSS(bs, state.params, state.breakMode);
+  const vol = (ss.rx * ss.ry / (BALL_R*BALL_R));
+  document.getElementById('lv-phase').textContent = bs.phase.toFixed(3);
+  document.getElementById('lv-vel').textContent = bs.vel.toFixed(2);
+  document.getElementById('lv-vol').textContent = vol.toFixed(2) + '×';
+  document.getElementById('lv-rxry').textContent = ss.rx.toFixed(1) + ' ⁄ ' + ss.ry.toFixed(1);
+  document.getElementById('vol-correct').textContent = vol.toFixed(2) + '×';
+  document.getElementById('vol-wrong').textContent = '1.00×';
+
+  // tDR live volume color
+  const volDiff = Math.abs(vol - 1);
+  const lvVol = document.getElementById('lv-vol');
+  lvVol.classList.toggle('warn', volDiff > 0.25);
+
+  // progress bars
+  const p = (state.frame / state.totalFrames * 100).toFixed(1) + '%';
+  document.getElementById('inc-bar').style.setProperty('--p', p);
+  document.getElementById('prog-bar').style.setProperty('--p', p);
+
+  // TC
+  const ff = String(state.frame % 24).padStart(2,'0');
+  const ss2 = String(Math.floor(state.frame/24)).padStart(2,'0');
+  document.getElementById('tc').textContent = '00:00:' + ss2 + ':' + ff;
+
+  // frame dots
+  const fdots = document.getElementById('frame-dots');
+  const NDOTS = 30;
+  if(fdots.children.length !== NDOTS){
+    fdots.innerHTML = '';
+    for(let i=0;i<NDOTS;i++){
+      const d = document.createElement('span'); d.className='fd'; fdots.appendChild(d);
+    }
+  }
+  const cur = Math.floor((state.frame / state.totalFrames) * NDOTS);
+  [...fdots.children].forEach((d,i)=>{
+    d.classList.toggle('cur', i === cur);
+    d.classList.toggle('on', i < cur);
+  });
+
   updateEaseGauge(state.params.ease);
 
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 
-/* ══════════════════════════
-   CONTROLS
-══════════════════════════ */
-function togglePlay() {
-  state.playing = !state.playing;
-  const btn = document.getElementById('btn-play');
-  btn.textContent = state.playing ? '▶' : '⏸';
-  btn.classList.toggle('active', state.playing);
+// ════════════════════════════════════════════════════════════
+// CONTROLS
+// ════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+function setPlay(p){
+  state.playing = p;
+  $('btn-play').textContent = p ? '▶' : '⏸';
+  $('btn-play').classList.toggle('active', p);
 }
-function stepFrame(n) {
-  state.playing = false;
-  document.getElementById('btn-play').textContent = '▶';
-  document.getElementById('btn-play').classList.remove('active');
-  state.frame = (state.frame + n + state.totalFrames) % state.totalFrames;
-  document.getElementById('scrubber').value = state.frame;
-}
-function resetPlay() {
-  state.frame = 0; accumMs = 0;
-  document.getElementById('scrubber').value = 0;
-}
-function scrubTo(v) {
-  state.frame = parseInt(v);
-}
-function setMode(m) {
-  state.mode = m;
-  ['compare','correct','wrong'].forEach(k => {
-    document.getElementById(`pill-${k}`).className =
-      'status-pill ' + (k===m ? 'active-pill' : 'inactive');
+$('btn-play').addEventListener('click', ()=> setPlay(!state.playing));
+$('btn-prev').addEventListener('click', ()=>{
+  setPlay(false);
+  state.frame = (state.frame - 1 + state.totalFrames) % state.totalFrames;
+});
+$('btn-next').addEventListener('click', ()=>{
+  setPlay(false);
+  state.frame = (state.frame + 1) % state.totalFrames;
+});
+$('btn-reset').addEventListener('click', ()=>{ state.frame = 0; accumMs = 0; });
+$('scrubber').addEventListener('input', e => { state.frame = parseInt(e.target.value); });
+
+// mode pills
+document.querySelectorAll('#mode-row .btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    state.mode = b.dataset.mode;
+    document.querySelectorAll('#mode-row .btn').forEach(x => x.classList.toggle('active', x.dataset.mode === state.mode));
   });
-  document.getElementById('demo-area').style.gridTemplateColumns =
-    m === 'compare' ? '1fr 1fr' : '1fr';
+});
+
+// ss mode
+$('ss-full').addEventListener('click', ()=>{
+  state.ssMode = 'full';
+  $('ss-full').classList.add('active'); $('ss-squash').classList.remove('active');
+});
+$('ss-squash').addEventListener('click', ()=>{
+  state.ssMode = 'squash';
+  $('ss-squash').classList.add('active'); $('ss-full').classList.remove('active');
+});
+
+// toggles
+document.querySelectorAll('.tog').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    const key = t.dataset.feat;
+    state.features[key] = !state.features[key];
+    t.classList.toggle('on', state.features[key]);
+    if(key === 'frame'){
+      ['correct','wrong'].forEach(s => $(`frame-${s}`).classList.toggle('show', state.features.frame));
+    }
+  });
+});
+
+// sliders
+function bindSl(id, key, fn, fmt){
+  $('sl-'+id).addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    state.params[key] = fn(v);
+    $('val-'+id).textContent = fmt(v);
+    const isBreaking = state.params.squash > 2.5 || state.params.stretch > 2.5;
+    ['squash','stretch'].forEach(k => $('val-'+k).classList.toggle('warn', isBreaking));
+  });
 }
-function toggleFeature(key) {
-  state.features[key] = !state.features[key];
-  document.getElementById(`tog-${key}`).classList.toggle('on', state.features[key]);
-  if (key === 'frame') {
-    ['correct','wrong'].forEach(s => {
-      document.getElementById(`frame-${s}`).classList.toggle('show', state.features.frame);
+bindSl('squash',  'squash',  v=>v/100, v=>(v/100).toFixed(2));
+bindSl('stretch', 'stretch', v=>v/100, v=>(v/100).toFixed(2));
+bindSl('height',  'height',  v=>v,     v=>`${v} PX`);
+bindSl('speed',   'speed',   v=>v/100, v=>`${(v/100).toFixed(1)}×`);
+bindSl('ease',    'ease',    v=>v/10,  v=>(v/10).toFixed(1));
+
+// break
+$('break-btn').addEventListener('click', ()=>{
+  state.breakMode = !state.breakMode;
+  $('break-btn').classList.toggle('active', state.breakMode);
+  $('break-warn').style.display = state.breakMode ? 'block' : 'none';
+  $('break-btn').firstElementChild.textContent = state.breakMode ? '✕ EXIT OVERDRIVE' : '⚠ OVERDRIVE MODE';
+  if(state.breakMode){
+    $('sl-squash').value = 300; $('sl-stretch').value = 300;
+    state.params.squash = 3.0; state.params.stretch = 3.0;
+    $('val-squash').textContent = '3.00'; $('val-stretch').textContent = '3.00';
+  } else {
+    $('sl-squash').value = 150; $('sl-stretch').value = 160;
+    state.params.squash = 1.5; state.params.stretch = 1.6;
+    $('val-squash').textContent = '1.50'; $('val-stretch').textContent = '1.60';
+  }
+  ['squash','stretch'].forEach(k => $('val-'+k).classList.toggle('warn', state.breakMode));
+});
+
+// APPLY demos
+$('apply-btn').addEventListener('click', ()=>{
+  const btn = $('apply-btn');
+  btn.style.transition = 'transform 0.08s cubic-bezier(0.36,0.07,0.19,0.97)';
+  btn.style.transform = 'scaleX(1.12) scaleY(0.75)';
+  btn.style.transformOrigin = 'center bottom';
+  setTimeout(()=>{
+    btn.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
+    btn.style.transform = 'scaleX(0.92) scaleY(1.18)';
+    setTimeout(()=>{
+      btn.style.transition = 'transform 0.18s cubic-bezier(0.25,1,0.5,1)';
+      btn.style.transform = 'scaleX(1) scaleY(1)';
+    },120);
+  },80);
+});
+$('trigger-notif').addEventListener('click', ()=>{
+  const el = $('apply-notif');
+  el.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
+  el.style.transform = 'scaleY(0)';
+  el.style.transformOrigin = 'top';
+  setTimeout(()=>{
+    el.style.transition = 'transform 0.18s cubic-bezier(0.68,-0.55,0.27,1.55)';
+    el.style.transform = 'scaleY(1.08)';
+    setTimeout(()=>{
+      el.style.transition = 'transform 0.1s ease-out';
+      el.style.transform = 'scaleY(1)';
+    },180);
+  },50);
+  setTimeout(()=>{
+    el.style.transition = 'transform 0.15s ease-in';
+    el.style.transform = 'scaleY(0)';
+  },2200);
+});
+
+// EXPORT
+$('btn-export').addEventListener('click', ()=>{
+  const out = {
+    params: state.params,
+    features: state.features,
+    ssMode: state.ssMode,
+    mode: state.mode,
+    breakMode: state.breakMode,
+  };
+  navigator.clipboard.writeText(JSON.stringify(out, null, 2)).catch(()=>{});
+  $('btn-export').firstElementChild.nextSibling.textContent = ' COPIED ✓';
+  setTimeout(()=>{ $('btn-export').innerHTML = '<span class="dot"></span>EXPORT.JSON'; }, 1100);
+});
+
+// keyboard
+document.addEventListener('keydown', e => {
+  if(e.code === 'Space'){ e.preventDefault(); setPlay(!state.playing); }
+  if(e.code === 'ArrowRight'){ setPlay(false); state.frame = (state.frame+1) % state.totalFrames; }
+  if(e.code === 'ArrowLeft'){ setPlay(false); state.frame = (state.frame-1+state.totalFrames) % state.totalFrames; }
+  if(e.code === 'KeyR'){ state.frame = 0; accumMs = 0; }
+  if(e.code === 'Escape'){ window.location.href = 'index.html'; }
+});
+
+</script>
+
+<!-- ── TWEAKS PANEL ── -->
+<div id="tweaks-panel">
+  <div class="tw-hd"><span>TWEAKS</span><button id="tw-close">✕</button></div>
+  <div class="tw-sec">
+    <div class="tw-lbl">ACCENT</div>
+    <div class="tw-swatches" id="tw-acc"></div>
+  </div>
+  <div class="tw-sec">
+    <div class="tw-lbl">BACKGROUND</div>
+    <div class="tw-swatches" id="tw-bg"></div>
+  </div>
+  <div class="tw-sec tw-sec-last">
+    <div class="tw-lbl">DECORATION</div>
+    <div class="tw-pills">
+      <button class="tw-pill active" data-deco="full">FULL</button>
+      <button class="tw-pill" data-deco="minimal">MINI</button>
+      <button class="tw-pill" data-deco="off">OFF</button>
+    </div>
+  </div>
+</div>
+<style>
+#tweaks-panel{
+  display:none;position:fixed;bottom:36px;right:16px;width:220px;
+  background:var(--bg);border:1px solid var(--line);
+  box-shadow:3px 3px 0 var(--ink);font-family:var(--mono);font-size:9px;z-index:9999;
+}
+.tw-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--line);
+  letter-spacing:0.16em;text-transform:uppercase;font-weight:700;color:var(--ink);
+}
+.tw-hd button{
+  appearance:none;background:transparent;border:1px solid transparent;
+  font-family:var(--mono);font-size:11px;color:var(--ink);cursor:pointer;padding:0 3px;
+}
+.tw-hd button:hover{background:var(--ink);color:var(--bg)}
+.tw-sec{padding:10px 12px;border-bottom:1px solid var(--mute-2)}
+.tw-sec-last{border-bottom:none}
+.tw-lbl{font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--mute);margin-bottom:7px}
+.tw-swatches{display:flex;gap:5px}
+.tw-swatch{
+  width:24px;height:24px;border:1px solid var(--mute-2);cursor:pointer;
+  position:relative;transition:border-color 100ms;
+}
+.tw-swatch:hover{border-color:var(--ink)}
+.tw-swatch.active::after{
+  content:"";position:absolute;inset:3px;border:1.5px solid var(--ink);pointer-events:none;
+}
+.tw-pills{display:flex;gap:3px}
+.tw-pill{
+  appearance:none;flex:1;font-family:var(--mono);font-size:8px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:5px 4px;border:1px solid var(--ink);
+  background:var(--plate);color:var(--ink);cursor:pointer;
+}
+.tw-pill:hover,.tw-pill.active{background:var(--ink);color:var(--bg)}
+</style>
+<script>
+(function(){
+  const ACC=[{c:'#c8ff1a',n:'LIME'},{c:'#1affea',n:'CYAN'},{c:'#ffb81a',n:'AMBER'},{c:'#ff4fe0',n:'FUCHSIA'}];
+  const BG=[{c:'#f2f2ef',n:'CREAM'},{c:'#f5f0e6',n:'WARM'},{c:'#eef0f2',n:'COOL'}];
+  const DECO='.gh-01,.gh-N1,.regmarks,.checker,.hatch-slab,.blk-bar,.ticks-top,.ticks-top-major,.ticks-right,.axis';
+  function makeSw(arr,id,cb){
+    const w=document.getElementById(id);
+    arr.forEach((o,i)=>{
+      const s=document.createElement('div');
+      s.className='tw-swatch'+(i===0?' active':'');
+      s.title=o.n;s.style.background=o.c;
+      s.addEventListener('click',()=>{w.querySelectorAll('.tw-swatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');cb(o.c);});
+      w.appendChild(s);
     });
   }
-}
-function updateParam(key, rawVal) {
-  const v = parseInt(rawVal);
-  switch(key) {
-    case 'squash':
-      state.params.squash  = v/100;
-      document.getElementById('val-squash').textContent  = (v/100).toFixed(2);
-      break;
-    case 'stretch':
-      state.params.stretch = v/100;
-      document.getElementById('val-stretch').textContent = (v/100).toFixed(2);
-      break;
-    case 'height':
-      state.params.height  = v;
-      document.getElementById('val-height').textContent  = `${v}px`;
-      break;
-    case 'speed':
-      state.params.speed   = v/100;
-      document.getElementById('val-speed').textContent   = `${(v/100).toFixed(1)}x`;
-      break;
-    case 'ease':
-      state.params.ease    = v/10;
-      document.getElementById('val-ease').textContent    = (v/10).toFixed(1);
-      break;
-  }
-  const isBreaking = state.params.squash > 2.5 || state.params.stretch > 2.5;
-  ['squash','stretch'].forEach(k => {
-    const el = document.getElementById(`val-${k}`);
-    if (el) el.classList.toggle('break-val', isBreaking);
+  makeSw(ACC,'tw-acc',c=>document.documentElement.style.setProperty('--acc',c));
+  makeSw(BG,'tw-bg',c=>document.documentElement.style.setProperty('--bg',c));
+  document.querySelectorAll('.tw-pill[data-deco]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.tw-pill[data-deco]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const v=b.dataset.deco;
+      document.querySelectorAll(DECO).forEach(el=>{el.style.opacity=v==='off'?'0':v==='minimal'?'0.12':'';});
+    });
   });
-}
-function toggleBreak() {
-  state.breakMode = !state.breakMode;
-  const btn  = document.getElementById('break-btn');
-  const warn = document.getElementById('break-warning');
-  btn.classList.toggle('active-break', state.breakMode);
-  warn.style.display = state.breakMode ? 'block' : 'none';
-  btn.textContent = state.breakMode ? '✕ EXIT OVERDRIVE' : '⚠ OVERDRIVE MODE';
-  if (state.breakMode) {
-    document.getElementById('sl-squash').value  = 300;
-    document.getElementById('sl-stretch').value = 300;
-    updateParam('squash',300); updateParam('stretch',300);
-  } else {
-    document.getElementById('sl-squash').value  = 150;
-    document.getElementById('sl-stretch').value = 160;
-    updateParam('squash',150); updateParam('stretch',160);
-  }
-}
-
-function setSSMode(m) {
-  state.ssMode = m;
-  document.getElementById('pill-ss-full').className   = 'status-pill ' + (m==='full'   ? 'active-pill' : 'inactive');
-  document.getElementById('pill-ss-squash').className = 'status-pill ' + (m==='squash' ? 'active-pill' : 'inactive');
-  // ラベル文字も変更
-  const correctLabel = document.querySelector('#panel-correct .panel-label');
-  if (correctLabel) correctLabel.textContent = m === 'full'
-    ? '// CORRECT — WITH S&S'
-    : '// CORRECT — SQUASH ONLY';
-}
-
-/* G APPLY デモ */
-function applyDemo(type) {
-  if (type === 'button') {
-    const btn = document.getElementById('apply-btn');
-    // Squash（押し込み）
-    btn.style.transition = 'transform 0.08s cubic-bezier(0.36,0.07,0.19,0.97)';
-    btn.style.transform  = 'scaleX(1.12) scaleY(0.75)';
-    btn.style.transformOrigin = 'center bottom';
-    setTimeout(() => {
-      // Stretch（離れ）
-      btn.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
-      btn.style.transform  = 'scaleX(0.92) scaleY(1.18)';
-      setTimeout(() => {
-        // Settle
-        btn.style.transition = 'transform 0.18s cubic-bezier(0.25,1,0.5,1)';
-        btn.style.transform  = 'scaleX(1) scaleY(1)';
-      }, 120);
-    }, 80);
-  }
-  if (type === 'notif') {
-    const el = document.getElementById('apply-notif');
-    el.style.transition = 'transform 0.12s cubic-bezier(0.68,-0.55,0.27,1.55)';
-    el.style.transform  = 'scaleY(0)';
-    el.style.transformOrigin = 'top';
-    setTimeout(() => {
-      el.style.transition = 'transform 0.18s cubic-bezier(0.68,-0.55,0.27,1.55)';
-      el.style.transform  = 'scaleY(1.08)';
-      setTimeout(() => {
-        el.style.transition = 'transform 0.1s ease-out';
-        el.style.transform  = 'scaleY(1)';
-      }, 180);
-    }, 50);
-    // 2秒後に消える
-    setTimeout(() => {
-      el.style.transition = 'transform 0.15s ease-in';
-      el.style.transform  = 'scaleY(0)';
-    }, 2200);
-  }
-}
-
-/* clock */
-function tick() {
-  const d = new Date();
-  document.getElementById('clock').textContent =
-    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-}
-setInterval(tick,1000); tick();
-
-/* keyboard */
-document.addEventListener('keydown', e => {
-  if (e.code==='Space')      { e.preventDefault(); togglePlay(); }
-  if (e.code==='ArrowRight') stepFrame(1);
-  if (e.code==='ArrowLeft')  stepFrame(-1);
-  if (e.code==='KeyR')       resetPlay();
-});
+  const panel=document.getElementById('tweaks-panel');
+  document.getElementById('tw-close').addEventListener('click',()=>{
+    panel.style.display='none';
+    window.parent&&window.parent.postMessage({type:'__edit_mode_dismissed'},'*');
+  });
+  document.getElementById('btn-tweaks').addEventListener('click',()=>{
+    panel.style.display=panel.style.display==='none'?'block':'none';
+  });
+  window.addEventListener('message',e=>{
+    if(!e.data)return;
+    if(e.data.type==='__activate_edit_mode')panel.style.display='block';
+    if(e.data.type==='__deactivate_edit_mode')panel.style.display='none';
+  });
+  window.parent&&window.parent.postMessage({type:'__edit_mode_available'},'*');
+})();
 </script>
 </body>
 </html>
