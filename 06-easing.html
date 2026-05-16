@@ -231,9 +231,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; h
       <span>KINETIC_GEOMETRY // LEC_08</span>
       <span>PRINCIPLE_06 // SLOW_IN_SLOW_OUT</span>
     </div>
-    <div style="display:flex;gap:24px;">
+    <div style="display:flex;gap:24px;align-items:center;">
       <span>SYS_ID:08 // BEZIER_SOUL</span>
       <span id="clock">00:00:00</span>
+      <a href="index.html" style="color:rgba(54,255,0,0.5);text-decoration:none;border:1px solid rgba(54,255,0,0.25);padding:2px 8px;letter-spacing:0.18em;font-size:9px;transition:all 0.15s;" onmouseover="this.style.background='rgba(54,255,0,0.15)'" onmouseout="this.style.background=''">[ESC] INDEX</a>
     </div>
   </div>
 
@@ -946,6 +947,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowRight') stepFrame(1);
   if(e.code==='ArrowLeft')  stepFrame(-1);
   if(e.code==='KeyR')       resetPlay();
+  if(e.code==='Escape')     window.location.href='index.html';
 });
 
 /* INIT */
