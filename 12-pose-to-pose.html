@@ -8,876 +8,1860 @@
 <style>
 :root{
   --acid:#36FF00;--neon:#F9FF47;--grey:#888;
-  --black:#000;--panel:#0C0C0C;
-  --border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
-  --mono:'IBM Plex Mono',monospace;--disp:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
+  --black:#000;--white:#fff;--panel:#0C0C0C;
+  --border:rgba(54,255,0,0.15);
+  --mono:'IBM Plex Mono',monospace;
+  --disp:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+  --right-col:#36FF00;
+  --left-col:#F9FF47;
+  --center-col:#ffffff;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:var(--black);color:var(--acid);font-family:var(--mono);overflow:hidden;}
-body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(0,0,0,0.28) 1px,transparent 1px);background-size:4px 4px;pointer-events:none;z-index:9998;opacity:0.5;}
+html,body{width:100%;height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(0,0,0,0.3) 1px,transparent 1px);background-size:4px 4px;pointer-events:none;z-index:9998;opacity:0.6;}
 
 #app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 300px;height:100vh;}
-
-/* TOPBAR */
-#topbar{
-  grid-column:1/-1;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;font-size:10px;color:rgba(54,255,0,0.5);letter-spacing:0.2em;
-}
-#topbar .left{display:flex;align-items:center;gap:16px}
-#topbar .right{display:flex;align-items:center;gap:12px}
-.esc-btn{color:rgba(54,255,0,0.4);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
-.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
-
-/* MAIN STAGE */
+#topbar{grid-column:1/-1;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:10px;color:rgba(54,255,0,0.5);letter-spacing:0.25em;}
 #main{position:relative;overflow:hidden;background:var(--black);border-right:1px solid var(--border);}
-.stage-grid{position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
-  background-size:40px 40px;}
-.stage-bignum{
-  position:absolute;bottom:-40px;left:-10px;
-  font-family:var(--disp);font-weight:900;font-style:italic;
-  font-size:clamp(180px,28vw,380px);color:rgba(54,255,0,0.025);
-  letter-spacing:-0.05em;line-height:1;pointer-events:none;
-}
+.stage-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(54,255,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(54,255,0,0.03) 1px,transparent 1px);background-size:40px 40px;}
+.stage-bignum{position:absolute;bottom:-40px;left:-10px;font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(180px,28vw,380px);color:rgba(255,255,255,0.07);letter-spacing:-0.05em;line-height:1;pointer-events:none;}
 .checker{position:absolute;background-image:repeating-conic-gradient(rgba(54,255,0,0.05) 0% 25%,transparent 0% 50%);background-size:16px 16px;pointer-events:none;}
 .corner{position:absolute;width:14px;height:14px;pointer-events:none;}
 .corner::before,.corner::after{content:'';position:absolute;background:var(--acid);}
-.corner::before{width:100%;height:1px;}.corner::after{width:1px;height:100%;}
-.corner.tl{top:10px;left:10px;}.corner.tr{top:10px;right:10px;transform:scaleX(-1);}
-.corner.bl{bottom:10px;left:10px;transform:scaleY(-1);}.corner.br{bottom:10px;right:10px;transform:scale(-1);}
+.corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
+.corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
+.corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
 .po{position:absolute;top:12px;right:14px;text-align:right;pointer-events:none;}
-.po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,5.5vw,72px);color:var(--acid);line-height:1;letter-spacing:-0.03em;}
-.po-en{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(11px,1.8vw,18px);color:rgba(255,255,255,0.9);line-height:1;}
+.po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
+#main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
+#main.editing-mode .stage-bignum{color:rgba(136,136,136,0.05);}
+#main.editing-mode .po-en,
+#main.editing-mode .po-jp{display:none;}
+.po-en{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(12px,2vw,20px);color:var(--white);line-height:1;}
 .po-jp{font-family:var(--jp);font-size:10px;color:var(--grey);margin-top:3px;}
 
-/* ── STAGE LAYOUT ── */
-#stage-inner{
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  display:flex;flex-direction:column;
-}
+#strip-area{position:absolute;top:52px;bottom:68px;left:16px;right:16px;display:flex;flex-direction:column;gap:8px;}
+#anim-view{flex:0 0 auto;height:60%;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid rgba(54,255,0,0.1);background:rgba(255,255,255,0.01);overflow:hidden;}
+#anim-view.editing{border-color:var(--acid);box-shadow:inset 0 0 0 1px rgba(54,255,0,0.3);}
 
-/* ANIM VIEW — top 56% */
-#anim-view{
-  flex:0 0 56%;
-  position:relative;
-  display:flex;align-items:center;justify-content:center;
-  border-bottom:1px solid var(--border);
-  overflow:hidden;
-}
 #anim-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#edit-canvas{position:absolute;inset:0;width:100%;height:100%;display:none;touch-action:none;cursor:crosshair;}
+#anim-view.editing #edit-canvas{display:block;}
+#anim-view.editing #anim-canvas{opacity:0.2;}
 
-/* phase badge */
-#phase-badge{
-  position:absolute;top:12px;left:14px;
-  font-size:9px;letter-spacing:0.35em;color:var(--acid);
-  pointer-events:none;line-height:1.8;
-}
-#frame-counter{
-  position:absolute;top:30px;left:14px;
-  font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;pointer-events:none;
-}
+#phase-label{position:absolute;top:10px;left:14px;font-size:9px;letter-spacing:0.4em;pointer-events:none;color:var(--acid);}
+#frame-label{position:absolute;top:28px;left:14px;font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;pointer-events:none;}
+#stage-hud{position:absolute;bottom:10px;left:14px;font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.1em;pointer-events:none;line-height:2;display:flex;gap:14px;}
+#stage-hud span{color:var(--acid);margin-left:4px;}
+#edit-hint{position:absolute;bottom:10px;right:14px;display:none;font-size:8px;color:rgba(249,255,71,0.55);letter-spacing:0.12em;pointer-events:none;line-height:1.8;text-align:right;}
+#anim-view.editing #edit-hint{display:block;}
+#anim-view.editing #phase-label{color:var(--neon);}
+#anim-view.editing #frame-label{display:none;}
 
-/* HUD live data */
-#stage-hud{
-  position:absolute;bottom:12px;left:14px;
-  font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.1em;
-  pointer-events:none;line-height:2;
-  display:flex;gap:20px;
-}
-#stage-hud span{color:var(--acid)}
-
-/* ── TIMELINE STRIP — bottom 44% ── */
-#timeline-area{
-  flex:1;min-height:0;
-  position:relative;
-  display:flex;flex-direction:column;
-  padding:18px 12px 8px 12px;
-  gap:8px;
-}
-#tl-header{
-  font-size:8px;letter-spacing:0.25em;color:rgba(54,255,0,0.4);
-  display:flex;align-items:center;gap:16px;flex-shrink:0;
-}
-#tl-header strong{color:var(--acid)}
-
-/* FRAME STRIP */
-#frame-strip{
-  flex:1;min-height:0;
-  display:flex;align-items:center;
-  gap:3px;overflow-x:auto;overflow-y:visible;
-  padding:18px 4px 4px 4px;
-  scrollbar-width:none;
-}
+#strip-wrapper{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;overflow:hidden;}
+#frame-strip{flex:1;min-height:0;display:flex;align-items:center;gap:3px;overflow-x:scroll;overflow-y:visible;padding:20px 4px 4px 4px;scroll-behavior:auto;scrollbar-width:none;}
 #frame-strip::-webkit-scrollbar{display:none;}
 
-/* FRAME CELL */
-.fc{
-  flex-shrink:0;position:relative;
-  border:1px solid rgba(54,255,0,0.1);
-  background:#050505;cursor:pointer;
-  transition:border-color 0.15s;
-  display:flex;flex-direction:column;align-items:center;
-  overflow:visible;
-}
+#strip-scrollbar{height:10px;background:rgba(255,255,255,0.04);position:relative;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.05);cursor:default;}
+#strip-thumb{position:absolute;top:2px;height:6px;background:rgba(54,255,0,0.4);border-radius:3px;cursor:grab;transition:background 0.15s;min-width:24px;}
+#strip-thumb:hover{background:rgba(54,255,0,0.7);}
+#strip-thumb:active{cursor:grabbing;background:var(--acid);}
+#strip-thumb::before,#strip-thumb::after{content:'';position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;background:rgba(54,255,0,0);}
+#strip-thumb::before{left:-2px;}
+#strip-thumb::after{right:-2px;}
+
+.fc{flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,0.06);background:#050505;cursor:pointer;transition:border-color 0.15s;display:flex;flex-direction:column;align-items:center;overflow:visible;}
 .fc:hover{border-color:rgba(54,255,0,0.3);}
 .fc.active{border-color:var(--acid);box-shadow:0 0 8px rgba(54,255,0,0.2);}
-/* key marker top stripe */
-.fc-stripe{position:absolute;top:0;left:0;right:0;height:3px;pointer-events:none;}
-.fc.is-key .fc-stripe{background:var(--acid);}
-.fc.is-inbet .fc-stripe{background:rgba(136,136,136,0.5);}
-.fc.is-ghost .fc-stripe{background:rgba(249,255,71,0.4);}
-/* frame number */
-.fc-num{
-  position:absolute;bottom:3px;left:0;right:0;
-  text-align:center;font-size:7px;color:rgba(54,255,0,0.3);letter-spacing:0.15em;
-}
+.fc.is-key{border-top:2px solid var(--acid);}
+.fc.is-inbet{border-top:2px solid rgba(136,136,136,0.4);}
+.fc-num{font-size:7px;color:rgba(255,255,255,0.3);letter-spacing:0.2em;flex-shrink:0;position:absolute;bottom:3px;left:0;right:0;text-align:center;}
 .fc.active .fc-num{color:var(--acid);}
-.fc.is-key .fc-num{color:rgba(54,255,0,0.7);}
-.fc.is-ghost .fc-num{color:rgba(249,255,71,0.6);}
-/* phase marker above cell */
-.fc-marker{
-  position:absolute;top:-16px;left:0;right:0;
-  text-align:center;font-size:7px;letter-spacing:0.1em;
-  pointer-events:none;white-space:nowrap;
-}
-.fc.is-key .fc-marker{color:rgba(54,255,0,0.8);}
-.fc.is-ghost .fc-marker{color:rgba(249,255,71,0.7);}
+.fc.is-key .fc-num{color:rgba(54,255,0,0.65);}
+.fc-marker{position:absolute;top:-16px;left:0;right:0;text-align:center;font-family:var(--mono);font-weight:400;font-size:8px;letter-spacing:0.1em;pointer-events:none;white-space:nowrap;z-index:5;color:rgba(54,255,0,0.75);}
+.fc.is-inbet .fc-marker{visibility:hidden;}
+.fc.dragging{opacity:0.4;cursor:grabbing;}
+.fc.drag-over{border-color:var(--neon)!important;background:rgba(249,255,71,0.05);}
 
-/* drag state */
-.fc.dragging{opacity:0.35;cursor:grabbing;}
-.fc.drag-over{border-color:var(--neon)!important;background:rgba(249,255,71,0.04);}
+/* Edit ボタン（EDITモード中、原画セルに出る小さなドット）*/
+.fc-edit-btn{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:rgba(249,255,71,0.18);border:1px solid rgba(249,255,71,0.4);display:none;cursor:pointer;z-index:10;transition:all .15s;}
+.fc.is-key .fc-edit-btn{display:block;}
+.fc.is-key .fc-edit-btn:hover{background:rgba(249,255,71,0.7);}
+.fc.editing-now{box-shadow:0 0 0 1px var(--neon),0 0 12px rgba(249,255,71,0.4);border-color:var(--neon)!important;}
+#main.editing-mode .fc-marker{visibility:hidden;}
 
-/* KEY POSE indicator dot */
-.fc-key-dot{
-  position:absolute;top:4px;right:4px;
-  width:5px;height:5px;border-radius:50%;
-  background:var(--acid);display:none;
-}
-.fc.is-key .fc-key-dot{display:block;}
-
-/* scrollbar */
-#strip-scrollbar{height:8px;background:rgba(255,255,255,0.03);position:relative;flex-shrink:0;cursor:default;border-top:1px solid rgba(255,255,255,0.04);}
-#strip-thumb{position:absolute;top:1px;height:6px;background:rgba(54,255,0,0.35);border-radius:3px;cursor:grab;min-width:24px;transition:background .15s;}
-#strip-thumb:hover{background:rgba(54,255,0,0.6);}
-#strip-thumb:active{cursor:grabbing;background:var(--acid);}
-
-/* playbar */
-#playbar{
-  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;align-items:center;z-index:50;
-}
-.pb{
-  width:28px;height:28px;border:1px solid rgba(54,255,0,0.4);
-  background:rgba(0,0,0,0.7);color:var(--acid);font-size:11px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;user-select:none;
-}
+#playbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;z-index:50;}
+.pb{min-width:28px;height:28px;border:1px solid rgba(54,255,0,0.4);background:rgba(0,0,0,0.7);color:var(--acid);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;user-select:none;padding:0 6px;}
 .pb:hover{background:rgba(54,255,0,0.1);}
 .pb.active{background:rgba(54,255,0,0.15);border-color:var(--acid);}
-input[type=range]{-webkit-appearance:none;width:80px;height:2px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer;}
+.sw{width:120px;display:flex;align-items:center;gap:6px;}
+.sl{font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.15em;white-space:nowrap;}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acid);cursor:pointer;}
 
-/* ── SIDE PANEL ── */
 #side{display:flex;flex-direction:column;overflow-y:auto;background:var(--panel);}
 #side::-webkit-scrollbar{width:2px;}
 #side::-webkit-scrollbar-thumb{background:var(--acid);}
-.sp{border-bottom:1px solid rgba(54,255,0,0.08);padding:14px 16px;flex-shrink:0;}
-.spl{font-size:8px;letter-spacing:0.35em;color:rgba(54,255,0,0.4);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.spl .lt{font-size:10px;font-weight:700;color:var(--acid);background:rgba(54,255,0,0.1);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0;flex-shrink:0;}
-.db{background:rgba(54,255,0,0.04);border-left:3px solid var(--acid);padding:10px 12px;margin-bottom:8px;}
-.de{font-family:var(--disp);font-weight:700;font-style:italic;font-size:15px;color:rgba(255,255,255,0.9);line-height:1.2;}
-.dj{font-family:var(--jp);font-size:11px;color:var(--grey);margin-top:4px;line-height:1.6;}
-.dc{margin-top:8px;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.04em;line-height:1.8;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;}
-.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-size:9px;}
-.data-row:last-child{border-bottom:none;}
-.dk{color:rgba(54,255,0,0.45);letter-spacing:0.04em;}.dv{color:var(--acid);font-weight:700;}
-.dv.neon{color:var(--neon);}
+.sp{border-bottom:1px solid rgba(255,255,255,0.05);padding:14px 16px;flex-shrink:0;}
+.spl{font-size:9px;letter-spacing:0.4em;color:rgba(54,255,0,0.4);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.spl .lt{font-size:11px;font-weight:700;color:var(--acid);background:rgba(54,255,0,0.1);width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0;flex-shrink:0;}
 .tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:0.05em;}
-.tg{width:34px;height:17px;background:rgba(255,255,255,0.1);border-radius:9px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tg{width:34px;height:17px;background:rgba(255,255,255,0.1);border-radius:9px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
 .tg.on{background:var(--acid);}
-.tg::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;}
+.tg::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:var(--white);top:2px;left:2px;transition:left 0.2s;}
 .tg.on::after{left:19px;background:var(--black);}
-.fp{font-size:9px;letter-spacing:0.12em;padding:4px 10px;border:1px solid;cursor:pointer;transition:all .15s;user-select:none;display:inline-block;margin-right:4px;margin-bottom:4px;}
+.fpr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.fp{font-size:9px;letter-spacing:0.15em;padding:3px 10px;border:1px solid;cursor:pointer;transition:all 0.15s;user-select:none;}
 .fp.on{background:var(--acid);border-color:var(--acid);color:var(--black);}
-.fp.off{border-color:rgba(54,255,0,0.25);color:rgba(54,255,0,0.5);}
+.fp.off{border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);}
+.db{background:rgba(54,255,0,0.04);border-left:3px solid var(--acid);padding:10px 12px;margin-bottom:8px;}
+.de{font-family:var(--disp);font-weight:700;font-style:italic;font-size:15px;color:var(--white);line-height:1.2;}
+.dj{font-family:var(--jp);font-size:11px;color:var(--grey);margin-top:4px;line-height:1.6;}
+.dc{margin-top:8px;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.06em;line-height:1.8;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(54,255,0,0.06);font-size:9px;}
+.data-row:last-child{border-bottom:none;}
+.dk{color:rgba(54,255,0,0.45);letter-spacing:0.04em;}
+.dv{color:var(--acid);font-weight:700;}
+.dv.neon{color:var(--neon);}
 
-/* legend */
-.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:8px;color:rgba(255,255,255,0.5);}
-.legend-stripe{width:28px;height:3px;flex-shrink:0;}
-.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-size:8px;line-height:1.8;color:rgba(54,255,0,0.45);margin-top:8px;}
-.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.12em;}
+/* チェックリスト */
+.check-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:10px;letter-spacing:0.05em;cursor:pointer;color:rgba(255,255,255,0.6);transition:color 0.15s;}
+.check-item.checked{color:var(--acid);}
+.check-item.checked span{text-decoration:line-through;text-decoration-color:rgba(54,255,0,0.5);}
+.check-dot{width:10px;height:10px;border:1px solid rgba(255,255,255,0.3);flex-shrink:0;margin-top:2px;transition:all 0.15s;position:relative;}
+.check-item.checked .check-dot{background:var(--acid);border-color:var(--acid);}
+.check-item.checked .check-dot::after{content:'✓';position:absolute;top:-3px;left:1px;font-size:11px;color:var(--black);font-weight:700;line-height:1;}
+.check-progress{margin-top:8px;font-size:9px;color:var(--acid);letter-spacing:0.25em;font-weight:700;}
+.check-progress.complete{color:var(--neon);text-shadow:0 0 8px rgba(249,255,71,0.5);}
 
-/* BOTTOMBAR */
-#bottombar{
-  grid-column:1/-1;border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;font-size:9px;color:rgba(54,255,0,0.3);letter-spacing:0.15em;
-}
+#bottombar{grid-column:1/-1;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:9px;color:rgba(54,255,0,0.3);letter-spacing:0.18em;}
+
+/* SHORTCUT MODAL */
+#shortcut-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;}
+#shortcut-modal.open{display:flex;}
+#shortcut-box{background:#0C0C0C;border:1px solid var(--acid);width:min(540px,92vw);max-height:80vh;overflow-y:auto;padding:0;}
+#shortcut-box::-webkit-scrollbar{width:2px;}
+#shortcut-box::-webkit-scrollbar-thumb{background:var(--acid);}
+.sc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:0.4em;color:var(--acid);}
+.sc-close{cursor:pointer;color:var(--grey);font-size:18px;line-height:1;padding:0 4px;}
+.sc-close:hover{color:var(--white);}
+.sc-section{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.sc-section-lbl{font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.4em;margin-bottom:10px;}
+.sc-row{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:8px;margin-bottom:8px;font-size:10px;}
+.sc-desc{color:rgba(255,255,255,0.6);letter-spacing:0.05em;}
+.sc-key-wrap{display:flex;align-items:center;gap:4px;}
+.sc-key{background:#1a1a1a;border:1px solid rgba(255,255,255,0.2);color:var(--white);font-family:var(--mono);font-size:9px;padding:2px 7px;min-width:28px;text-align:center;letter-spacing:0.05em;cursor:pointer;transition:border-color 0.15s;user-select:none;}
+.sc-key:hover{border-color:var(--acid);color:var(--acid);}
+.sc-key.recording{border-color:var(--neon);color:var(--neon);animation:blink 0.4s steps(1) infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.sc-edit-btn{font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:0.15em;cursor:pointer;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);transition:all 0.15s;background:transparent;font-family:var(--mono);}
+.sc-edit-btn:hover{border-color:var(--acid);color:var(--acid);}
+.sc-edit-btn.active{border-color:var(--neon);color:var(--neon);}
+.sc-note{font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;margin-top:8px;line-height:1.7;}
+
+#sc-open-btn{cursor:pointer;color:rgba(54,255,0,0.4);font-size:9px;letter-spacing:0.2em;padding:2px 8px;border:1px solid rgba(54,255,0,0.2);transition:all 0.15s;}
+#sc-open-btn:hover{color:var(--acid);border-color:var(--acid);}
+#edit-toggle.active{background:var(--acid);color:var(--black);font-weight:700;}
+
+.ed-btn{background:transparent;border:1px solid rgba(54,255,0,0.3);color:var(--acid);font-family:var(--mono);font-size:9px;letter-spacing:0.15em;padding:7px 8px;cursor:pointer;transition:all 0.15s;text-align:center;}
+.ed-btn:hover{background:rgba(54,255,0,0.1);border-color:var(--acid);}
+.ed-btn.copy-active{background:rgba(54,255,0,0.15);border-color:var(--acid);color:var(--acid);}
+
+/* JOINT LIST (edit mode side panel) */
+.joint-row{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;margin-bottom:2px;border:1px solid rgba(54,255,0,0.08);font-size:8px;letter-spacing:0.08em;color:rgba(54,255,0,0.5);transition:all .1s;cursor:pointer;}
+.joint-row:hover{border-color:var(--acid);color:var(--acid);}
+.joint-row.selected{border-color:var(--neon);color:var(--neon);background:rgba(249,255,71,0.05);}
+.joint-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.joint-dot.near{background:var(--acid);}
+.joint-dot.far{background:var(--neon);}
+.joint-dot.center{background:var(--white);}
+.joint-coord{font-size:7px;color:rgba(255,255,255,0.3);font-family:var(--mono);}
+
+/* KEY LIST (key frames) */
+.key-list-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;margin-bottom:3px;border:1px solid rgba(54,255,0,0.15);cursor:pointer;font-size:9px;letter-spacing:0.08em;color:rgba(54,255,0,0.6);transition:all .12s;}
+.key-list-item:hover{border-color:var(--acid);color:var(--acid);}
+.key-list-item.editing-this{border-color:var(--neon);color:var(--neon);background:rgba(249,255,71,0.06);}
+.key-list-item .kli-del{color:rgba(255,54,54,0.5);cursor:pointer;padding:0 4px;font-size:11px;line-height:1;}
+.key-list-item .kli-del:hover{color:#FF3636;}
+
 .kbd{display:inline-block;border:1px solid rgba(54,255,0,0.2);padding:1px 5px;font-size:8px;margin-left:4px;color:rgba(54,255,0,0.35);}
+
 </style>
 </head>
 <body>
 <div id="app">
+<div id="topbar">
+  <div style="display:flex;gap:28px;"><span>KINETIC_GEOMETRY // LEC_12</span><span>PRINCIPLE_12 // POSE TO POSE</span></div>
+  <div style="display:flex;gap:24px;align-items:center;"><span id="kf-status">KEY: 0 // IN-BET: 0</span><span id="clock">00:00:00</span><a href="index.html" style="color:rgba(54,255,0,0.5);text-decoration:none;border:1px solid rgba(54,255,0,0.25);padding:2px 8px;letter-spacing:0.18em;font-size:9px;transition:all 0.15s;" onmouseover="this.style.background='rgba(54,255,0,0.15)'" onmouseout="this.style.background=''">[ESC] INDEX</a></div>
+</div>
 
-<header id="topbar">
-  <div class="left">
-    <span>KINETIC_GEOMETRY // LEC_12</span>
-    <span style="color:var(--acid);font-weight:700;font-size:11px;letter-spacing:0.12em">PRINCIPLE_12 // POSE TO POSE</span>
-  </div>
-  <div class="right">
-    <span>KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED</span>
-    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
-  </div>
-</header>
-
-<main id="main">
+<div id="main">
   <div class="stage-grid"></div>
   <div class="stage-bignum">12</div>
+  <div class="checker" style="right:3%;top:6%;width:90px;height:90px;"></div>
+  <div class="checker" style="left:2%;bottom:16%;width:70px;height:70px;opacity:0.4;"></div>
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
-  <div class="checker" style="bottom:56px;right:0;width:48px;height:48px"></div>
-  <div class="checker" style="top:0;left:0;width:24px;height:80px"></div>
   <div class="po">
     <div class="po-num">12</div>
     <div class="po-en">POSE TO POSE</div>
     <div class="po-jp">ポーズ・トゥ・ポーズ</div>
   </div>
 
-  <div id="stage-inner">
-    <!-- ANIM VIEW -->
+  <div id="strip-area">
     <div id="anim-view">
       <canvas id="anim-canvas"></canvas>
-      <div id="phase-badge">PHASE: —</div>
-      <div id="frame-counter">FRAME: 000 / 000</div>
+      <canvas id="edit-canvas"></canvas>
+      <div id="phase-label">PHASE: —</div>
+      <div id="frame-label">F00 / 00</div>
       <div id="stage-hud">
-        <div>KEY_FR&nbsp;<span id="hud-key">0</span></div>
-        <div>INBET&nbsp;<span id="hud-inb">0</span></div>
-        <div>GHOST&nbsp;<span id="hud-gho">—</span></div>
-        <div>INTERP&nbsp;<span id="hud-itp">LINEAR</span></div>
+        <div>KEY<span id="hud-key">0</span></div>
+        <div>INBET<span id="hud-inb">0</span></div>
+        <div>GHOST<span id="hud-gho">ON</span></div>
+        <div>EASING<span id="hud-itp">LINEAR</span></div>
+      </div>
+      <div id="edit-hint">
+        ◆ 丸ポイントをドラッグでポーズ調整<br>
+        ◆ SAVE で原画を上書き登録<br>
+        ◆ ESC で編集モードを終了
+      </div>
+    </div>
+    <div id="strip-wrapper">
+      <div id="frame-strip"></div>
+      <div id="strip-scrollbar">
+        <div id="strip-thumb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="playbar">
+    <div class="pb active" id="btn-play" onclick="togglePlay()">▶</div>
+    <div class="pb" onclick="stepFrame(-1)">|◁</div>
+    <div class="pb" onclick="stepFrame(1)">▷|</div>
+    <div class="sw"><span class="sl">SCR</span><input type="range" id="scrubber" min="0" max="0" value="0" oninput="scrubTo(this.value)"></div>
+    <div class="pb" onclick="resetPlay()">↺</div>
+  </div>
+</div>
+
+<div id="side">
+  <div class="sp" style="padding:10px 16px;">
+    <button id="edit-toggle" onclick="toggleEditMode()" style="width:100%;background:transparent;border:1px solid var(--acid);color:var(--acid);font-family:var(--mono);font-size:10px;letter-spacing:0.3em;padding:7px 10px;cursor:pointer;transition:all 0.15s;">
+      ✏ EDIT MODE
+    </button>
+  </div>
+
+  <!-- ═══════ 表示モード（A〜G） ═══════ -->
+  <div id="view-mode">
+    <div class="sp">
+      <div class="spl"><span class="lt">A</span>DEMO — PLAYBACK</div>
+      <div class="fpr">
+        <div class="fp on"  id="fps-6"  onclick="setFps(6)">6 FPS</div>
+        <div class="fp off" id="fps-12" onclick="setFps(12)">12 FPS</div>
+        <div class="fp off" id="fps-24" onclick="setFps(24)">24 FPS</div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.2);margin-top:6px;letter-spacing:0.1em;line-height:1.7;">6fps: 原画と動画の差が見える<br>24fps: 補間の滑らかさを体感</div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">B</span>DEBUG — 表示切替</div>
+      <div class="tr"><span>GHOST FRAMES（前後ポーズ）</span><div class="tg on" id="tog-ghost" onclick="togF('ghost')"></div></div>
+      <div class="tr"><span>ONION SKIN（隣接原画）</span><div class="tg on" id="tog-onion" onclick="togF('onion')"></div></div>
+      <div class="tr"><span>INTERP LINE（補間軌道）</span><div class="tg on" id="tog-line" onclick="togF('line')"></div></div>
+      <div class="tr"><span>地面ライン</span><div class="tg on" id="tog-ground" onclick="togF('ground')"></div></div>
+      <div class="tr"><span>関節ラベル</span><div class="tg" id="tog-label" onclick="togF('label')"></div></div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">C</span>EASING — 補間方式</div>
+      <div class="fpr">
+        <div class="fp on"  id="ez-linear" onclick="setEasing('linear')">LINEAR</div>
+        <div class="fp off" id="ez-ease"   onclick="setEasing('ease')">EASE I/O</div>
+        <div class="fp off" id="ez-step"   onclick="setEasing('step')">STEP</div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.25);margin-top:6px;letter-spacing:0.1em;line-height:1.7;">
+        STEP=動画なし（原画のみ）<br>
+        ⇒「ポーズだけで物語が読める」か検証
       </div>
     </div>
 
-    <!-- TIMELINE -->
-    <div id="timeline-area">
-      <div id="tl-header">
-        <span>// <strong>TIMELINE</strong> — ドラッグで原画を並べ替え &nbsp;|&nbsp; <span style="color:var(--acid)">■</span> KEY &nbsp;<span style="color:rgba(136,136,136,0.6)">■</span> IN-BET &nbsp;<span style="color:rgba(249,255,71,0.6)">■</span> GHOST</span>
+    <div class="sp">
+      <div class="spl"><span class="lt">D</span>IN-BETWEEN — 動画枚数</div>
+      <div class="fpr">
+        <div class="fp off" id="ib-1" onclick="setInbet(1)">+1</div>
+        <div class="fp off" id="ib-3" onclick="setInbet(3)">+3</div>
+        <div class="fp on"  id="ib-5" onclick="setInbet(5)">+5</div>
+        <div class="fp off" id="ib-7" onclick="setInbet(7)">+7</div>
       </div>
-      <div id="frame-strip"></div>
-      <div id="strip-scrollbar"><div id="strip-thumb"></div></div>
-      <div id="playbar">
-        <div class="pb" id="pb-prev" title="prev(←)">◀</div>
-        <div class="pb active" id="pb-play" title="play(SPC)">▶</div>
-        <div class="pb" id="pb-next" title="next(→)">▶</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
-          <span style="font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.15em">SPD</span>
-          <input type="range" id="sl-spd" min="1" max="30" value="10">
-          <span style="font-size:9px;color:var(--acid);min-width:24px" id="spd-val">1.0x</span>
+      <div style="font-size:8px;color:rgba(255,255,255,0.25);margin-top:6px;letter-spacing:0.1em;line-height:1.7;">
+        原画間の動画(in-between)枚数
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">E</span>PRESET — サンプル原画</div>
+      <div class="fpr">
+        <span class="fp off" onclick="loadPreset('run')">RUN</span>
+        <span class="fp off" onclick="loadPreset('jump')">JUMP</span>
+        <span class="fp off" onclick="loadPreset('punch')">PUNCH</span>
+        <span class="fp off" onclick="loadPreset('wave')">WAVE</span>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">F</span>LIVE — リアルタイム値</div>
+      <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-fr">00</span></div>
+      <div class="data-row"><span class="dk">FRAME_TYPE</span><span class="dv" id="lv-type">—</span></div>
+      <div class="data-row"><span class="dk">INTERP_T</span><span class="dv neon" id="lv-t">0.000</span></div>
+      <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">—</span></div>
+      <div class="data-row"><span class="dk">KEY_COUNT</span><span class="dv" id="lv-kc">0</span></div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">G</span>CHECK — 自己採点</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>STEPモードで物語が読めるか？</span></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>原画は3〜5枚に絞れているか？</span></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>シルエットでポーズが識別できるか？</span></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-dot"></div><span>EASE I/Oで気持ちよくなるか？</span></div>
+      <div class="check-progress" id="check-progress">CHECK: 0 / 4</div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">H</span>TEXT</div>
+      <div class="db">
+        <div class="de">Pose first.<br>Then in-between.</div>
+        <div class="dj">原画でストーリーを決める。<br>動画は後から埋める。</div>
+        <div class="dc">
+          原画(KEY) ＝ ポーズで語る点<br>
+          動画(IN-BETWEEN) ＝ 滑らかに繋ぐ点<br><br>
+          <span style="color:var(--neon);">「ポーズだけで物語が読める」</span>
         </div>
       </div>
     </div>
-  </div>
-</main>
 
-<!-- SIDE PANEL -->
-<aside id="side">
+    <div class="sp">
+      <div class="spl"><span class="lt">I</span>APPLY — 応用例</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.05em;line-height:2;">→ UIアニメ：開始/中間/終了の3点<br>→ キャラ演技：感情の節目を原画化<br>→ カメラワーク：見せ場で止める<br>→ プレゼン：要点だけ残し補間は省略</div>
+    </div>
+  </div><!-- /view-mode -->
 
-  <!-- THEORY -->
-  <div class="sp">
-    <div class="spl"><span class="lt">A</span>THEORY — 原則解説</div>
-    <div class="db">
-      <div class="de">Pose to Pose</div>
-      <div class="dj">キーポーズを先に決め、後から動画（中割り）で繋ぐ。</div>
-      <div class="dc">
-        Key frames define the story.<br>
-        In-betweens connect them.<br>
-        The pose is the message.
+  <!-- ═══════ 編集モード ═══════ -->
+  <div id="edit-mode" style="display:none;">
+
+    <div class="sp">
+      <div class="spl" style="justify-content:space-between;">
+        <span><span class="lt">K</span>KEY FRAME — 編集中</span>
+        <span onclick="openShortcuts()" style="font-size:8px;color:rgba(54,255,0,0.5);letter-spacing:0.2em;padding:2px 8px;border:1px solid rgba(54,255,0,0.2);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.color='var(--acid)';this.style.borderColor='var(--acid)'" onmouseout="this.style.color='rgba(54,255,0,0.5)';this.style.borderColor='rgba(54,255,0,0.2)'">⌨ SHORTCUTS</span>
+      </div>
+      <div id="edit-frame-info" style="font-size:14px;color:var(--neon);font-family:var(--disp);font-weight:900;font-style:italic;letter-spacing:0.05em;">KEY 00 — STAND</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;margin-top:4px;line-height:1.7;">
+        ステージ上の丸ポイントをドラッグ<br>
+        下のストリップで対象原画を切替
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="ed-btn" id="save-btn" onclick="savePose()" style="flex:1;color:var(--neon);border-color:rgba(249,255,71,0.5);">SAVE<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">S</span></button>
+        <button class="ed-btn" onclick="resetPoseFromKey()" style="flex:1;">RESET<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">R</span></button>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">P</span>POSE — 操作</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <button class="ed-btn" id="copy-btn" onclick="doCopyPose()" style="flex:1;">COPY<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">Ctrl+C</span></button>
+        <button class="ed-btn" id="paste-btn" onclick="doPastePose()" style="flex:1;opacity:0.4;">PASTE<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">Ctrl+V</span></button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="ed-btn" onclick="flipPose()" style="flex:1;">FLIP H<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">H</span></button>
+        <button class="ed-btn" onclick="addKeyFrame()" style="flex:1;color:var(--neon);border-color:rgba(249,255,71,0.4);">+ KEY<br><span style="font-size:8px;opacity:0.5;letter-spacing:0.1em;">N</span></button>
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">L</span>LIST — 原画一覧</div>
+      <div id="key-list" style="max-height:240px;overflow-y:auto;"></div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">J</span>JOINT — 関節色</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;margin-bottom:5px;"><div class="joint-dot near"></div><span style="color:rgba(255,255,255,0.6);">手前側（NEAR）緑</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;margin-bottom:5px;"><div class="joint-dot far"></div><span style="color:rgba(255,255,255,0.6);">奥側（FAR）黄</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:9px;margin-bottom:8px;"><div class="joint-dot center"></div><span style="color:rgba(255,255,255,0.6);">中心軸（首/腰）白</span></div>
+      <div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 0;"></div>
+      <div style="font-size:9px;color:rgba(54,255,0,0.4);letter-spacing:0.3em;margin-bottom:8px;">FRAME MARKER</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.08em;line-height:1.9;margin-bottom:8px;">
+        ストリップ右上 ● をクリックで<br>
+        原画(KEY) を直接編集
+      </div>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">E</span>EXPORT — 出力</div>
+      <button class="ed-btn" onclick="exportJSON()" style="width:100%;margin-bottom:6px;">📋 JSON出力（コピペ用）<span style="float:right;opacity:0.4;font-size:8px;">Ctrl+S</span></button>
+      <button class="ed-btn" onclick="exportSVG()" style="width:100%;">🖼 現フレームSVG<span style="float:right;opacity:0.4;font-size:8px;">Ctrl+Shift+S</span></button>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">I</span>IMPORT — 読込</div>
+      <textarea id="json-paste" placeholder="ここにJSON貼付してから [APPLY] を押す..." style="width:100%;height:80px;background:#050505;border:1px solid rgba(54,255,0,0.2);color:var(--acid);font-family:var(--mono);font-size:9px;padding:6px;resize:vertical;letter-spacing:0.05em;"></textarea>
+      <button class="ed-btn" onclick="importJSON()" style="width:100%;margin-top:6px;color:var(--neon);border-color:rgba(249,255,71,0.4);">⤴ APPLY</button>
+    </div>
+
+    <div class="sp">
+      <div class="spl"><span class="lt">U</span>UNDO</div>
+      <div style="display:flex;gap:6px;">
+        <button class="ed-btn" onclick="undo()" style="flex:1;">↶ UNDO</button>
+        <button class="ed-btn" onclick="redo()" style="flex:1;">↷ REDO</button>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.25);margin-top:6px;letter-spacing:0.1em;">Ctrl+Z / Ctrl+Shift+Z</div>
+    </div>
+
+  </div><!-- /edit-mode -->
+</div>
+
+<!-- ショートカットモーダル -->
+<div id="shortcut-modal">
+  <div id="shortcut-box">
+    <div class="sc-header">
+      ⌨ SHORTCUT KEYS
+      <span class="sc-close" onclick="closeShortcuts()">✕</span>
+    </div>
+    <div class="sc-section">
+      <div class="sc-section-lbl">// PLAYBACK — 再生</div>
+      <div id="sc-list-play"></div>
+    </div>
+    <div class="sc-section">
+      <div class="sc-section-lbl">// EDIT — 編集</div>
+      <div id="sc-list-edit"></div>
+    </div>
+    <div class="sc-section">
+      <div class="sc-section-lbl">// POSE — ポーズ操作</div>
+      <div id="sc-list-pose"></div>
+    </div>
+    <div class="sc-section">
+      <div class="sc-section-lbl">// EXPORT — 出力</div>
+      <div id="sc-list-export"></div>
+    </div>
+    <div class="sc-section" style="border:none;">
+      <div class="sc-note">
+        [EDIT] ボタンをクリック → キーを押す → 割り当て完了<br>
+        Ctrl/Shift/Alt の組み合わせは現在非対応（単キーのみ）
       </div>
     </div>
   </div>
+</div>
 
-  <!-- LIVE DATA -->
-  <div class="sp">
-    <div class="spl"><span class="lt">B</span>LIVE — リアルタイム</div>
-    <div class="data-row"><span class="dk">CURRENT_FRAME</span><span class="dv" id="lv-fr">000</span></div>
-    <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">—</span></div>
-    <div class="data-row"><span class="dk">FRAME_TYPE</span><span class="dv" id="lv-type">—</span></div>
-    <div class="data-row"><span class="dk">NEAREST_KEY</span><span class="dv" id="lv-nkey">—</span></div>
-    <div class="data-row"><span class="dk">INTERP_T</span><span class="dv neon" id="lv-t">0.000</span></div>
-    <div class="data-row"><span class="dk">GHOST_ALPHA</span><span class="dv" id="lv-ga">—</span></div>
-    <div class="data-row"><span class="dk">KEY_COUNT</span><span class="dv" id="lv-kc">—</span></div>
-    <div class="data-row"><span class="dk">INBET_COUNT</span><span class="dv" id="lv-ic">—</span></div>
-  </div>
-
-  <!-- CONTROLS -->
-  <div class="sp">
-    <div class="spl"><span class="lt">C</span>CONTROLS — 操作</div>
-    <div class="tr">
-      <span>GHOST FRAMES</span>
-      <div class="tg on" id="tg-ghost" onclick="toggleGhost()"></div>
-    </div>
-    <div class="tr">
-      <span>ONION SKIN</span>
-      <div class="tg on" id="tg-onion" onclick="toggleOnion()"></div>
-    </div>
-    <div class="tr">
-      <span>INTERPOLATION LINE</span>
-      <div class="tg on" id="tg-line" onclick="toggleLine()"></div>
-    </div>
-    <div style="margin-top:10px;margin-bottom:4px;font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.2em">EASING</div>
-    <div>
-      <span class="fp on" id="fp-linear" onclick="setEasing('linear')">LINEAR</span>
-      <span class="fp off" id="fp-ease" onclick="setEasing('ease')">EASE I-O</span>
-      <span class="fp off" id="fp-step" onclick="setEasing('step')">STEP</span>
-    </div>
-    <div style="margin-top:10px;margin-bottom:4px;font-size:8px;color:rgba(54,255,0,0.4);letter-spacing:0.2em">PRESET SEQUENCE</div>
-    <div>
-      <span class="fp off" onclick="loadPreset('jump')">JUMP</span>
-      <span class="fp off" onclick="loadPreset('walk')">WALK</span>
-      <span class="fp off" onclick="loadPreset('punch')">PUNCH</span>
-      <span class="fp off" onclick="loadPreset('wave')">WAVE</span>
-    </div>
-  </div>
-
-  <!-- LEGEND -->
-  <div class="sp">
-    <div class="spl"><span class="lt">D</span>FRAME TYPE — フレーム種別</div>
-    <div class="legend-row"><div class="legend-stripe" style="background:var(--acid)"></div>KEY FRAME — 原画（アニメーターが描く）</div>
-    <div class="legend-row"><div class="legend-stripe" style="background:rgba(136,136,136,0.5)"></div>IN-BETWEEN — 動画（補間で計算）</div>
-    <div class="legend-row"><div class="legend-stripe" style="background:rgba(249,255,71,0.5)"></div>GHOST — 前後の原画を透過表示</div>
-    <div class="insight">
-      <strong>// POSE TO POSE</strong>
-      直線補間（LINEAR）は機械的。<br>
-      EASE I-Oで有機的な重みが生まれる。<br>
-      STEPは動画なし——原画のみの世界。<br><br>
-      ゴーストを見ると「次に何が来るか」が<br>
-      アニメーターに見えている視点がわかる。
-    </div>
-  </div>
-
-</aside>
-
-<footer id="bottombar">
-  <div>KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED // PROTOCOL: POSE_TO_POSE</div>
-  <div>FRAME: <span id="bb-fr" style="color:var(--acid)">000</span> / <span id="bb-total">000</span></div>
-  <div>
-    <span class="kbd">SPC</span>PLAY
-    <span class="kbd">←→</span>STEP
-    <span class="kbd">K</span>MARK KEY
-    <span class="kbd">ESC</span>INDEX
-    &nbsp;ID: SENTIENT-BP-2026-VLS.12
-  </div>
-</footer>
+<div id="bottombar">
+  <span>KEY_FRAMES: LOCKED // IN_BETWEEN: CALCULATED</span>
+  <span id="bot-frame">FRAME: 00 / 00</span>
+  <span id="sc-open-btn" onclick="openShortcuts()">⌨ SHORTCUTS</span>
+</div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════
-// POSE DEFINITIONS
-// Each pose: a stick-figure defined by joint positions (normalized 0..1)
-// joints: head, neck, lShoulder, rShoulder, lElbow, rElbow, lHand, rHand,
-//         hip, lKnee, rKnee, lFoot, rFoot
-// ══════════════════════════════════════════════
-const JOINT_NAMES=['head','neck','lSho','rSho','lElb','rElb','lHan','rHan','hip','lKne','rKne','lFoo','rFoo'];
+// ══════════════════════════════════════════════════════════════
+// JOINT DEFINITIONS（run.svg ベース、横向きシルエット固定）
+// side: 'n' = NEAR (手前/緑), 'f' = FAR (奥/黄), 'c' = CENTER (白)
+// sz : ジョイント円の大きさ
+// ══════════════════════════════════════════════════════════════
+const JOINTS = [
+  // CENTER spine (small)
+  {k:'head',  side:'n', sz:'XL', label:'頭'},
+  {k:'neck',  side:'c', sz:'XS', label:'首'},   // 首と肩の交点（小）
+  {k:'hip',   side:'c', sz:'XS', label:'腰'},   // 背骨と腰の交点（小）
 
-// Pose library
-const POSES = {
-  // JUMP sequence
-  stand:   {head:[.50,.18],neck:[.50,.28],lSho:[.43,.29],rSho:[.57,.29],lElb:[.40,.40],rElb:[.60,.40],lHan:[.38,.52],rHan:[.62,.52],hip:[.50,.50],lKne:[.46,.65],rKne:[.54,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
-  crouch:  {head:[.50,.28],neck:[.50,.36],lSho:[.43,.37],rSho:[.57,.37],lElb:[.38,.46],rElb:[.62,.46],lHan:[.34,.54],rHan:[.66,.54],hip:[.50,.58],lKne:[.43,.70],rKne:[.57,.70],lFoo:[.44,.82],rFoo:[.56,.82]},
-  launch:  {head:[.50,.12],neck:[.50,.22],lSho:[.40,.24],rSho:[.60,.24],lElb:[.34,.16],rElb:[.66,.16],lHan:[.28,.10],rHan:[.72,.10],hip:[.50,.40],lKne:[.44,.54],rKne:[.56,.54],lFoo:[.42,.70],rFoo:[.58,.70]},
-  peak:    {head:[.50,.08],neck:[.50,.16],lSho:[.38,.18],rSho:[.62,.18],lElb:[.30,.12],rElb:[.70,.12],lHan:[.24,.06],rHan:[.76,.06],hip:[.50,.34],lKne:[.45,.46],rKne:[.55,.46],lFoo:[.42,.60],rFoo:[.58,.60]},
-  descend: {head:[.50,.14],neck:[.50,.22],lSho:[.40,.24],rSho:[.60,.24],lElb:[.34,.18],rElb:[.66,.18],lHan:[.30,.12],rHan:[.70,.12],hip:[.50,.42],lKne:[.44,.56],rKne:[.56,.56],lFoo:[.42,.72],rFoo:[.58,.72]},
-  land:    {head:[.50,.30],neck:[.50,.38],lSho:[.42,.40],rSho:[.58,.40],lElb:[.36,.50],rElb:[.64,.50],lHan:[.32,.58],rHan:[.68,.58],hip:[.50,.58],lKne:[.43,.71],rKne:[.57,.71],lFoo:[.44,.83],rFoo:[.56,.83]},
-  // WALK
-  walk1:   {head:[.50,.18],neck:[.50,.27],lSho:[.43,.28],rSho:[.57,.28],lElb:[.36,.38],rElb:[.64,.38],lHan:[.32,.50],rHan:[.62,.46],hip:[.50,.49],lKne:[.45,.63],rKne:[.56,.61],lFoo:[.41,.78],rFoo:[.58,.75]},
-  walk2:   {head:[.50,.17],neck:[.50,.26],lSho:[.42,.27],rSho:[.58,.27],lElb:[.37,.36],rElb:[.65,.36],lHan:[.33,.48],rHan:[.63,.44],hip:[.50,.48],lKne:[.46,.62],rKne:[.57,.60],lFoo:[.42,.77],rFoo:[.59,.74]},
-  walk3:   {head:[.50,.16],neck:[.50,.25],lSho:[.41,.26],rSho:[.59,.26],lElb:[.34,.35],rElb:[.66,.35],lHan:[.30,.47],rHan:[.66,.42],hip:[.50,.47],lKne:[.47,.61],rKne:[.55,.59],lFoo:[.43,.76],rFoo:[.57,.72]},
-  // PUNCH
-  punch1:  {head:[.50,.18],neck:[.50,.27],lSho:[.44,.28],rSho:[.58,.28],lElb:[.40,.38],rElb:[.70,.36],lHan:[.38,.50],rHan:[.82,.34],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.63],lFoo:[.44,.80],rFoo:[.57,.78]},
-  punch2:  {head:[.52,.20],neck:[.52,.29],lSho:[.45,.30],rSho:[.60,.29],lElb:[.40,.40],rElb:[.72,.28],lHan:[.38,.52],rHan:[.88,.22],hip:[.50,.52],lKne:[.46,.66],rKne:[.55,.64],lFoo:[.44,.81],rFoo:[.57,.79]},
-  // WAVE
-  wave1:   {head:[.50,.17],neck:[.50,.26],lSho:[.43,.28],rSho:[.58,.27],lElb:[.40,.38],rElb:[.68,.22],lHan:[.38,.50],rHan:[.76,.12],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
-  wave2:   {head:[.50,.17],neck:[.50,.26],lSho:[.43,.28],rSho:[.58,.27],lElb:[.40,.38],rElb:[.65,.18],lHan:[.38,.50],rHan:[.80,.10],hip:[.50,.50],lKne:[.46,.65],rKne:[.55,.65],lFoo:[.44,.80],rFoo:[.56,.80]},
-};
+  // NEAR arm (黒/手前 → 緑)
+  {k:'nSho',  side:'n', sz:'M',  label:'手前肩'},
+  {k:'nElb',  side:'n', sz:'M',  label:'手前肘'},
+  {k:'nHan',  side:'n', sz:'L',  label:'手前手'},
 
-// PRESETS: sequences of [poseName, frameIndex, label]
-const PRESET_SEQUENCES = {
-  jump: [
-    {pose:'stand',  label:'IDLE',    phase:'READY'},
-    {pose:'crouch', label:'CROUCH',  phase:'WIND_UP'},
-    {pose:'launch', label:'LAUNCH',  phase:'ACTION'},
-    {pose:'peak',   label:'PEAK',    phase:'ACTION'},
-    {pose:'descend',label:'DESCEND', phase:'ACTION'},
-    {pose:'land',   label:'LAND',    phase:'FOLLOW'},
-    {pose:'stand',  label:'SETTLE',  phase:'SETTLE'},
-  ],
-  walk: [
-    {pose:'walk1', label:'STEP_A', phase:'ACTION'},
-    {pose:'walk2', label:'MID',    phase:'ACTION'},
-    {pose:'walk3', label:'STEP_B', phase:'ACTION'},
-    {pose:'walk2', label:'MID',    phase:'ACTION'},
-  ],
-  punch: [
-    {pose:'stand',  label:'IDLE',   phase:'READY'},
-    {pose:'crouch', label:'PREP',   phase:'WIND_UP'},
-    {pose:'punch1', label:'EXTEND', phase:'ACTION'},
-    {pose:'punch2', label:'IMPACT', phase:'ACTION'},
-    {pose:'stand',  label:'RETURN', phase:'SETTLE'},
-  ],
-  wave: [
-    {pose:'stand', label:'IDLE',   phase:'READY'},
-    {pose:'wave1', label:'WAVE_A', phase:'ACTION'},
-    {pose:'wave2', label:'WAVE_B', phase:'ACTION'},
-    {pose:'wave1', label:'WAVE_A', phase:'ACTION'},
-    {pose:'stand', label:'IDLE',   phase:'SETTLE'},
-  ],
-};
+  // FAR arm (灰/奥 → 黄)
+  {k:'fSho',  side:'f', sz:'M',  label:'奥肩'},
+  {k:'fElb',  side:'f', sz:'M',  label:'奥肘'},
+  {k:'fHan',  side:'f', sz:'L',  label:'奥手'},
 
-// ── TIMELINE STATE ──
-// Each entry: {pose, label, phase, inBetween (count before next key)}
-let keyFrames = []; // [{pose, label, phase}]
-const INBET_DEFAULT = 4; // in-betweens between each key
+  // NEAR leg
+  {k:'nKne',  side:'n', sz:'M',  label:'手前膝'},
+  {k:'nAnk',  side:'n', sz:'M',  label:'手前足首'},
+  {k:'nToe1', side:'n', sz:'S',  label:'手前足1'},
+  {k:'nToe2', side:'n', sz:'S',  label:'手前足2'},
+  {k:'nToe3', side:'n', sz:'S',  label:'手前先'},
 
-// Full expanded frame list: [{type:'key'|'inbet', keyIdx, t, pose0, pose1, label, phase}]
-let frames = [];
-let currentFrame = 0;
-let playing = false;
-let playSpd = 1.0;
-let lastTime = null;
-let playT = 0; // float frame position
+  // FAR leg
+  {k:'fHip',  side:'f', sz:'M',  label:'奥腰'},
+  {k:'fKne',  side:'f', sz:'M',  label:'奥膝'},
+  {k:'fAnk',  side:'f', sz:'M',  label:'奥足首'},
+  {k:'fToe1', side:'f', sz:'S',  label:'奥足1'},
+  {k:'fToe2', side:'f', sz:'S',  label:'奥先'},
+];
 
-// Display flags
-let showGhost = true;
-let showOnion = true;
-let showLine  = true;
-let easingMode = 'linear'; // 'linear'|'ease'|'step'
+// 骨の接続（run.svg のポリラインに基づく）
+const BONES = [
+  // spine
+  ['head','neck'],['neck','hip'],
+  // near arm
+  ['neck','nSho'],['nSho','nElb'],['nElb','nHan'],
+  // far arm
+  ['neck','fSho'],['fSho','fElb'],['fElb','fHan'],
+  // near leg
+  ['hip','nKne'],['nKne','nAnk'],['nAnk','nToe1'],['nToe1','nToe2'],['nToe2','nToe3'],
+  // far leg (hip → fHip でブランチ)
+  ['hip','fHip'],['fHip','fKne'],['fKne','fAnk'],['fAnk','fToe1'],['fToe1','fToe2'],
+];
 
-// Drag state (frame strip)
-let dragSrcIdx = null;
-
-// ── CANVAS ──
-const canvas = document.getElementById('anim-canvas');
-const ctx    = canvas.getContext('2d');
-
-// ── RESIZE ──
-function resizeCanvas(){
-  const av = document.getElementById('anim-view');
-  canvas.width  = av.offsetWidth  * devicePixelRatio;
-  canvas.height = av.offsetHeight * devicePixelRatio;
-  canvas.style.width  = av.offsetWidth  + 'px';
-  canvas.style.height = av.offsetHeight + 'px';
+// Joint colors
+function jointColor(side, alpha=1){
+  if(side==='n') return `rgba(54,255,0,${alpha})`;
+  if(side==='f') return `rgba(249,255,71,${alpha})`;
+  return `rgba(255,255,255,${alpha})`;
 }
-function cw(){ return canvas.offsetWidth; }
-function ch(){ return canvas.offsetHeight; }
+function jointRadius(sz, scale=1){
+  const base = {XL:22, L:11, M:7.5, S:5, XS:3.5};
+  return (base[sz]||7)*scale;
+}
 
-// ── POSE INTERPOLATION ──
+// ══════════════════════════════════════════════════════════════
+// POSE LIBRARY（run.svg を基準に作成・正規化 0..1）
+// run.svg はステージ全体に大きく描かれているので、
+// 全身が見える程度にスケーリングしたポーズを定義
+// ══════════════════════════════════════════════════════════════
+
+// RUN_A: run.svg そのまま（横向き走り）
+const POSES = {
+  // run.svg を 0..1 に正規化 → 中央寄せ＆余白付与のため再マッピング
+  // 元 viewBox 1920x1080 を 0.15-0.85 / 0.10-0.90 にマップ
+  run_a:   {head:[.365,.199],neck:[.427,.263],hip:[.512,.502],nSho:[.416,.282],nElb:[.380,.431],nHan:[.289,.376],fSho:[.437,.245],fElb:[.500,.199],fHan:[.555,.288],nKne:[.525,.492],nAnk:[.630,.693],nToe1:[.741,.537],nToe2:[.777,.563],nToe3:[.793,.601],fHip:[.500,.511],fKne:[.395,.657],fAnk:[.309,.853],fToe1:[.274,.823],fToe2:[.253,.779]},
+
+  // RUN_B: 反対脚が前 (run_a の左右脚をスワップした感じ)
+  run_b:   {head:[.365,.205],neck:[.427,.268],hip:[.512,.508],nSho:[.430,.290],nElb:[.470,.440],nHan:[.420,.560],fSho:[.420,.250],fElb:[.380,.380],fHan:[.330,.490],nKne:[.395,.660],nAnk:[.309,.853],nToe1:[.253,.820],nToe2:[.220,.790],nToe3:[.200,.760],fHip:[.530,.515],fKne:[.625,.690],fAnk:[.740,.555],fToe1:[.795,.560],fToe2:[.825,.595]},
+
+  // RUN_C: 着地（足が下に集まる）
+  run_c:   {head:[.420,.230],neck:[.480,.295],hip:[.500,.540],nSho:[.480,.310],nElb:[.460,.450],nHan:[.380,.490],fSho:[.500,.280],fElb:[.560,.310],fHan:[.620,.380],nKne:[.510,.700],nAnk:[.530,.860],nToe1:[.580,.870],nToe2:[.610,.872],nToe3:[.630,.872],fHip:[.490,.545],fKne:[.420,.700],fAnk:[.380,.860],fToe1:[.340,.872],fToe2:[.310,.872]},
+
+  // STAND: 直立中央
+  stand:   {head:[.500,.180],neck:[.500,.260],hip:[.500,.500],nSho:[.540,.270],nElb:[.555,.380],nHan:[.560,.490],fSho:[.460,.275],fElb:[.445,.385],fHan:[.440,.495],nKne:[.520,.660],nAnk:[.525,.820],nToe1:[.555,.860],nToe2:[.575,.860],nToe3:[.585,.860],fHip:[.490,.510],fKne:[.480,.660],fAnk:[.475,.820],fToe1:[.445,.860],fToe2:[.425,.860]},
+
+  // CROUCH: しゃがみ
+  crouch:  {head:[.500,.350],neck:[.500,.420],hip:[.500,.580],nSho:[.555,.430],nElb:[.580,.520],nHan:[.595,.610],fSho:[.445,.430],fElb:[.420,.520],fHan:[.405,.610],nKne:[.580,.720],nAnk:[.540,.860],nToe1:[.590,.870],nToe2:[.615,.872],nToe3:[.630,.872],fHip:[.490,.585],fKne:[.420,.720],fAnk:[.460,.860],fToe1:[.410,.870],fToe2:[.385,.872]},
+
+  // LAUNCH: 跳び始め (両腕上)
+  launch:  {head:[.500,.220],neck:[.500,.295],hip:[.500,.480],nSho:[.555,.300],nElb:[.595,.220],nHan:[.625,.140],fSho:[.445,.305],fElb:[.405,.225],fHan:[.375,.145],nKne:[.520,.620],nAnk:[.530,.770],nToe1:[.570,.795],nToe2:[.595,.800],nToe3:[.612,.802],fHip:[.490,.490],fKne:[.480,.620],fAnk:[.470,.770],fToe1:[.430,.795],fToe2:[.405,.800]},
+
+  // PEAK: 最高点 (空中)
+  peak:    {head:[.500,.120],neck:[.500,.195],hip:[.500,.380],nSho:[.560,.205],nElb:[.605,.130],nHan:[.640,.070],fSho:[.440,.210],fElb:[.395,.135],fHan:[.360,.075],nKne:[.535,.510],nAnk:[.555,.650],nToe1:[.610,.665],nToe2:[.640,.672],nToe3:[.660,.675],fHip:[.490,.385],fKne:[.475,.510],fAnk:[.460,.650],fToe1:[.410,.665],fToe2:[.385,.672]},
+
+  // PUNCH_PREP: パンチ準備（引く）
+  punch_p: {head:[.500,.200],neck:[.500,.280],hip:[.500,.520],nSho:[.560,.290],nElb:[.660,.310],nHan:[.730,.300],fSho:[.450,.295],fElb:[.420,.400],fHan:[.395,.490],nKne:[.520,.680],nAnk:[.530,.840],nToe1:[.575,.872],nToe2:[.600,.872],nToe3:[.615,.872],fHip:[.490,.530],fKne:[.475,.680],fAnk:[.465,.840],fToe1:[.420,.872],fToe2:[.400,.872]},
+
+  // PUNCH_HIT: パンチ命中（突き出す）
+  punch_h: {head:[.510,.210],neck:[.510,.290],hip:[.510,.520],nSho:[.560,.300],nElb:[.690,.305],nHan:[.830,.295],fSho:[.460,.305],fElb:[.435,.405],fHan:[.420,.495],nKne:[.530,.680],nAnk:[.560,.835],nToe1:[.610,.872],nToe2:[.640,.872],nToe3:[.655,.872],fHip:[.500,.530],fKne:[.480,.680],fAnk:[.460,.840],fToe1:[.420,.872],fToe2:[.400,.872]},
+
+  // WAVE: 手を振る（片手挙げる）
+  wave_a:  {head:[.500,.180],neck:[.500,.260],hip:[.500,.500],nSho:[.555,.270],nElb:[.605,.180],nHan:[.640,.100],fSho:[.460,.275],fElb:[.445,.385],fHan:[.440,.495],nKne:[.520,.660],nAnk:[.525,.820],nToe1:[.555,.860],nToe2:[.575,.860],nToe3:[.585,.860],fHip:[.490,.510],fKne:[.480,.660],fAnk:[.475,.820],fToe1:[.445,.860],fToe2:[.425,.860]},
+  wave_b:  {head:[.500,.180],neck:[.500,.260],hip:[.500,.500],nSho:[.560,.270],nElb:[.640,.190],nHan:[.700,.130],fSho:[.460,.275],fElb:[.445,.385],fHan:[.440,.495],nKne:[.520,.660],nAnk:[.525,.820],nToe1:[.555,.860],nToe2:[.575,.860],nToe3:[.585,.860],fHip:[.490,.510],fKne:[.480,.660],fAnk:[.475,.820],fToe1:[.445,.860],fToe2:[.425,.860]},
+};
+
+// ══════════════════════════════════════════════════════════════
+// PRESET SEQUENCES
+// ══════════════════════════════════════════════════════════════
+const PRESET_SEQUENCES = {
+  run:   [{p:'run_a',l:'RUN_A',ph:'STEP_A'},{p:'run_c',l:'CONTACT',ph:'CONTACT'},{p:'run_b',l:'RUN_B',ph:'STEP_B'},{p:'run_c',l:'CONTACT',ph:'CONTACT'}],
+  jump:  [{p:'stand',l:'IDLE',ph:'READY'},{p:'crouch',l:'CROUCH',ph:'WIND_UP'},{p:'launch',l:'LAUNCH',ph:'ACTION'},{p:'peak',l:'PEAK',ph:'ACTION'},{p:'crouch',l:'LAND',ph:'FOLLOW'},{p:'stand',l:'SETTLE',ph:'SETTLE'}],
+  punch: [{p:'stand',l:'IDLE',ph:'READY'},{p:'punch_p',l:'PREP',ph:'WIND_UP'},{p:'punch_h',l:'IMPACT',ph:'ACTION'},{p:'stand',l:'RETURN',ph:'SETTLE'}],
+  wave:  [{p:'stand',l:'IDLE',ph:'READY'},{p:'wave_a',l:'WAVE_A',ph:'ACTION'},{p:'wave_b',l:'WAVE_B',ph:'ACTION'},{p:'wave_a',l:'WAVE_A',ph:'ACTION'},{p:'stand',l:'SETTLE',ph:'SETTLE'}],
+};
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+const state = {
+  keyFrames: [],   // [{poseData, label, phase}]
+  frames:    [],   // expanded {type:'key'|'inbet', keyIdx, t, pose, label, phase}
+  frame:     0,
+  playing:   true,
+  fps:       6,
+  inbet:     5,
+  easing:    'linear',
+  feat:      {ghost:true, onion:true, line:true, ground:true, label:false},
+};
+
+const editor = {
+  active:   false,
+  keyIdx:   -1,
+  poseData: null,
+  dragJoint:null,
+  history:  [],
+  redoStack:[],
+};
+
+let frameClipboard = null;
+let accumMs = 0;
+let lastTime = null;
+
+// ══════════════════════════════════════════════════════════════
+// CANVAS
+// ══════════════════════════════════════════════════════════════
+const animC = document.getElementById('anim-canvas');
+const animCtx = animC.getContext('2d');
+const editC  = document.getElementById('edit-canvas');
+const editCtx = editC.getContext('2d');
+function avEl(){ return document.getElementById('anim-view'); }
+function avW(){ return avEl().offsetWidth; }
+function avH(){ return avEl().offsetHeight; }
+function resizeCanvas(){
+  const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
+  animC.width=w*dpr; animC.height=h*dpr; animC.style.width=w+'px'; animC.style.height=h+'px';
+  editC.width=w*dpr; editC.height=h*dpr; editC.style.width=w+'px'; editC.style.height=h+'px';
+}
+
+// ══════════════════════════════════════════════════════════════
+// POSE HELPERS
+// ══════════════════════════════════════════════════════════════
+function clonePose(p){ const o={}; for(const k in p) o[k]=[p[k][0], p[k][1]]; return o; }
+function getPose(name){ return clonePose(POSES[name]||POSES['stand']); }
 function lerpPose(p0, p1, t){
   const out = {};
-  for(const k of JOINT_NAMES){
-    if(!p0[k]||!p1[k]) continue;
-    out[k] = [p0[k][0]+(p1[k][0]-p0[k][0])*t, p0[k][1]+(p1[k][1]-p0[k][1])*t];
+  for(const j of JOINTS){
+    const k = j.k;
+    if(p0[k] && p1[k]) out[k] = [p0[k][0] + (p1[k][0]-p0[k][0])*t, p0[k][1] + (p1[k][1]-p0[k][1])*t];
+    else if(p0[k]) out[k] = [...p0[k]];
+    else if(p1[k]) out[k] = [...p1[k]];
   }
   return out;
 }
-
 function applyEasing(t){
-  if(easingMode==='linear') return t;
-  if(easingMode==='ease')   return t<0.5?2*t*t:-1+(4-2*t)*t;
-  if(easingMode==='step')   return t<0.5?0:1;
+  if(state.easing==='ease') return t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+  if(state.easing==='step') return t<0.5 ? 0 : 1;
   return t;
 }
 
-function getPose(pose){ return POSES[pose]||POSES['stand']; }
-
-// ── BUILD FRAME LIST ──
 function buildFrames(){
-  frames = [];
-  if(keyFrames.length === 0) return;
-  if(keyFrames.length === 1){
-    frames.push({type:'key', keyIdx:0, t:0, pose:getPose(keyFrames[0].pose), label:keyFrames[0].label, phase:keyFrames[0].phase, phaseSrc:keyFrames[0].phase});
-    return;
-  }
-  for(let k=0; k<keyFrames.length; k++){
-    const kf = keyFrames[k];
-    const nextKf = keyFrames[(k+1)%keyFrames.length];
-    // key frame itself
-    frames.push({type:'key', keyIdx:k, t:0, pose:getPose(kf.pose), label:kf.label, phase:kf.phase});
-    // in-betweens (not for last key if no loop)
-    if(k < keyFrames.length-1){
-      const n = INBET_DEFAULT;
-      for(let i=1; i<=n; i++){
-        const rawT = i/(n+1);
+  state.frames = [];
+  if(state.keyFrames.length === 0) return;
+  for(let k=0; k<state.keyFrames.length; k++){
+    const kf = state.keyFrames[k];
+    state.frames.push({type:'key', keyIdx:k, t:0, pose:kf.poseData, label:kf.label, phase:kf.phase});
+    if(k < state.keyFrames.length-1){
+      const nkf = state.keyFrames[k+1];
+      for(let i=1; i<=state.inbet; i++){
+        const rawT = i/(state.inbet+1);
         const easedT = applyEasing(rawT);
-        const interpolated = lerpPose(getPose(kf.pose), getPose(nextKf.pose), easedT);
-        frames.push({type:'inbet', keyIdx:k, t:rawT, pose:interpolated, label:'IN_'+(i), phase:kf.phase});
+        state.frames.push({type:'inbet', keyIdx:k, t:rawT, pose:lerpPose(kf.poseData, nkf.poseData, easedT), label:'IN_'+i, phase:kf.phase});
       }
     }
   }
+  // scrubber max更新
+  const scr = document.getElementById('scrubber');
+  scr.max = Math.max(0, state.frames.length-1);
+  if(state.frame >= state.frames.length) state.frame = 0;
 }
 
-// ── DRAW POSE ──
-function drawPose(pose, alpha, color, scale, offX, offY){
+// ══════════════════════════════════════════════════════════════
+// DRAW: animation frame
+// ══════════════════════════════════════════════════════════════
+function drawPoseOnCtx(c, pose, alpha, ghostMode){
   if(!pose) return;
-  const w = cw(), h = ch();
-  ctx.save();
-  ctx.globalAlpha = alpha;
+  const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
+  c.save(); c.globalAlpha = alpha;
 
-  // bones to draw: [joint0, joint1]
-  const bones = [
-    ['head','neck'],['neck','lSho'],['neck','rSho'],
-    ['lSho','lElb'],['lElb','lHan'],
-    ['rSho','rElb'],['rElb','rHan'],
-    ['neck','hip'],
-    ['hip','lKne'],['lKne','lFoo'],
-    ['hip','rKne'],['rKne','rFoo'],
-  ];
-
-  const px = j => offX + (pose[j]?.[0]||0)*w*scale;
-  const py = j => offY + (pose[j]?.[1]||0)*h*scale;
-
-  // draw bones
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2 * scale;
-  ctx.lineCap = 'round';
-  for(const [a,b] of bones){
-    if(!pose[a]||!pose[b]) continue;
-    ctx.beginPath();
-    ctx.moveTo(px(a), py(a));
-    ctx.lineTo(px(b), py(b));
-    ctx.stroke();
+  // bones
+  for(const [a,b] of BONES){
+    if(!pose[a] || !pose[b]) continue;
+    const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
+    const ax = pose[a][0]*w*dpr, ay = pose[a][1]*h*dpr;
+    const bx = pose[b][0]*w*dpr, by = pose[b][1]*h*dpr;
+    if(ghostMode){
+      c.strokeStyle = 'rgba(54,255,0,0.35)';
+    } else {
+      const grad = c.createLinearGradient(ax,ay,bx,by);
+      grad.addColorStop(0, jointColor(jA?.side||'c', 0.9));
+      grad.addColorStop(1, jointColor(jB?.side||'c', 0.9));
+      c.strokeStyle = grad;
+    }
+    c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by);
+    c.lineWidth = (ghostMode?1.8:2.5)*dpr; c.lineCap='round';
+    c.stroke();
   }
 
-  // draw joints
-  for(const j of JOINT_NAMES){
-    if(!pose[j]) continue;
-    const r = j==='head'?8*scale:j==='hip'?5*scale:3.5*scale;
-    ctx.beginPath();
-    ctx.arc(px(j), py(j), r, 0, Math.PI*2);
-    ctx.fillStyle = j==='head'?'transparent':color;
-    ctx.fill();
-    if(j==='head'){
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5*scale;
-      ctx.stroke();
+  // joints
+  for(const j of JOINTS){
+    if(!pose[j.k]) continue;
+    const x = pose[j.k][0]*w*dpr, y = pose[j.k][1]*h*dpr;
+    const r = jointRadius(j.sz, dpr);
+    const col = jointColor(j.side, ghostMode?0.4:0.9);
+
+    if(j.k === 'head'){
+      // head circle (outline)
+      c.beginPath(); c.arc(x,y,r,0,Math.PI*2);
+      c.fillStyle = ghostMode?'rgba(54,255,0,0.08)':'rgba(255,255,255,0.05)';
+      c.fill();
+      c.strokeStyle = ghostMode?'rgba(54,255,0,0.4)':'rgba(255,255,255,0.9)';
+      c.lineWidth = 2*dpr; c.stroke();
+      // eye (small white circle, run.svg を踏襲、左向き)
+      if(!ghostMode){
+        c.beginPath(); c.arc(x - r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
+        c.fillStyle='rgba(255,255,255,0.95)'; c.fill();
+      }
+    } else {
+      c.beginPath(); c.arc(x,y,r,0,Math.PI*2);
+      c.fillStyle = col;
+      c.fill();
+      // 中心軸(white)は枠線で
+      if(j.side === 'c' && !ghostMode){
+        c.strokeStyle = 'rgba(54,255,0,0.7)';
+        c.lineWidth = 1*dpr;
+        c.stroke();
+      }
     }
   }
-
-  ctx.restore();
+  c.restore();
 }
 
-// ── DRAW FRAME ──
 function drawFrame(){
-  const dpr = devicePixelRatio;
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0,0,W,H);
-  ctx.save(); ctx.scale(dpr, dpr);
-  const w = cw(), h = ch();
+  const dpr = window.devicePixelRatio||1;
+  const w=avW(), h=avH();
+  animCtx.clearRect(0, 0, animC.width, animC.height);
+  if(state.frames.length === 0) return;
 
-  if(frames.length === 0){ ctx.restore(); return; }
+  const fi = state.frame;
+  const frame = state.frames[fi];
+  if(!frame) return;
 
-  const fi = Math.round(playT) % frames.length;
-  const frame = frames[fi];
-
-  // Ground line
-  ctx.save();
-  ctx.strokeStyle = 'rgba(54,255,0,0.2)'; ctx.lineWidth=1; ctx.setLineDash([4,8]);
-  const gy = h*0.82;
-  ctx.beginPath(); ctx.moveTo(w*0.08, gy); ctx.lineTo(w*0.92, gy); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.restore();
-
-  // ── ONION SKIN (prev/next key ghost) ──
-  if(showOnion){
-    // previous key
-    const prevKeyIdx = Math.max(0, (frame.type==='key' ? frame.keyIdx-1 : frame.keyIdx));
-    if(prevKeyIdx >= 0 && prevKeyIdx < keyFrames.length){
-      drawPose(getPose(keyFrames[prevKeyIdx].pose), 0.10, '#36FF00', 1, 0, 0);
-    }
-    // next key
-    const nextKeyIdx = Math.min(keyFrames.length-1, (frame.type==='key'?frame.keyIdx+1:frame.keyIdx+1));
-    if(nextKeyIdx < keyFrames.length){
-      drawPose(getPose(keyFrames[nextKeyIdx].pose), 0.10, '#F9FF47', 1, 0, 0);
-    }
+  // ground line
+  if(state.feat.ground){
+    animCtx.save();
+    animCtx.strokeStyle = 'rgba(54,255,0,0.22)';
+    animCtx.lineWidth = 1*dpr;
+    animCtx.setLineDash([4*dpr, 8*dpr]);
+    animCtx.beginPath();
+    animCtx.moveTo(w*0.05*dpr, h*0.88*dpr);
+    animCtx.lineTo(w*0.95*dpr, h*0.88*dpr);
+    animCtx.stroke();
+    animCtx.setLineDash([]);
+    animCtx.restore();
   }
 
-  // ── GHOST (prev frame + next frame at low alpha) ──
-  if(showGhost){
-    const prevFi = (fi-1+frames.length)%frames.length;
-    const nextFi = (fi+1)%frames.length;
-    drawPose(frames[prevFi].pose, 0.18, '#36FF00', 1, 0, 0);
-    drawPose(frames[nextFi].pose, 0.12, '#F9FF47', 1, 0, 0);
+  // onion skin (隣接KEY)
+  if(state.feat.onion && frame.type==='inbet'){
+    const ki = frame.keyIdx;
+    if(ki>0)   drawPoseOnCtx(animCtx, state.keyFrames[ki-1].poseData, 0.10, true);
+    if(ki<state.keyFrames.length-1) drawPoseOnCtx(animCtx, state.keyFrames[ki+1].poseData, 0.10, true);
   }
 
-  // ── INTERPOLATION LINE ──
-  if(showLine && frame.type==='inbet'){
-    // draw dashed line from prev key to next key hip position
-    const kf0 = keyFrames[frame.keyIdx];
-    const kf1 = keyFrames[Math.min(keyFrames.length-1, frame.keyIdx+1)];
-    const p0 = getPose(kf0.pose), p1 = getPose(kf1.pose);
-    if(p0.hip && p1.hip){
-      ctx.save();
-      ctx.strokeStyle='rgba(54,255,0,0.2)'; ctx.lineWidth=1; ctx.setLineDash([2,4]);
-      ctx.beginPath();
-      ctx.moveTo(p0.hip[0]*w, p0.hip[1]*h);
-      ctx.lineTo(p1.hip[0]*w, p1.hip[1]*h);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      // current position dot
+  // ghost frames (前後フレーム)
+  if(state.feat.ghost && state.frames.length>1){
+    const pfi = (fi-1 + state.frames.length) % state.frames.length;
+    const nfi = (fi+1) % state.frames.length;
+    drawPoseOnCtx(animCtx, state.frames[pfi].pose, 0.18, true);
+    drawPoseOnCtx(animCtx, state.frames[nfi].pose, 0.10, true);
+  }
+
+  // interp line (補間軌道)
+  if(state.feat.line && frame.type==='inbet'){
+    const k0 = state.keyFrames[frame.keyIdx];
+    const k1 = state.keyFrames[Math.min(state.keyFrames.length-1, frame.keyIdx+1)];
+    if(k0 && k1 && k0.poseData.hip && k1.poseData.hip){
+      animCtx.save();
+      animCtx.strokeStyle = 'rgba(249,255,71,0.4)';
+      animCtx.lineWidth = 1*dpr;
+      animCtx.setLineDash([2*dpr, 4*dpr]);
+      animCtx.beginPath();
+      animCtx.moveTo(k0.poseData.hip[0]*w*dpr, k0.poseData.hip[1]*h*dpr);
+      animCtx.lineTo(k1.poseData.hip[0]*w*dpr, k1.poseData.hip[1]*h*dpr);
+      animCtx.stroke();
+      animCtx.setLineDash([]);
       const cur = frame.pose;
       if(cur.hip){
-        ctx.beginPath();ctx.arc(cur.hip[0]*w,cur.hip[1]*h,4,0,Math.PI*2);
-        ctx.fillStyle='rgba(54,255,0,0.5)';ctx.fill();
-        ctx.fillStyle='rgba(54,255,0,0.35)';ctx.font='7px IBM Plex Mono,monospace';
-        ctx.fillText('t='+frame.t.toFixed(2),cur.hip[0]*w+6,cur.hip[1]*h+3);
+        animCtx.beginPath();
+        animCtx.arc(cur.hip[0]*w*dpr, cur.hip[1]*h*dpr, 4*dpr, 0, Math.PI*2);
+        animCtx.fillStyle = 'rgba(249,255,71,0.6)';
+        animCtx.fill();
+        animCtx.fillStyle = 'rgba(249,255,71,0.6)';
+        animCtx.font = `${8*dpr}px IBM Plex Mono, monospace`;
+        animCtx.fillText('t='+frame.t.toFixed(2), cur.hip[0]*w*dpr+8*dpr, cur.hip[1]*h*dpr+3*dpr);
       }
-      ctx.restore();
+      animCtx.restore();
     }
   }
 
-  // ── MAIN POSE ──
-  const isKey = frame.type==='key';
-  const poseColor = isKey?'#36FF00':'rgba(54,255,0,0.75)';
-  drawPose(frame.pose, 1.0, poseColor, 1, 0, 0);
-
-  // ── KEY FRAME HIGHLIGHT ──
-  if(isKey){
-    ctx.save();
-    ctx.strokeStyle='rgba(54,255,0,0.25)'; ctx.lineWidth=1;
-    ctx.strokeRect(w*0.12, h*0.04, w*0.76, h*0.86);
-    ctx.fillStyle='rgba(54,255,0,0.35)';
-    ctx.font='700 9px IBM Plex Mono,monospace';
-    ctx.fillText('KEY: '+frame.label, w*0.14, h*0.96);
-    ctx.restore();
+  // KEY frame border / label
+  if(frame.type === 'key'){
+    animCtx.save();
+    animCtx.strokeStyle = 'rgba(54,255,0,0.18)';
+    animCtx.lineWidth = 1*dpr;
+    animCtx.strokeRect(w*0.04*dpr, h*0.04*dpr, w*0.92*dpr, h*0.92*dpr);
+    animCtx.fillStyle = 'rgba(54,255,0,0.75)';
+    animCtx.font = `700 ${9*dpr}px IBM Plex Mono, monospace`;
+    animCtx.fillText('● KEY: '+frame.label, w*0.06*dpr, h*0.965*dpr);
+    animCtx.restore();
   }
 
-  ctx.restore();
+  // main pose
+  drawPoseOnCtx(animCtx, frame.pose, 1.0, false);
 
-  // ── HUD UPDATE ──
-  const phase = frame.phase||'—';
-  document.getElementById('phase-badge').textContent = 'PHASE: '+phase;
-  document.getElementById('frame-counter').textContent = 'FRAME: '+String(fi).padStart(3,'0')+' / '+String(frames.length-1).padStart(3,'0');
-  document.getElementById('hud-key').textContent = keyFrames.length;
-  document.getElementById('hud-inb').textContent = frames.filter(f=>f.type==='inbet').length;
-  document.getElementById('hud-gho').textContent = showGhost?'ON':'OFF';
-  document.getElementById('hud-itp').textContent = easingMode.toUpperCase();
-
-  // panel live data
-  document.getElementById('lv-fr').textContent    = String(fi).padStart(3,'0');
-  document.getElementById('lv-phase').textContent  = phase;
-  document.getElementById('lv-type').textContent   = isKey?'KEY FRAME':'IN-BETWEEN';
-  document.getElementById('lv-type').style.color   = isKey?'var(--acid)':'rgba(136,136,136,0.8)';
-  document.getElementById('lv-nkey').textContent   = isKey?frame.label:(keyFrames[frame.keyIdx]?.label||'—');
-  document.getElementById('lv-t').textContent      = frame.t.toFixed(3);
-  document.getElementById('lv-ga').textContent     = showGhost?'0.18 / 0.12':'—';
-  document.getElementById('lv-kc').textContent     = keyFrames.length;
-  document.getElementById('lv-ic').textContent     = frames.filter(f=>f.type==='inbet').length;
-  document.getElementById('bb-fr').textContent     = String(fi).padStart(3,'0');
-  document.getElementById('bb-total').textContent  = String(frames.length-1).padStart(3,'0');
+  // joint labels
+  if(state.feat.label){
+    animCtx.save();
+    animCtx.fillStyle = 'rgba(255,255,255,0.4)';
+    animCtx.font = `${7*dpr}px IBM Plex Mono, monospace`;
+    animCtx.textAlign = 'center';
+    for(const j of JOINTS){
+      if(!frame.pose[j.k]) continue;
+      const x = frame.pose[j.k][0]*w*dpr, y = frame.pose[j.k][1]*h*dpr;
+      const r = jointRadius(j.sz, dpr);
+      animCtx.fillText(j.k, x, y - r - 4*dpr);
+    }
+    animCtx.restore();
+  }
 }
 
-// ── ANIMATION LOOP ──
-function loop(ts){
-  if(!lastTime) lastTime=ts;
-  const dt=(ts-lastTime)/1000; lastTime=ts;
-  if(playing && frames.length>0){
-    playT += dt * playSpd * 12; // ~12fps base
-    if(playT >= frames.length) playT = 0;
+// ══════════════════════════════════════════════════════════════
+// DRAW: edit mode
+// ══════════════════════════════════════════════════════════════
+function drawEdit(){
+  const dpr = window.devicePixelRatio||1;
+  const w=avW(), h=avH();
+  editCtx.clearRect(0, 0, editC.width, editC.height);
+  if(!editor.active || !editor.poseData) return;
+
+  // ground line
+  editCtx.save();
+  editCtx.strokeStyle = 'rgba(249,255,71,0.25)';
+  editCtx.lineWidth = 1*dpr;
+  editCtx.setLineDash([4*dpr, 8*dpr]);
+  editCtx.beginPath();
+  editCtx.moveTo(w*0.05*dpr, h*0.88*dpr);
+  editCtx.lineTo(w*0.95*dpr, h*0.88*dpr);
+  editCtx.stroke();
+  editCtx.setLineDash([]);
+  editCtx.restore();
+
+  // bones
+  for(const [a,b] of BONES){
+    if(!editor.poseData[a] || !editor.poseData[b]) continue;
+    const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
+    const ax = editor.poseData[a][0]*w*dpr, ay = editor.poseData[a][1]*h*dpr;
+    const bx = editor.poseData[b][0]*w*dpr, by = editor.poseData[b][1]*h*dpr;
+    const grad = editCtx.createLinearGradient(ax,ay,bx,by);
+    grad.addColorStop(0, jointColor(jA?.side||'c', 0.95));
+    grad.addColorStop(1, jointColor(jB?.side||'c', 0.95));
+    editCtx.beginPath(); editCtx.moveTo(ax, ay); editCtx.lineTo(bx, by);
+    editCtx.strokeStyle = grad;
+    editCtx.lineWidth = 3*dpr; editCtx.lineCap = 'round';
+    editCtx.stroke();
   }
-  resizeCanvas();
+
+  // joints
+  for(const j of JOINTS){
+    if(!editor.poseData[j.k]) continue;
+    const x = editor.poseData[j.k][0]*w*dpr, y = editor.poseData[j.k][1]*h*dpr;
+    const r = jointRadius(j.sz, dpr)*1.1;
+    const col = jointColor(j.side, 0.95);
+    const isDrag = (editor.dragJoint?.k === j.k);
+    const isHover= (hoverJoint?.k === j.k);
+
+    if(isDrag || isHover){
+      editCtx.save();
+      editCtx.shadowColor = col;
+      editCtx.shadowBlur = 14*dpr;
+    }
+
+    if(j.k === 'head'){
+      editCtx.beginPath(); editCtx.arc(x,y,r,0,Math.PI*2);
+      editCtx.fillStyle = 'rgba(0,0,0,0.4)';
+      editCtx.fill();
+      editCtx.strokeStyle = 'rgba(255,255,255,0.95)';
+      editCtx.lineWidth = (isDrag||isHover?3:2)*dpr;
+      editCtx.stroke();
+      // eye (左向きに)
+      editCtx.beginPath();
+      editCtx.arc(x - r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
+      editCtx.fillStyle = 'rgba(255,255,255,0.95)';
+      editCtx.fill();
+    } else {
+      editCtx.beginPath(); editCtx.arc(x,y,r,0,Math.PI*2);
+      editCtx.fillStyle = col;
+      editCtx.fill();
+      if(j.side === 'c'){
+        editCtx.strokeStyle = 'rgba(0,0,0,0.6)';
+        editCtx.lineWidth = 1*dpr;
+        editCtx.stroke();
+      }
+    }
+    if(isDrag || isHover) editCtx.restore();
+
+    // joint label (small, on hover or always if showLabel)
+    if(state.feat.label || isHover || isDrag){
+      editCtx.fillStyle = isHover||isDrag ? 'rgba(249,255,71,0.95)' : 'rgba(255,255,255,0.3)';
+      editCtx.font = `${6.5*dpr}px IBM Plex Mono, monospace`;
+      editCtx.textAlign = 'center';
+      editCtx.fillText(j.k, x, y - r - 4*dpr);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// UI UPDATE
+// ══════════════════════════════════════════════════════════════
+function updateUI(){
   drawFrame();
-  buildStripHighlight();
-  requestAnimationFrame(loop);
+  drawEdit();
+
+  if(state.frames.length === 0){
+    document.getElementById('phase-label').textContent = 'PHASE: NO KEYS';
+    document.getElementById('frame-label').textContent = 'F00 / 00';
+    document.getElementById('bot-frame').textContent = 'FRAME: 00 / 00';
+    return;
+  }
+
+  const fi = state.frame;
+  const frame = state.frames[fi];
+
+  // フレーム / フェーズラベル
+  document.getElementById('phase-label').textContent = editor.active ? `✎ EDIT: ${state.keyFrames[editor.keyIdx]?.label||'—'}` : `PHASE: ${frame.phase||'—'}`;
+  document.getElementById('frame-label').textContent = `F${String(fi).padStart(2,'0')} / ${String(state.frames.length-1).padStart(2,'0')}`;
+
+  // HUD
+  document.getElementById('hud-key').textContent = state.keyFrames.length;
+  document.getElementById('hud-inb').textContent = state.frames.filter(f=>f.type==='inbet').length;
+  document.getElementById('hud-gho').textContent = state.feat.ghost?'ON':'OFF';
+  document.getElementById('hud-itp').textContent = state.easing.toUpperCase();
+
+  // LIVE 値
+  document.getElementById('lv-fr').textContent = String(fi).padStart(2,'0');
+  document.getElementById('lv-type').textContent = frame.type==='key' ? 'KEY' : 'IN-BETWEEN';
+  document.getElementById('lv-type').style.color = frame.type==='key' ? 'var(--acid)' : 'rgba(136,136,136,0.8)';
+  document.getElementById('lv-t').textContent = frame.t.toFixed(3);
+  document.getElementById('lv-phase').textContent = frame.phase || '—';
+  document.getElementById('lv-kc').textContent = state.keyFrames.length;
+
+  // top status / bottom frame
+  document.getElementById('kf-status').textContent = `KEY: ${state.keyFrames.length} // IN-BET: ${state.frames.filter(f=>f.type==='inbet').length}`;
+  document.getElementById('bot-frame').textContent = `FRAME: ${String(fi).padStart(2,'0')} / ${String(state.frames.length-1).padStart(2,'0')}`;
+
+  // strip highlight
+  document.querySelectorAll('.fc').forEach((c,i)=>c.classList.toggle('active', i===fi));
+  document.getElementById('scrubber').value = fi;
+
+  // edit frame info
+  if(editor.active && editor.keyIdx>=0){
+    const kf = state.keyFrames[editor.keyIdx];
+    if(kf) document.getElementById('edit-frame-info').textContent = `KEY ${String(editor.keyIdx).padStart(2,'0')} — ${kf.label}`;
+  }
 }
 
-// ── FRAME STRIP ──
-const CELL_W = 28, CELL_H = 52;
+// ══════════════════════════════════════════════════════════════
+// STRIP (timeline)
+// ══════════════════════════════════════════════════════════════
+const CELL_H_BASE = 78;
+let cellScale = 1.0;
+const CELL_SCALE_MIN = 0.4;
+const CELL_SCALE_MAX = 3.0;
+
+function calcCellW(){
+  // 縦横比は run.svg と同じ 16:9 を踏襲（ステージとの整合）
+  const cellH = CELL_H_BASE;
+  return Math.round(cellH * (16/9) * 0.5 * cellScale);
+}
+
+function applyCellScale(){
+  const w = calcCellW();
+  document.querySelectorAll('.fc').forEach(el=>{ el.style.width = w+'px'; });
+  document.querySelectorAll('.fc canvas').forEach(c=>{
+    c.style.width = w+'px';
+  });
+  // mini canvasを再描画
+  document.querySelectorAll('.fc').forEach((el,i)=>{
+    const mc = el.querySelector('canvas');
+    if(mc && state.frames[i]){
+      const fr = state.frames[i];
+      const cw = parseInt(el.style.width), ch = CELL_H_BASE - 10;
+      const dpr = window.devicePixelRatio||1;
+      mc.width = cw*dpr; mc.height = ch*dpr;
+      mc.style.height = ch+'px';
+      drawMiniPose(mc, fr.pose, fr.type);
+    }
+  });
+  updateScrollThumb();
+}
+
+function drawMiniPose(mc, pose, type){
+  if(!pose) return;
+  const dpr = window.devicePixelRatio||1;
+  const mw = mc.width/dpr, mh = mc.height/dpr;
+  const c = mc.getContext('2d');
+  c.clearRect(0, 0, mc.width, mc.height);
+  c.save();
+  for(const [a,b] of BONES){
+    if(!pose[a] || !pose[b]) continue;
+    const col = type==='key' ? 'rgba(54,255,0,0.75)' : 'rgba(136,136,136,0.45)';
+    c.beginPath();
+    c.moveTo(pose[a][0]*mw*dpr, pose[a][1]*mh*dpr);
+    c.lineTo(pose[b][0]*mw*dpr, pose[b][1]*mh*dpr);
+    c.strokeStyle = col;
+    c.lineWidth = 1*dpr;
+    c.lineCap = 'round';
+    c.stroke();
+  }
+  for(const j of JOINTS){
+    if(!pose[j.k]) continue;
+    const r = (j.sz==='XL'?3.5 : j.sz==='L'?1.8 : j.sz==='S'?0.9 : j.sz==='XS'?0.7 : 1.3)*dpr;
+    const col = type==='key' ? jointColor(j.side, 0.85) : 'rgba(136,136,136,0.45)';
+    c.beginPath();
+    c.arc(pose[j.k][0]*mw*dpr, pose[j.k][1]*mh*dpr, r, 0, Math.PI*2);
+    c.fillStyle = col;
+    c.fill();
+  }
+  c.restore();
+}
+
+let dragSrcIdx = null;
 
 function buildStrip(){
   const strip = document.getElementById('frame-strip');
-  strip.innerHTML='';
-  frames.forEach((fr,i)=>{
+  strip.innerHTML = '';
+
+  state.frames.forEach((fr, i) => {
     const cell = document.createElement('div');
-    cell.className = 'fc '+(fr.type==='key'?'is-key':fr.type==='ghost'?'is-ghost':'is-inbet');
-    cell.style.width  = CELL_W+'px';
-    cell.style.height = CELL_H+'px';
-    cell.dataset.idx  = i;
+    cell.className = 'fc ' + (fr.type==='key' ? 'is-key' : 'is-inbet');
+    cell.style.height = CELL_H_BASE + 'px';
+    cell.dataset.idx = i;
 
-    // stripe
-    const stripe = document.createElement('div');
-    stripe.className='fc-stripe'; cell.appendChild(stripe);
-
-    // key dot
-    const dot = document.createElement('div');
-    dot.className='fc-key-dot'; cell.appendChild(dot);
-
-    // phase marker (above)
-    if(fr.type==='key'){
-      const mk = document.createElement('div');
-      mk.className='fc-marker';
-      mk.textContent = fr.label;
-      cell.appendChild(mk);
+    // 編集中ハイライト
+    if(editor.active && fr.type==='key' && fr.keyIdx===editor.keyIdx){
+      cell.classList.add('editing-now');
     }
 
-    // mini pose thumbnail (canvas)
-    const mini = document.createElement('canvas');
-    mini.width  = CELL_W * devicePixelRatio;
-    mini.height = (CELL_H-12) * devicePixelRatio;
-    mini.style.width  = CELL_W+'px';
-    mini.style.height = (CELL_H-12)+'px';
-    mini.style.display='block';
-    cell.appendChild(mini);
+    // mini canvas
+    const mc = document.createElement('canvas');
+    mc.style.display = 'block';
+    cell.appendChild(mc);
 
-    // draw mini pose
-    drawMiniPose(mini, fr.pose, fr.type);
+    // marker label (KEYのみ)
+    if(fr.type === 'key'){
+      const mk = document.createElement('div');
+      mk.className = 'fc-marker';
+      mk.textContent = fr.label;
+      cell.appendChild(mk);
+
+      // edit button (EDITモード中のみ表示)
+      const eb = document.createElement('div');
+      eb.className = 'fc-edit-btn';
+      eb.title = 'このKEYを編集';
+      eb.addEventListener('click', e=>{
+        e.stopPropagation();
+        enterEdit(fr.keyIdx);
+      });
+      cell.appendChild(eb);
+    }
 
     // frame number
     const num = document.createElement('div');
-    num.className='fc-num'; num.textContent=String(i).padStart(2,'0');
+    num.className = 'fc-num';
+    num.textContent = (fr.type==='key' ? '● ' : '') + 'F' + String(i).padStart(2,'0');
     cell.appendChild(num);
 
-    // click to seek
-    cell.addEventListener('click',()=>{ playT=i; playing=false; syncPlayBtn(); });
+    // click → select
+    cell.addEventListener('click', () => {
+      state.frame = i;
+      state.playing = false;
+      syncPlayBtn();
+      if(editor.active && fr.type==='key'){
+        enterEdit(fr.keyIdx);
+      }
+      updateUI();
+    });
 
-    // drag to reorder KEYS only
-    if(fr.type==='key'){
-      cell.draggable=true;
-      cell.addEventListener('dragstart',e=>{ dragSrcIdx=i; cell.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-      cell.addEventListener('dragend',  ()=>{ cell.classList.remove('dragging'); document.querySelectorAll('.fc').forEach(c=>c.classList.remove('drag-over')); });
-      cell.addEventListener('dragover', e=>{ e.preventDefault(); cell.classList.add('drag-over'); });
-      cell.addEventListener('dragleave',()=>{ cell.classList.remove('drag-over'); });
-      cell.addEventListener('drop',     e=>{
-        e.preventDefault(); cell.classList.remove('drag-over');
-        if(dragSrcIdx===null||dragSrcIdx===i) return;
-        // find key indices for both
-        const srcKeyIdx = frames[dragSrcIdx]?.keyIdx;
-        const dstKeyIdx = frames[i]?.keyIdx;
-        if(srcKeyIdx===undefined||dstKeyIdx===undefined) return;
-        // swap keyFrames
-        [keyFrames[srcKeyIdx], keyFrames[dstKeyIdx]] = [keyFrames[dstKeyIdx], keyFrames[srcKeyIdx]];
-        buildFrames(); buildStrip(); playT=0;
-        dragSrcIdx=null;
+    // drag-reorder (KEYのみ、EDIT中)
+    if(fr.type === 'key'){
+      cell.setAttribute('draggable', 'true');
+      cell.addEventListener('dragstart', e=>{
+        if(!editor.active){ e.preventDefault(); return; }
+        dragSrcIdx = i;
+        cell.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(i));
+      });
+      cell.addEventListener('dragend', () => cell.classList.remove('dragging'));
+      cell.addEventListener('dragover', e=>{
+        if(!editor.active) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        cell.classList.add('drag-over');
+      });
+      cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+      cell.addEventListener('drop', e=>{
+        if(!editor.active) return;
+        e.preventDefault();
+        cell.classList.remove('drag-over');
+        if(dragSrcIdx === null) return;
+        const src = state.frames[dragSrcIdx];
+        const dst = state.frames[i];
+        if(!src || !dst || src.type!=='key' || dst.type!=='key') return;
+        if(src.keyIdx === dst.keyIdx) return;
+        pushHistory();
+        [state.keyFrames[src.keyIdx], state.keyFrames[dst.keyIdx]] =
+          [state.keyFrames[dst.keyIdx], state.keyFrames[src.keyIdx]];
+        if(editor.keyIdx === src.keyIdx) editor.keyIdx = dst.keyIdx;
+        else if(editor.keyIdx === dst.keyIdx) editor.keyIdx = src.keyIdx;
+        buildFrames(); buildStrip(); applyCellScale(); updateUI();
+        dragSrcIdx = null;
       });
     }
 
     strip.appendChild(cell);
   });
-  updateScrollbar();
+
+  applyCellScale();
+  buildKeyList();
 }
 
-function buildStripHighlight(){
-  const fi = Math.round(playT)%Math.max(1,frames.length);
-  document.querySelectorAll('.fc').forEach((c,i)=>{
-    c.classList.toggle('active', i===fi);
+function buildKeyList(){
+  const el = document.getElementById('key-list');
+  if(!el) return;
+  el.innerHTML = '';
+  state.keyFrames.forEach((kf, i) => {
+    const row = document.createElement('div');
+    row.className = 'key-list-item' + (editor.active && editor.keyIdx===i ? ' editing-this' : '');
+    row.innerHTML = `<span>[${String(i).padStart(2,'0')}] ${kf.label} — ${kf.phase}</span><span class="kli-del" title="削除">✕</span>`;
+    row.addEventListener('click', e=>{
+      if(e.target.classList.contains('kli-del')){
+        e.stopPropagation();
+        if(state.keyFrames.length<=1){ alert('最後の1コマは削除できません'); return; }
+        pushHistory();
+        state.keyFrames.splice(i,1);
+        if(editor.keyIdx >= state.keyFrames.length) editor.keyIdx = state.keyFrames.length-1;
+        buildFrames(); buildStrip(); updateUI();
+        return;
+      }
+      enterEdit(i);
+    });
+    el.appendChild(row);
   });
 }
 
-function drawMiniPose(miniCanvas, pose, type){
-  if(!pose) return;
-  const mc = miniCanvas.getContext('2d');
-  const dpr = devicePixelRatio;
-  const mw = miniCanvas.width/dpr, mh = miniCanvas.height/dpr;
-  mc.clearRect(0,0,miniCanvas.width,miniCanvas.height);
-  mc.save(); mc.scale(dpr,dpr);
-  const col = type==='key'?'rgba(54,255,0,0.8)':type==='ghost'?'rgba(249,255,71,0.5)':'rgba(136,136,136,0.5)';
-  const bones=[['head','neck'],['neck','lSho'],['neck','rSho'],['lSho','lElb'],['lElb','lHan'],['rSho','rElb'],['rElb','rHan'],['neck','hip'],['hip','lKne'],['lKne','lFoo'],['hip','rKne'],['rKne','rFoo']];
-  mc.strokeStyle=col; mc.lineWidth=1; mc.lineCap='round';
-  const px=j=>(pose[j]?.[0]||0)*mw*0.9+mw*0.05;
-  const py=j=>(pose[j]?.[1]||0)*mh*0.9+mh*0.02;
-  for(const[a,b]of bones){
-    if(!pose[a]||!pose[b])continue;
-    mc.beginPath(); mc.moveTo(px(a),py(a)); mc.lineTo(px(b),py(b)); mc.stroke();
+// ══════════════════════════════════════════════════════════════
+// PLAYBACK
+// ══════════════════════════════════════════════════════════════
+function loop(now){
+  if(state.playing && state.frames.length>0 && !editor.active){
+    if(lastTime!==null) accumMs += now-lastTime;
+    lastTime = now;
+    const mspf = 1000/state.fps;
+    while(accumMs >= mspf){
+      state.frame = (state.frame+1) % state.frames.length;
+      accumMs -= mspf;
+    }
+  } else {
+    lastTime = null;
   }
-  // head
-  if(pose.head){mc.beginPath();mc.arc(px('head'),py('head'),3,0,Math.PI*2);mc.strokeStyle=col;mc.stroke();}
-  mc.restore();
+  resizeCanvas();
+  updateUI();
+  requestAnimationFrame(loop);
 }
 
-// ── SCROLLBAR ──
-function updateScrollbar(){
-  const strip = document.getElementById('frame-strip');
-  const thumb = document.getElementById('strip-thumb');
-  const sb    = document.getElementById('strip-scrollbar');
-  const ratio = strip.offsetWidth / (strip.scrollWidth||1);
-  const tw    = Math.max(24, sb.offsetWidth*ratio);
-  thumb.style.width = tw+'px';
-  const maxLeft = sb.offsetWidth-tw;
-  const scrollRatio = strip.scrollLeft/(strip.scrollWidth-strip.offsetWidth||1);
-  thumb.style.left  = (scrollRatio*maxLeft)+'px';
+function togglePlay(){
+  if(editor.active) return;
+  state.playing = !state.playing;
+  syncPlayBtn();
 }
-document.getElementById('frame-strip').addEventListener('scroll', updateScrollbar);
-// thumb drag
-(function(){
-  const thumb=document.getElementById('strip-thumb');
-  const sb=document.getElementById('strip-scrollbar');
-  const strip=document.getElementById('frame-strip');
-  let dragging=false,startX=0,startLeft=0;
-  thumb.addEventListener('pointerdown',e=>{dragging=true;startX=e.clientX;startLeft=thumb.offsetLeft;thumb.setPointerCapture(e.pointerId);e.preventDefault();});
-  document.addEventListener('pointermove',e=>{
-    if(!dragging)return;
-    const dx=e.clientX-startX;
-    const maxLeft=sb.offsetWidth-thumb.offsetWidth;
-    const newLeft=Math.max(0,Math.min(maxLeft,startLeft+dx));
-    thumb.style.left=newLeft+'px';
-    const ratio=maxLeft?newLeft/maxLeft:0;
-    strip.scrollLeft=ratio*(strip.scrollWidth-strip.offsetWidth);
+function syncPlayBtn(){
+  const b = document.getElementById('btn-play');
+  b.textContent = state.playing ? '⏸' : '▶';
+  b.classList.toggle('active', state.playing);
+}
+function stepFrame(n){
+  if(state.frames.length===0) return;
+  state.playing = false;
+  state.frame = (state.frame + n + state.frames.length) % state.frames.length;
+  syncPlayBtn();
+}
+function resetPlay(){ state.frame = 0; accumMs = 0; }
+function scrubTo(v){ state.frame = parseInt(v); state.playing = false; syncPlayBtn(); }
+function setFps(fps){
+  state.fps = fps; accumMs = 0;
+  [6,12,24].forEach(f => {
+    document.getElementById(`fps-${f}`).className = 'fp ' + (f===fps ? 'on' : 'off');
   });
-  document.addEventListener('pointerup',()=>{dragging=false;});
-})();
-
-// ── PRESETS ──
-function loadPreset(name){
-  const seq = PRESET_SEQUENCES[name];
-  if(!seq) return;
-  keyFrames = seq.map(s=>({pose:s.pose, label:s.label, phase:s.phase}));
-  buildFrames(); buildStrip(); playT=0; playing=true; syncPlayBtn();
 }
-
-// ── CONTROLS ──
-function toggleGhost(){ showGhost=!showGhost; document.getElementById('tg-ghost').classList.toggle('on',showGhost); }
-function toggleOnion(){ showOnion=!showOnion; document.getElementById('tg-onion').classList.toggle('on',showOnion); }
-function toggleLine(){  showLine =!showLine;  document.getElementById('tg-line').classList.toggle('on',showLine); }
+function togF(key){
+  state.feat[key] = !state.feat[key];
+  document.getElementById(`tog-${key}`).classList.toggle('on', state.feat[key]);
+}
 function setEasing(m){
-  easingMode=m;
-  ['linear','ease','step'].forEach(k=>{
-    document.getElementById('fp-'+k).className='fp '+(k===m?'on':'off');
+  state.easing = m;
+  ['linear','ease','step'].forEach(k => {
+    document.getElementById(`ez-${k}`).className = 'fp ' + (k===m ? 'on' : 'off');
+  });
+  buildFrames(); buildStrip();
+}
+function setInbet(n){
+  state.inbet = n;
+  [1,3,5,7].forEach(v => {
+    document.getElementById(`ib-${v}`).className = 'fp ' + (v===n ? 'on' : 'off');
   });
   buildFrames(); buildStrip();
 }
 
-function syncPlayBtn(){
-  document.getElementById('pb-play').textContent = playing?'⏸':'▶';
-  document.getElementById('pb-play').classList.toggle('active',playing);
+function loadPreset(name){
+  const seq = PRESET_SEQUENCES[name];
+  if(!seq) return;
+  pushHistory();
+  state.keyFrames = seq.map(s => ({ poseData: getPose(s.p), label: s.l, phase: s.ph }));
+  state.frame = 0;
+  buildFrames(); buildStrip();
+  state.playing = true; syncPlayBtn();
 }
 
-document.getElementById('pb-play').onclick=()=>{ playing=!playing; syncPlayBtn(); };
-document.getElementById('pb-prev').onclick=()=>{ playing=false; playT=Math.max(0,Math.round(playT)-1); syncPlayBtn(); };
-document.getElementById('pb-next').onclick=()=>{ playing=false; playT=Math.min(frames.length-1,Math.round(playT)+1); syncPlayBtn(); };
-document.getElementById('sl-spd').oninput=function(){
-  playSpd=this.value/10;
-  document.getElementById('spd-val').textContent=playSpd.toFixed(1)+'x';
-};
+function toggleCheck(el){
+  el.classList.toggle('checked');
+  const items = document.querySelectorAll('.check-item');
+  let count = 0;
+  items.forEach(it => { if(it.classList.contains('checked')) count++; });
+  const prog = document.getElementById('check-progress');
+  prog.textContent = `CHECK: ${count} / 4` + (count === 4 ? '  ✓ ALL CLEAR' : '');
+  prog.classList.toggle('complete', count === 4);
+}
 
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space'){e.preventDefault();playing=!playing;syncPlayBtn();}
-  if(e.code==='ArrowRight'){playing=false;playT=Math.min(frames.length-1,Math.round(playT)+1);syncPlayBtn();}
-  if(e.code==='ArrowLeft') {playing=false;playT=Math.max(0,Math.round(playT)-1);syncPlayBtn();}
-  if(e.code==='KeyK'){
-    // mark current inbet as key (insert key at current position)
-    const fi=Math.round(playT)%Math.max(1,frames.length);
-    const fr=frames[fi];
-    if(fr&&fr.type==='inbet'){
-      const newKey={pose:Object.keys(POSES).find(k=>true)||'stand',label:'KEY_'+fi,phase:fr.phase};
-      // approximate: use interpolated pose, map back to closest named pose
-      keyFrames.splice(fr.keyIdx+1,0,newKey);
-      buildFrames();buildStrip();
+// ══════════════════════════════════════════════════════════════
+// EDIT MODE
+// ══════════════════════════════════════════════════════════════
+let hoverJoint = null;
+
+function toggleEditMode(){
+  editor.active = !editor.active;
+  const btn = document.getElementById('edit-toggle');
+  const viewPanel = document.getElementById('view-mode');
+  const editPanel = document.getElementById('edit-mode');
+  const animView  = document.getElementById('anim-view');
+
+  if(editor.active){
+    btn.textContent = '✕ EXIT EDIT MODE';
+    btn.classList.add('active');
+    viewPanel.style.display = 'none';
+    editPanel.style.display = 'block';
+    state.playing = false; syncPlayBtn();
+    animView.classList.add('editing');
+    document.getElementById('main').classList.add('editing-mode');
+
+    // 現在フレームから一番近いKEYに入る
+    const fi = state.frame;
+    const fr = state.frames[fi];
+    if(fr){
+      enterEdit(fr.keyIdx);
+    } else if(state.keyFrames.length>0){
+      enterEdit(0);
+    }
+  } else {
+    btn.textContent = '✏ EDIT MODE';
+    btn.classList.remove('active');
+    viewPanel.style.display = 'block';
+    editPanel.style.display = 'none';
+    animView.classList.remove('editing');
+    document.getElementById('main').classList.remove('editing-mode');
+    exitEdit(false);
+  }
+  buildStrip(); // editing-now ハイライト再構築
+  updateUI();
+}
+
+function enterEdit(keyIdx){
+  if(keyIdx<0 || keyIdx>=state.keyFrames.length) return;
+  // 編集中フレームを変更する前に、未保存変更があれば内部状態へ反映
+  // （SAVEは明示的に押す方が良いので、ここではただ poseData をリセット）
+  editor.keyIdx = keyIdx;
+  editor.poseData = clonePose(state.keyFrames[keyIdx].poseData);
+  editor.dragJoint = null;
+
+  // KEYの先頭フレームへジャンプ
+  const firstFI = state.frames.findIndex(f => f.type==='key' && f.keyIdx===keyIdx);
+  if(firstFI >= 0) state.frame = firstFI;
+
+  buildStrip();
+  buildKeyList();
+  updateUI();
+}
+
+function exitEdit(save){
+  if(save && editor.poseData && editor.keyIdx>=0){
+    pushHistory();
+    state.keyFrames[editor.keyIdx].poseData = clonePose(editor.poseData);
+    buildFrames(); buildStrip();
+  }
+  editor.poseData = null;
+  editor.dragJoint = null;
+  hoverJoint = null;
+}
+
+function savePose(){
+  if(!editor.active || !editor.poseData) return;
+  pushHistory();
+  state.keyFrames[editor.keyIdx].poseData = clonePose(editor.poseData);
+  buildFrames(); buildStrip();
+  updateUI();
+  // 軽い視覚フィードバック
+  const btn = document.getElementById('save-btn');
+  if(btn){
+    btn.style.background = 'rgba(249,255,71,0.3)';
+    setTimeout(()=>{ btn.style.background=''; }, 200);
+  }
+}
+
+function resetPoseFromKey(){
+  if(!editor.active || editor.keyIdx<0) return;
+  editor.poseData = clonePose(state.keyFrames[editor.keyIdx].poseData);
+  updateUI();
+}
+
+function flipPose(){
+  if(!editor.active || !editor.poseData) return;
+  pushHistory();
+  const flipped = {};
+  for(const j of JOINTS){
+    if(!editor.poseData[j.k]) continue;
+    const [x, y] = editor.poseData[j.k];
+    flipped[j.k] = [1-x, y];
+  }
+  // Near/Far の交換も自動で行う
+  const swapMap = {
+    'nSho':'fSho','nElb':'fElb','nHan':'fHan',
+    'fSho':'nSho','fElb':'nElb','fHan':'nHan',
+    'nKne':'fKne','nAnk':'fAnk','nToe1':'fToe1','nToe2':'fToe2','nToe3':'fToe2',
+    'fKne':'nKne','fAnk':'nAnk','fToe1':'nToe1','fToe2':'nToe2',
+    'fHip':'fHip',  // hip位置は対称
+  };
+  const out = {};
+  for(const j of JOINTS){
+    const target = swapMap[j.k] || j.k;
+    out[j.k] = flipped[target] || flipped[j.k];
+  }
+  // head/neck/hip はそのまま反転
+  out.head = flipped.head;
+  out.neck = flipped.neck;
+  out.hip  = flipped.hip;
+  out.fHip = flipped.fHip;
+  editor.poseData = out;
+  updateUI();
+}
+
+function doCopyPose(){
+  if(!editor.active || !editor.poseData) return;
+  frameClipboard = clonePose(editor.poseData);
+  document.getElementById('copy-btn').classList.add('copy-active');
+  document.getElementById('paste-btn').style.opacity = '1';
+}
+function doPastePose(){
+  if(!editor.active || !frameClipboard) return;
+  pushHistory();
+  editor.poseData = clonePose(frameClipboard);
+  updateUI();
+}
+
+function addKeyFrame(){
+  if(!editor.active) return;
+  pushHistory();
+  const insertAfter = editor.keyIdx;
+  const basePose = editor.poseData ? clonePose(editor.poseData) : clonePose(state.keyFrames[insertAfter].poseData);
+  const label = 'KEY_' + state.keyFrames.length;
+  const phase = state.keyFrames[insertAfter]?.phase || 'ACTION';
+  state.keyFrames.splice(insertAfter+1, 0, { poseData: basePose, label, phase });
+  buildFrames(); buildStrip();
+  enterEdit(insertAfter+1);
+}
+
+// ── EDIT canvas interaction ──
+function canvasToNorm(cx, cy){
+  const r = editC.getBoundingClientRect();
+  return [(cx-r.left)/avW(), (cy-r.top)/avH()];
+}
+function findJointAt(nx, ny){
+  const w=avW(), h=avH();
+  // 大きい順から（手と頭が大きいので先）
+  const sorted = [...JOINTS].sort((a,b) => jointRadius(b.sz) - jointRadius(a.sz));
+  for(const j of sorted){
+    if(!editor.poseData[j.k]) continue;
+    const jx = editor.poseData[j.k][0], jy = editor.poseData[j.k][1];
+    const r  = jointRadius(j.sz) / Math.min(w,h) * 2.2;  // ヒット範囲を少し広く
+    if((nx-jx)*(nx-jx) + (ny-jy)*(ny-jy) < r*r) return j;
+  }
+  return null;
+}
+
+editC.addEventListener('pointerdown', e=>{
+  if(!editor.active) return;
+  const [nx, ny] = canvasToNorm(e.clientX, e.clientY);
+  const j = findJointAt(nx, ny);
+  if(j){
+    pushHistory();
+    editor.dragJoint = j;
+    editC.setPointerCapture(e.pointerId);
+  }
+  e.preventDefault();
+});
+editC.addEventListener('pointermove', e=>{
+  if(!editor.active) return;
+  const [nx, ny] = canvasToNorm(e.clientX, e.clientY);
+  if(editor.dragJoint){
+    editor.poseData[editor.dragJoint.k] = [
+      Math.max(0, Math.min(1, nx)),
+      Math.max(0, Math.min(1, ny))
+    ];
+    e.preventDefault();
+  } else {
+    // hover
+    const oldHover = hoverJoint;
+    hoverJoint = findJointAt(nx, ny);
+    if((oldHover?.k || null) !== (hoverJoint?.k || null)){
+      editC.style.cursor = hoverJoint ? 'grab' : 'crosshair';
     }
   }
-  if(e.code==='Escape')window.location.href='index.html';
+});
+editC.addEventListener('pointerup', ()=>{
+  if(editor.dragJoint){
+    editor.dragJoint = null;
+    editC.style.cursor = hoverJoint ? 'grab' : 'crosshair';
+  }
+});
+editC.addEventListener('pointerleave', ()=>{ hoverJoint = null; });
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY (Undo / Redo)
+// ══════════════════════════════════════════════════════════════
+function snapshot(){
+  return {
+    keyFrames: state.keyFrames.map(kf => ({
+      poseData: clonePose(kf.poseData),
+      label: kf.label,
+      phase: kf.phase
+    })),
+    frame: state.frame,
+    editorKeyIdx: editor.keyIdx,
+    editorPose: editor.poseData ? clonePose(editor.poseData) : null,
+  };
+}
+function pushHistory(){
+  editor.history.push(snapshot());
+  if(editor.history.length > 80) editor.history.shift();
+  editor.redoStack = [];
+}
+function restore(snap){
+  state.keyFrames = snap.keyFrames.map(kf => ({
+    poseData: clonePose(kf.poseData),
+    label: kf.label,
+    phase: kf.phase
+  }));
+  state.frame = Math.min(snap.frame, Math.max(0, state.keyFrames.length-1));
+  if(editor.active){
+    editor.keyIdx = Math.min(snap.editorKeyIdx, state.keyFrames.length-1);
+    editor.poseData = snap.editorPose ? clonePose(snap.editorPose) : (state.keyFrames[editor.keyIdx] ? clonePose(state.keyFrames[editor.keyIdx].poseData) : null);
+  }
+  buildFrames(); buildStrip(); updateUI();
+}
+function undo(){
+  if(editor.history.length === 0) return;
+  editor.redoStack.push(snapshot());
+  restore(editor.history.pop());
+}
+function redo(){
+  if(editor.redoStack.length === 0) return;
+  editor.history.push(snapshot());
+  restore(editor.redoStack.pop());
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ══════════════════════════════════════════════════════════════
+function exportJSON(){
+  const data = {
+    keyFrames: state.keyFrames.map(kf => ({
+      poseData: kf.poseData,
+      label: kf.label,
+      phase: kf.phase
+    })),
+    inbet: state.inbet,
+    easing: state.easing,
+  };
+  const out = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(out).then(()=>{
+    alert('JSON出力をクリップボードにコピーしました！\nIMPORT欄に貼り付けて [APPLY] で復元できます。');
+  }).catch(()=>{
+    const ta = document.getElementById('json-paste');
+    ta.value = out;
+    alert('JSON出力をIMPORT欄に出力しました（手動でコピーしてください）');
+  });
+}
+
+function exportSVG(){
+  if(state.frames.length===0) return;
+  const fr = state.frames[state.frame];
+  if(!fr) return;
+  const pose = fr.pose;
+  const W = 800, H = 450;  // 16:9
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="background:#000">`;
+  // ground
+  svg += `<line x1="${W*0.05}" y1="${H*0.88}" x2="${W*0.95}" y2="${H*0.88}" stroke="rgba(54,255,0,0.25)" stroke-width="1" stroke-dasharray="4 8"/>`;
+  // bones
+  for(const [a,b] of BONES){
+    if(!pose[a] || !pose[b]) continue;
+    const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
+    const ax = pose[a][0]*W, ay = pose[a][1]*H;
+    const bx = pose[b][0]*W, by = pose[b][1]*H;
+    const colA = jointColor(jA?.side||'c', 0.9);
+    const colB = jointColor(jB?.side||'c', 0.9);
+    const gid = `g_${a}_${b}`;
+    svg += `<defs><linearGradient id="${gid}" x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="${colA}"/><stop offset="100%" stop-color="${colB}"/></linearGradient></defs>`;
+    svg += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="url(#${gid})" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  // joints
+  for(const j of JOINTS){
+    if(!pose[j.k]) continue;
+    const x = pose[j.k][0]*W, y = pose[j.k][1]*H;
+    const r = jointRadius(j.sz);
+    if(j.k === 'head'){
+      svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>`;
+      svg += `<circle cx="${x - r*0.30}" cy="${y - r*0.04}" r="${r*0.18}" fill="rgba(255,255,255,0.95)"/>`;
+    } else {
+      const col = jointColor(j.side, 0.9);
+      svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"`;
+      if(j.side==='c') svg += ` stroke="rgba(54,255,0,0.7)" stroke-width="1"`;
+      svg += `/>`;
+    }
+  }
+  svg += `</svg>`;
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kinetic-12-F${String(state.frame).padStart(2,'0')}-${fr.label||''}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(){
+  const ta = document.getElementById('json-paste');
+  const text = ta.value.trim();
+  if(!text){ alert('JSONテキストを貼り付けてから [APPLY] を押してください'); return; }
+  try{
+    const data = JSON.parse(text);
+    if(!data.keyFrames || !Array.isArray(data.keyFrames)) throw new Error('keyFrames配列が見つかりません');
+    pushHistory();
+    state.keyFrames = data.keyFrames.map(kf => ({
+      poseData: clonePose(kf.poseData),
+      label: kf.label || 'KEY',
+      phase: kf.phase || 'ACTION'
+    }));
+    if(typeof data.inbet === 'number'){
+      state.inbet = data.inbet;
+      [1,3,5,7].forEach(v => {
+        const el = document.getElementById(`ib-${v}`);
+        if(el) el.className = 'fp ' + (v===state.inbet ? 'on' : 'off');
+      });
+    }
+    if(data.easing){
+      state.easing = data.easing;
+      ['linear','ease','step'].forEach(k => {
+        const el = document.getElementById(`ez-${k}`);
+        if(el) el.className = 'fp ' + (k===state.easing ? 'on' : 'off');
+      });
+    }
+    state.frame = 0;
+    buildFrames(); buildStrip(); updateUI();
+    alert(`${state.keyFrames.length}原画を読み込みました`);
+  } catch(err){
+    alert('読み込みエラー: ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHORTCUTS
+// ══════════════════════════════════════════════════════════════
+const SHORTCUT_DEFS = [
+  { id:'play',       group:'play', desc:'再生 / 停止',  key:' ',          action:()=>togglePlay() },
+  { id:'prev-frame', group:'play', desc:'前コマ',        key:'ArrowLeft',  action:()=>stepFrame(-1) },
+  { id:'next-frame', group:'play', desc:'次コマ',        key:'ArrowRight', action:()=>stepFrame(1) },
+  { id:'reset',      group:'play', desc:'最初に戻る',    key:'r',          action:()=>resetPlay() },
+
+  { id:'edit-mode',  group:'edit', desc:'編集モード切替', key:'e',          action:()=>toggleEditMode() },
+  { id:'save-pose',  group:'edit', desc:'ポーズ保存',     key:'s',          action:()=>{ if(editor.active) savePose(); } },
+  { id:'reset-pose', group:'edit', desc:'ポーズリセット', key:'R',          action:()=>{ if(editor.active) resetPoseFromKey(); } },
+  { id:'add-key',    group:'edit', desc:'+ 新規KEY追加',  key:'n',          action:()=>{ if(editor.active) addKeyFrame(); } },
+  { id:'undo',       group:'edit', desc:'UNDO',           key:'z', mod:'ctrl', action:()=>undo() },
+  { id:'redo',       group:'edit', desc:'REDO',           key:'Z', mod:'ctrl+shift', action:()=>redo() },
+
+  { id:'flip-pose',  group:'pose', desc:'左右反転',       key:'h',          action:()=>{ if(editor.active) flipPose(); } },
+  { id:'copy-pose',  group:'pose', desc:'ポーズコピー',   key:'c', mod:'ctrl', action:()=>{ if(editor.active) doCopyPose(); } },
+  { id:'paste-pose', group:'pose', desc:'ポーズ貼付',     key:'v', mod:'ctrl', action:()=>{ if(editor.active) doPastePose(); } },
+
+  { id:'exp-json',   group:'export', desc:'JSON出力',       key:'s', mod:'ctrl',       action:()=>{ if(editor.active) exportJSON(); } },
+  { id:'exp-svg',    group:'export', desc:'現フレームSVG',  key:'s', mod:'ctrl+shift', action:()=>{ if(editor.active) exportSVG(); } },
+];
+const keyMap = {};
+SHORTCUT_DEFS.forEach(d => { keyMap[d.id] = { key:d.key, mod:d.mod||'' }; });
+
+let recordingId = null;
+function formatKeyLabel(key){
+  if(key===' ')          return 'Space';
+  if(key==='ArrowLeft')  return '←';
+  if(key==='ArrowRight') return '→';
+  if(key==='ArrowUp')    return '↑';
+  if(key==='ArrowDown')  return '↓';
+  return key.length===1 ? key.toUpperCase() : key;
+}
+function buildShortcutModal(){
+  const groups = {play:'sc-list-play', edit:'sc-list-edit', pose:'sc-list-pose', export:'sc-list-export'};
+  Object.values(groups).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = '';
+  });
+  SHORTCUT_DEFS.forEach(def => {
+    const container = document.getElementById(groups[def.group]);
+    if(!container) return;
+    const km = keyMap[def.id];
+    const row = document.createElement('div');
+    row.className = 'sc-row';
+    const modParts = km.mod ? km.mod.split('+') : [];
+    const modHtml = modParts.map(m =>
+      `<span class="sc-key" style="pointer-events:none;opacity:0.5;">${m==='ctrl'?'Ctrl':m==='shift'?'Shift':m}</span><span style="color:var(--grey);font-size:10px;padding:0 2px;">+</span>`
+    ).join('');
+    row.innerHTML = `
+      <span class="sc-desc">${def.desc}</span>
+      <div class="sc-key-wrap">${modHtml}<span class="sc-key" id="sckey-${def.id}">${formatKeyLabel(km.key)}</span></div>
+      <button class="sc-edit-btn" id="scedit-${def.id}" onclick="startRecording('${def.id}')" ${km.mod?'disabled style="opacity:0.3;"':''}>EDIT</button>
+    `;
+    container.appendChild(row);
+  });
+}
+function startRecording(id){
+  if(recordingId) cancelRecording();
+  recordingId = id;
+  const editBtn = document.getElementById(`scedit-${id}`);
+  const keyEl   = document.getElementById(`sckey-${id}`);
+  if(editBtn) editBtn.classList.add('active');
+  if(keyEl){ keyEl.classList.add('recording'); keyEl.textContent='...'; }
+}
+function cancelRecording(){
+  if(!recordingId) return;
+  const km = keyMap[recordingId];
+  const keyEl = document.getElementById(`sckey-${recordingId}`);
+  const editBtn = document.getElementById(`scedit-${recordingId}`);
+  if(keyEl){ keyEl.classList.remove('recording'); keyEl.textContent = formatKeyLabel(km.key); }
+  if(editBtn) editBtn.classList.remove('active');
+  recordingId = null;
+}
+function openShortcuts(){ buildShortcutModal(); document.getElementById('shortcut-modal').classList.add('open'); }
+function closeShortcuts(){ cancelRecording(); document.getElementById('shortcut-modal').classList.remove('open'); }
+document.getElementById('shortcut-modal').addEventListener('click', e=>{
+  if(e.target.id==='shortcut-modal') closeShortcuts();
 });
 
-// ── INIT ──
-loadPreset('jump');
+// ══════════════════════════════════════════════════════════════
+// KEYDOWN
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  // textarea へのフォーカス中はショートカット無効
+  if(e.target.tagName==='TEXTAREA' || e.target.tagName==='INPUT') return;
+
+  // キー記録中
+  if(recordingId){
+    e.preventDefault();
+    const ignore = ['Escape','Tab','CapsLock','Meta','Control','Shift','Alt'];
+    if(ignore.includes(e.key)){ if(e.key==='Escape') cancelRecording(); return; }
+    keyMap[recordingId].key = e.key;
+    keyMap[recordingId].mod = '';
+    const km = keyMap[recordingId];
+    const keyEl = document.getElementById(`sckey-${recordingId}`);
+    const editBtn = document.getElementById(`scedit-${recordingId}`);
+    if(keyEl){ keyEl.classList.remove('recording'); keyEl.textContent = formatKeyLabel(km.key); }
+    if(editBtn) editBtn.classList.remove('active');
+    recordingId = null;
+    return;
+  }
+
+  // ESC
+  if(e.key === 'Escape'){
+    if(document.getElementById('shortcut-modal').classList.contains('open')){ closeShortcuts(); return; }
+    if(editor.active){ toggleEditMode(); return; }
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // Ctrl系
+  if(e.ctrlKey || e.metaKey){
+    const k = e.key.toLowerCase();
+    const shift = e.shiftKey;
+    const alt = e.altKey;
+    if(k === 'z'){
+      e.preventDefault();
+      if(shift) redo(); else undo();
+      return;
+    }
+    if(editor.active){
+      if(k === 's'){
+        e.preventDefault();
+        if(shift) exportSVG();
+        else      exportJSON();
+        return;
+      }
+      if(k === 'c' && !shift && !alt){ e.preventDefault(); doCopyPose(); return; }
+      if(k === 'v' && !shift && !alt){ e.preventDefault(); doPastePose(); return; }
+    }
+    return;
+  }
+
+  // 単キー
+  for(const def of SHORTCUT_DEFS){
+    if(def.mod) continue;
+    const km = keyMap[def.id];
+    if(e.key === km.key && !e.ctrlKey && !e.metaKey && !e.altKey){
+      // play/prev-frame/next-frame/edit-mode は常時
+      if(['play','prev-frame','next-frame','edit-mode','reset'].includes(def.id)){
+        e.preventDefault(); def.action(); return;
+      }
+      // EDIT中のみ有効なもの
+      if(editor.active && ['edit','pose'].includes(def.group)){
+        e.preventDefault(); def.action(); return;
+      }
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// CUSTOM SCROLLBAR (02-anticipation を踏襲)
+// ══════════════════════════════════════════════════════════════
+function updateScrollThumb(){
+  const strip = document.getElementById('frame-strip');
+  const sb    = document.getElementById('strip-scrollbar');
+  const thumb = document.getElementById('strip-thumb');
+  if(!strip||!sb||!thumb) return;
+  const totalW = strip.scrollWidth;
+  const visW   = strip.clientWidth;
+  const sbW    = sb.clientWidth;
+  if(totalW <= visW){ thumb.style.display = 'none'; return; }
+  thumb.style.display = 'block';
+  const ratio  = visW/totalW;
+  const thumbW = Math.max(24, sbW*ratio);
+  const maxLeft = sbW - thumbW;
+  const thumbLeft = (strip.scrollLeft/(totalW-visW))*maxLeft;
+  thumb.style.width = thumbW+'px';
+  thumb.style.left  = thumbLeft+'px';
+}
+
+function setupStripScroll(){
+  const strip = document.getElementById('frame-strip');
+  const sb    = document.getElementById('strip-scrollbar');
+  const thumb = document.getElementById('strip-thumb');
+
+  // wheel: 横スクロール / Alt: 幅伸縮
+  const stripArea = document.getElementById('strip-area');
+  if(stripArea){
+    stripArea.addEventListener('wheel', e=>{
+      if(e.altKey){
+        e.preventDefault();
+        const delta = e.deltaY>0 ? -0.08 : 0.08;
+        cellScale = Math.max(CELL_SCALE_MIN, Math.min(CELL_SCALE_MAX, cellScale+delta));
+        applyCellScale();
+      } else {
+        e.preventDefault();
+        strip.scrollLeft += e.deltaY*0.8 + e.deltaX;
+        updateScrollThumb();
+      }
+    }, {passive:false});
+  }
+
+  strip.addEventListener('scroll', updateScrollThumb);
+
+  let thumbDragging = false;
+  let thumbDragStartX = 0;
+  let thumbDragStartScroll = 0;
+  thumb.addEventListener('mousedown', e=>{
+    if(e.target === thumb && !resizeDragging){
+      thumbDragging = true;
+      thumbDragStartX = e.clientX;
+      thumbDragStartScroll = strip.scrollLeft;
+      e.preventDefault();
+    }
+  });
+  sb.addEventListener('mousedown', e=>{
+    if(e.target !== sb) return;
+    const rect = sb.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const sbW = sb.clientWidth;
+    const totalW = strip.scrollWidth;
+    const visW = strip.clientWidth;
+    strip.scrollLeft = (clickX/sbW)*(totalW-visW);
+    updateScrollThumb();
+  });
+
+  // resize end drag
+  let resizeDragging = false;
+  let resizeSide = null;
+  let resizeStartX = 0;
+  let resizeStartScale = 1.0;
+  const EDGE_PX = 8;
+  thumb.addEventListener('mousedown', e=>{
+    const rect = thumb.getBoundingClientRect();
+    const localX = e.clientX - rect.left;
+    if(localX <= EDGE_PX){ resizeDragging = true; resizeSide = 'left'; }
+    else if(localX >= rect.width-EDGE_PX){ resizeDragging = true; resizeSide = 'right'; }
+    if(resizeDragging){
+      resizeStartX = e.clientX;
+      resizeStartScale = cellScale;
+      thumbDragging = false;
+      e.preventDefault();
+    }
+  });
+  thumb.addEventListener('mousemove', e=>{
+    if(resizeDragging || thumbDragging) return;
+    const rect = thumb.getBoundingClientRect();
+    const localX = e.clientX - rect.left;
+    thumb.style.cursor = (localX<=EDGE_PX || localX>=rect.width-EDGE_PX) ? 'ew-resize' : 'grab';
+  });
+  thumb.addEventListener('mouseleave', ()=>{
+    if(!resizeDragging && !thumbDragging) thumb.style.cursor = 'grab';
+  });
+  window.addEventListener('mousemove', e=>{
+    if(thumbDragging){
+      const dx = e.clientX - thumbDragStartX;
+      const sbW = sb.clientWidth;
+      const totalW = strip.scrollWidth;
+      const visW   = strip.clientWidth;
+      const thumbW = thumb.offsetWidth;
+      const maxLeft = sbW - thumbW;
+      const ratio = dx/maxLeft;
+      strip.scrollLeft = thumbDragStartScroll + ratio*(totalW-visW);
+      updateScrollThumb();
+    }
+    if(resizeDragging){
+      const dx = e.clientX - resizeStartX;
+      const sbW = sb.clientWidth || 1;
+      const totalW = strip.scrollWidth || 1;
+      const visW   = strip.clientWidth || 1;
+      const scaleDelta = (resizeSide==='right' ? dx : -dx)/sbW*(totalW/visW)*0.5;
+      cellScale = Math.max(CELL_SCALE_MIN, Math.min(CELL_SCALE_MAX, resizeStartScale+scaleDelta));
+      applyCellScale();
+    }
+  });
+  window.addEventListener('mouseup', ()=>{ thumbDragging=false; resizeDragging=false; });
+  window.addEventListener('resize', ()=>{ resizeCanvas(); updateScrollThumb(); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════════════════════
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' +
+    String(d.getMinutes()).padStart(2,'0') + ':' +
+    String(d.getSeconds()).padStart(2,'0');
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+loadPreset('run');
+setupStripScroll();
+resizeCanvas();
 requestAnimationFrame(loop);
 </script>
 </body>

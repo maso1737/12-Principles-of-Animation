@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KINETIC GEOMETRY — 07 SECONDARY ACTION</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EFEFEB; --ink:#101010; --panel:#E5E5E0;
+  --acid:#CADC00; --neon:#0BFF6A; --hot:#FF2D2D;
+  --dim:rgba(16,16,16,0.55); --dim2:rgba(16,16,16,0.32); --dim3:rgba(16,16,16,0.15);
+  --border:rgba(16,16,16,0.18); --border2:rgba(16,16,16,0.07);
+  --mono:'IBM Plex Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
+.sys-id{color:var(--dim);font-size:9px}
+.title-tag{color:var(--ink);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
+.esc-btn:hover{color:var(--ink);border-color:var(--ink)}
+
+#stage{position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.stage-bignum{
+  position:absolute;font-family:var(--cond);font-weight:900;
+  font-size:clamp(180px,24vw,320px);color:rgba(16,16,16,0.025);
+  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--ink)}
+.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
+.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
+.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
+.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
+.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
+.po-en{font-size:11px;color:var(--ink);font-weight:700;letter-spacing:0.15em}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(16,16,16,0.09) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
+.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
+
+/* MAIN ZONE — vertical layout: stage on top, graph below */
+#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border);background:var(--bg)}
+#main-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+#main-hud{
+  position:absolute;bottom:12px;left:16px;
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:28px;
+}
+#main-hud .val{color:var(--ink);font-weight:700}
+#main-hud .val.hot{color:var(--hot)}
+#main-hud .val.acid{color:#7a8800}
+
+#phase-badge{
+  position:absolute;top:12px;left:16px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  padding:3px 8px;border:1px solid var(--border);
+  color:var(--dim);background:rgba(239,239,235,0.85);pointer-events:none;
+}
+
+/* GRAPH ZONE */
+#graph-zone{position:relative;flex:0 0 38%;overflow:hidden;background:var(--bg)}
+#graph-canvas{position:absolute;inset:0;width:100%;height:100%}
+#gz-header{
+  position:absolute;top:8px;left:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--dim);
+  pointer-events:none;display:flex;gap:18px;align-items:center;z-index:2;
+}
+#gz-header strong{color:var(--ink)}
+.lg-sw{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
+
+/* LAYER DELAY readout — right side of graph */
+#delay-readout{
+  position:absolute;top:8px;right:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.06em;color:var(--dim);
+  line-height:1.7;pointer-events:none;z-index:2;text-align:right;
+}
+#delay-readout .row{display:flex;justify-content:flex-end;gap:8px}
+#delay-readout .row .name{color:var(--dim);min-width:64px;text-align:right}
+#delay-readout .row .fr{color:var(--ink);font-weight:700;min-width:28px;text-align:right}
+
+#panel{
+  border-left:1px solid var(--border);background:var(--panel);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--ink) transparent;
+}
+#panel::-webkit-scrollbar{width:2px}
+#panel::-webkit-scrollbar-thumb{background:var(--ink)}
+.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+.psec:last-child{border-bottom:none}
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'//';color:var(--dim2)}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:0.08em;color:var(--ink);line-height:1;margin-bottom:6px}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
+.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--ink);font-weight:700}
+.dv.hot{color:var(--hot)}.dv.acid{color:#7a8800}
+
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
+  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+}
+.btn:hover{color:var(--ink);border-color:var(--ink)}
+.btn.active{color:var(--ink);background:var(--acid);border-color:var(--acid)}
+.btn.warn.active{background:var(--hot);color:#fff;border-color:var(--hot)}
+
+.sl-row{margin-bottom:10px}
+.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:3px}
+.sl-label span{color:var(--ink);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
+
+.insight{background:rgba(202,220,0,0.12);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
+.insight strong{color:var(--ink);display:block;margin-bottom:4px;letter-spacing:0.1em}
+
+.layer-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--border2)}
+.layer-row:last-child{border-bottom:none}
+.layer-row .swatch{width:8px;height:8px;flex-shrink:0;border:1px solid rgba(16,16,16,0.2)}
+.layer-row label{cursor:pointer;flex:1;letter-spacing:0.05em}
+.layer-row input[type=checkbox]{accent-color:var(--ink);cursor:pointer}
+.layer-row .lat{color:var(--ink);font-size:8px;letter-spacing:0.04em;font-weight:700;min-width:36px;text-align:right}
+
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+}
+.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--ink);font-weight:700}.br{color:var(--dim)}
+.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+
+.fire-btn{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.18em;font-weight:700;
+  padding:8px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);
+  cursor:pointer;width:100%;transition:all .12s;
+}
+.fire-btn:hover{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+.fire-btn:active{transform:translateY(1px)}
+
+/* "WORLD" indicator — subtle ghost label that appears when world is still reacting */
+.world-tag{
+  position:absolute;bottom:14px;right:16px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim2);
+  pointer-events:none;text-align:right;line-height:1.7;
+}
+.world-tag .lab{color:#7a8800;font-weight:700}
+.world-tag .ghost{color:var(--dim);opacity:0.5;font-size:7px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span class="sys-id">KINETIC_GEOMETRY // LEC_07</span>
+    <span class="title-tag">PRINCIPLE_07 // SECONDARY ACTION</span>
+  </div>
+  <div class="right">
+    <span class="sys-id" id="topbar-state">SPATIAL_DELAY: ON // WORLD_MEMORY: ENABLED</span>
+    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="stage-bignum">07</div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="checker c1"></div><div class="checker c2"></div>
+  <div class="po">
+    <div class="po-num">PRINCIPLE // 07</div>
+    <div class="po-en">SECONDARY ACTION</div>
+    <div class="po-jp">セカンダリ・アクション</div>
+  </div>
+
+  <!-- MAIN ZONE -->
+  <div id="main-zone">
+    <canvas id="main-canvas"></canvas>
+    <div id="phase-badge">PHASE: IDLE</div>
+    <div id="main-hud">
+      <div>PRIMARY_E&nbsp;<span class="val" id="h-primary">0.00</span></div>
+      <div>WORLD_E&nbsp;<span class="val acid" id="h-world">0.00</span></div>
+      <div>RESIDUAL&nbsp;<span class="val" id="h-resid">0.00</span></div>
+      <div>STATE&nbsp;<span class="val" id="h-state">—</span></div>
+    </div>
+    <div class="world-tag" id="world-tag">
+      <span class="lab" id="wt-status">WORLD: STABLE</span><br>
+      <span class="ghost" id="wt-detail">no residual disturbance</span>
+    </div>
+  </div>
+
+  <!-- GRAPH -->
+  <div id="graph-zone">
+    <div id="gz-header">
+      <span>// <strong>PROPAGATION TIMELINE</strong></span>
+      <span><span class="lg-sw" style="background:var(--ink)"></span>PRIMARY</span>
+      <span><span class="lg-sw" style="background:#7a8800"></span>SECONDARY</span>
+      <span style="color:var(--dim2)">↗ DELAYED ECHO</span>
+    </div>
+    <div id="delay-readout">
+      <div class="row"><span class="name">PRIMARY</span><span class="fr">0fr</span></div>
+      <div class="row"><span class="name">SHOCK</span><span class="fr">+3fr</span></div>
+      <div class="row"><span class="name">GRID</span><span class="fr">+5fr</span></div>
+      <div class="row"><span class="name">TYPE</span><span class="fr">+9fr</span></div>
+      <div class="row"><span class="name">HUD</span><span class="fr">+13fr</span></div>
+      <div class="row"><span class="name">PHASE</span><span class="fr">+17fr</span></div>
+    </div>
+    <canvas id="graph-canvas"></canvas>
+  </div>
+</main>
+
+<aside id="panel">
+
+  <div class="psec">
+    <div class="sec-label">ATHEORY — 原則解説</div>
+    <div class="sec-title">SECONDARY<br>ACTION</div>
+    <div class="body-text">
+      主動作は一瞬で終わる。<br>
+      空間が遅れて反応し、<br>
+      世界が <strong style="color:var(--ink)">それを覚えている</strong>。
+    </div>
+    <div class="body-en">
+      Primary fires once. Space remembers.<br>
+      Not an effect — a propagation.<br>
+      The world is left altered.
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">BFIRE — トリガー</div>
+    <button class="fire-btn" id="btnFire">▼ FIRE BLADE (UP→ direction)</button>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.8">
+      Blade は下から上へ通過する。<br>
+      通過位置から距離に応じて<br>
+      <strong style="color:#7a8800">空間が遅れて反応</strong>する。<br>
+      <span class="kbd">F</span> = fire &nbsp; <span class="kbd">M</span> = mute &nbsp; <span class="kbd">O</span> = only<br>
+      <span class="kbd">R</span> = reset world &nbsp;
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">CLIVE — リアルタイム</div>
+    <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">IDLE</span></div>
+    <div class="data-row"><span class="dk">PRIMARY_E</span><span class="dv" id="lv-primary">0.000</span></div>
+    <div class="data-row"><span class="dk">WORLD_E</span><span class="dv acid" id="lv-world">0.000</span></div>
+    <div class="data-row"><span class="dk">RESIDUAL</span><span class="dv" id="lv-resid">0.000</span></div>
+    <div class="data-row"><span class="dk">BLADE_Y</span><span class="dv" id="lv-bladey">—</span></div>
+    <div class="data-row"><span class="dk">SPATIAL_DELAY</span><span class="dv" id="lv-sdelay">0.40</span></div>
+    <div class="data-row"><span class="dk">WORLD_DECAY</span><span class="dv" id="lv-decay">0.975</span></div>
+    <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-frame">000</span></div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">DLAYERS — 副次レイヤー</div>
+    <div id="layer-list">
+      <div class="layer-row">
+        <span class="swatch" style="background:var(--ink)"></span>
+        <input type="checkbox" id="lay-primary" checked disabled>
+        <label for="lay-primary">PRIMARY (blade)</label>
+        <span class="lat">0fr</span>
+      </div>
+      <div class="layer-row">
+        <span class="swatch" style="background:#a8a8a8"></span>
+        <input type="checkbox" id="lay-ring" checked>
+        <label for="lay-ring">SHOCK FRONT</label>
+        <span class="lat">+3fr</span>
+      </div>
+      <div class="layer-row">
+        <span class="swatch" style="background:#7a8800"></span>
+        <input type="checkbox" id="lay-grid" checked>
+        <label for="lay-grid">GRID DISTORT</label>
+        <span class="lat">+5fr</span>
+      </div>
+      <div class="layer-row">
+        <span class="swatch" style="background:#444"></span>
+        <input type="checkbox" id="lay-type" checked>
+        <label for="lay-type">TYPE GLITCH</label>
+        <span class="lat">+9fr</span>
+      </div>
+      <div class="layer-row">
+        <span class="swatch" style="background:#000;border:1px dashed #000"></span>
+        <input type="checkbox" id="lay-hud" checked>
+        <label for="lay-hud">HUD DRIFT</label>
+        <span class="lat">+13fr</span>
+      </div>
+      <div class="layer-row">
+        <span class="swatch" style="background:#bbb"></span>
+        <input type="checkbox" id="lay-phase" checked>
+        <label for="lay-phase">PHASE SHIFT</label>
+        <span class="lat">+17fr</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">EWORLD MEMORY — 残留状態</div>
+    <div class="data-row"><span class="dk">GRID_RESIDUAL</span><span class="dv" id="wm-grid">0%</span></div>
+    <div class="data-row"><span class="dk">TYPE_CORRUPT</span><span class="dv" id="wm-type">0%</span></div>
+    <div class="data-row"><span class="dk">PHASE_DRIFT</span><span class="dv" id="wm-phase">0.00</span></div>
+    <div class="data-row"><span class="dk">HUD_ERROR</span><span class="dv" id="wm-hud">±0px</span></div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">FPARAMS — パラメータ</div>
+    <div class="sl-row">
+      <div class="sl-label">PRIMARY POWER <span id="sl-pow-val">1.00</span></div>
+      <input type="range" id="sl-pow" min="20" max="200" value="100">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">SPATIAL DELAY <span id="sl-prop-val">0.40</span></div>
+      <input type="range" id="sl-prop" min="5" max="80" value="40">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">WORLD DECAY <span id="sl-dec-val">0.975</span></div>
+      <input type="range" id="sl-dec" min="900" max="995" value="975">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label">RESIDUAL PERSISTENCE <span id="sl-res-val">0.85</span></div>
+      <input type="range" id="sl-res" min="0" max="99" value="85">
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">GMODES — 教材モード</div>
+    <button class="btn" id="btnNormal">NORMAL</button>
+    <button class="btn warn" id="btnMute">SECONDARY MUTE</button>
+    <button class="btn warn" id="btnOnly">SECONDARY ONLY</button>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.7">
+      <strong style="color:var(--ink)">MUTE</strong> → <span style="color:var(--hot)">TOO DEAD</span><br>
+      <strong style="color:var(--ink)">ONLY</strong> → <span style="color:var(--hot)">GHOSTED WORLD</span><br>
+      &nbsp;&nbsp;&nbsp; (原因不明の揺れ)
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">HINSIGHT</div>
+    <div class="insight">
+      <strong>// CAUSAL PROPAGATION</strong>
+      Follow Through は1本の鎖の遅延。<br>
+      Secondary Action は<br>
+      <span style="color:#7a8800">因果が空間へ伝播する</span>。<br><br>
+      Primary は <strong>引き金</strong>。<br>
+      Secondary が <strong>世界を支配</strong>する。<br><br>
+      動きは終わっても、<br>
+      世界はまだ覚えている。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div class="bl">
+    <span>SPATIAL_DELAY: ENABLED</span>
+    <span>WORLD_MEMORY: ON</span>
+    <span>STATE: <span id="bb-state">IDLE</span></span>
+  </div>
+  <div class="bc">FRAME: <span id="bb-fr">000</span></div>
+  <div class="br">
+    <span class="kbd">F</span>FIRE
+    <span class="kbd">M</span>MUTE
+    <span class="kbd">O</span>ONLY
+    <span class="kbd">R</span>RESET
+    &nbsp;ID: SENTIENT-BP-2026-VLS.07
+  </div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SECONDARY ACTION v2 — Causal Propagation Engine
+//
+// Core changes from v1:
+//   • Primary is a BLADE traveling UP (bottom → top), 0.20s duration
+//   • Secondary "WorldEnergy" is now POSITION-DEPENDENT
+//     — each region samples primary history at delay = distance × factor
+//   • Long-tail decay (worldDecay 0.975+) — secondary lasts 3-5s
+//   • WORLD MEMORY: per-cell grid distortion, type corruption,
+//     phase shift, HUD error that DOES NOT FULLY DECAY (residual stays)
+//   • Mouse acts as a gravity field: amplifies local secondary response
+// ═══════════════════════════════════════════════════════════════
+
+// ── PARAMS ──
+let primaryPower = 1.00;
+let spatialDelay = 0.40;   // px → frames conversion factor
+let worldDecay   = 0.975;
+let residualPersistence = 0.85;
+let mode = 'normal';
+let layers = { ring:true, grid:true, type:true, hud:true, phase:true };
+
+// ── STATE ──
+let primaryE = 0;
+let firedAt = -9999;
+let bladeProgress = 0; // 0..1 — bottom→top
+let primaryHist = [];
+const HIST_MAX = 600;
+
+// World energy: scalar for HUD only. Actual world response is per-position-sampled from primaryHist.
+let worldEHud = 0;
+
+// Mouse field
+let mouseX = 0, mouseY = 0;
+let mouseActive = false;
+
+// Unified viewport (logical CSS coords)
+let VW = 0, VH = 0;
+let DPR = 1;
+let GVW = 0, GVH = 0; // graph viewport
+
+// World memory — NODE-BASED grid (15 × 10 nodes = 14 × 9 cells)
+const GRID_X = 14, GRID_Y = 9;
+const GRID_NODES_X = GRID_X + 1;
+const GRID_NODES_Y = GRID_Y + 1;
+let wmNodes = []; // {x, y, dx, dy, lastImpact}
+function initWM() {
+  wmNodes = [];
+  for (let y = 0; y < GRID_NODES_Y; y++) {
+    for (let x = 0; x < GRID_NODES_X; x++) {
+      wmNodes.push({ x, y, dx: 0, dy: 0, lastImpact: -999 });
+    }
+  }
+}
+initWM();
+function wmNode(ix, iy) {
+  return wmNodes[iy * GRID_NODES_X + ix];
+}
+
+let typeCorrupt = 0;   // 0..1
+let phaseDrift = 0;    // accumulates
+let hudError = 0;      // px offset
+
+let frameCount = 0;
+
+function fire() {
+  firedAt = frameCount;
+  primaryE = 1.0 * primaryPower;
+  bladeProgress = 0;
+}
+
+// ── CANVAS ──
+const mainC = document.getElementById('main-canvas');
+const mainCtx = mainC.getContext('2d');
+const graphC = document.getElementById('graph-canvas');
+const graphCtx = graphC.getContext('2d');
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  const mz = document.getElementById('main-zone');
+  VW = mz.clientWidth;
+  VH = mz.clientHeight;
+  mainC.width  = VW * DPR;
+  mainC.height = VH * DPR;
+  mainC.style.width = VW + 'px';
+  mainC.style.height = VH + 'px';
+  mainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  const gz = document.getElementById('graph-zone');
+  GVW = gz.clientWidth;
+  GVH = gz.clientHeight;
+  graphC.width = GVW * DPR;
+  graphC.height = GVH * DPR;
+  graphC.style.width = GVW + 'px';
+  graphC.style.height = GVH + 'px';
+  graphCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── MOUSE ──
+mainC.addEventListener('mousemove', (e) => {
+  const r = mainC.getBoundingClientRect();
+  mouseX = (e.clientX - r.left);
+  mouseY = (e.clientY - r.top);
+  mouseActive = true;
+});
+mainC.addEventListener('mouseleave', () => { mouseActive = false; });
+mainC.addEventListener('click', fire);
+
+// ── PRIMARY PROGRESS ──
+// Primary is now a SHORT BLADE: progresses 0→1 over PRIMARY_FRAMES
+const PRIMARY_FRAMES = 12; // ~0.20s @ 60fps
+function primaryProgressVal() {
+  const t = frameCount - firedAt;
+  if (t < 0) return 0;
+  if (t > PRIMARY_FRAMES) return 1;
+  const u = t / PRIMARY_FRAMES;
+  return 1 - Math.pow(1 - u, 3); // ease-out
+}
+
+function phaseLabel() {
+  const t = frameCount - firedAt;
+  if (t < 0) return 'IDLE';
+  if (t < PRIMARY_FRAMES) return 'BLADE';
+  if (worldEHud > 0.10) return 'PROPAGATING';
+  if (worldEHud > 0.02 || typeCorrupt > 0.02 || phaseDrift > 0.5) return 'RESIDUAL';
+  return 'SETTLED';
+}
+
+// ── SAMPLING WORLD ENERGY AT A POSITION ──
+// Given a y position, find the local delay = how far it is from the blade's current y
+// Then sample primaryHist at frameCount - localDelay
+function sampleLocalWorld(yNormalized, baseLayerDelay) {
+  // yNormalized: 0 (bottom) to 1 (top)
+  // blade travels bottom→top, so blade y at progress p is at yNormalized = p
+  const bladeY = bladeProgress; // 0..1
+  const dist = Math.abs(yNormalized - bladeY);
+  const distPx = dist * VH;
+  const localDelayFrames = distPx * spatialDelay * 0.08 + baseLayerDelay;
+  const idx = primaryHist.length - 1 - Math.floor(localDelayFrames);
+  if (idx < 0 || idx >= primaryHist.length) return 0;
+  return primaryHist[idx];
+}
+
+// Sample at exact point with mouse-as-gravity-field amplification
+function sampleLocalWorldXY(xNorm, yNorm, baseLayerDelay) {
+  let v = sampleLocalWorld(yNorm, baseLayerDelay);
+  if (mouseActive && v > 0.001) {
+    const dx = xNorm * VW - mouseX;
+    const dy = yNorm * VH - mouseY;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    const influence = Math.max(0, 1 - d / 250);
+    v *= 1 + influence * 1.6;
+  }
+  return v;
+}
+
+// ── STEP ──
+function step() {
+  frameCount++;
+
+  // BLADE: primary energy is a SHORT impulse during PRIMARY_FRAMES
+  const t = frameCount - firedAt;
+  let bladeE = 0;
+  if (t >= 0 && t < PRIMARY_FRAMES) {
+    bladeProgress = t / PRIMARY_FRAMES;
+    // Energy peaks mid-blade, drops fast
+    const u = t / PRIMARY_FRAMES;
+    bladeE = primaryPower * Math.sin(u * Math.PI); // 0 → peak at 0.5 → 0
+  } else if (t >= PRIMARY_FRAMES) {
+    bladeProgress = 1;
+  }
+  primaryE = bladeE;
+
+  // Push to history
+  if (mode !== 'mute') {
+    primaryHist.push(primaryE);
+  } else {
+    primaryHist.push(0);
+  }
+  if (primaryHist.length > HIST_MAX) primaryHist.shift();
+
+  // Compute HUD world energy: average of sampled secondary across the whole stage
+  let acc = 0; let cnt = 0;
+  for (let i = 0; i < 8; i++) {
+    const y = i / 7;
+    acc += sampleLocalWorld(y, 5);
+    cnt++;
+  }
+  let avgWorld = cnt > 0 ? acc / cnt : 0;
+  // Apply long-tail decay characteristic
+  worldEHud = worldEHud * worldDecay + avgWorld * (1 - worldDecay);
+
+  // ── WORLD MEMORY UPDATES ──
+  // When a region of the stage has high local energy, it gets "imprinted" — leaves residual
+  if (mode !== 'mute') {
+    for (const node of wmNodes) {
+      const xNorm = node.x / GRID_X;
+      const yNorm = node.y / GRID_Y;
+      const local = sampleLocalWorldXY(xNorm, yNorm, 5);
+      if (local > 0.25) {
+        // Imprint: nudge node offset in direction away from center
+        const dx = (node.x - GRID_X / 2);
+        const dy = (node.y - GRID_Y / 2);
+        const len = Math.sqrt(dx*dx + dy*dy) + 0.01;
+        node.dx += (dx / len) * local * 1.2 * (Math.random()*0.5 + 0.5);
+        node.dy += (dy / len) * local * 1.2 * (Math.random()*0.5 + 0.5);
+        node.lastImpact = frameCount;
+      }
+      // VERY SLOW decay — residual persistence
+      const decayFactor = 0.985 + residualPersistence * 0.014; // 0.985..0.999
+      node.dx *= decayFactor;
+      node.dy *= decayFactor;
+    }
+    typeCorrupt = Math.min(1, typeCorrupt + avgWorld * 0.06);
+    typeCorrupt *= 0.985 + residualPersistence * 0.013;
+    phaseDrift += avgWorld * 0.6;
+    phaseDrift *= 0.99 + residualPersistence * 0.009;
+    hudError = hudError * (0.985 + residualPersistence * 0.013) + (Math.random() - 0.5) * avgWorld * 2;
+  } else {
+    // Mute mode: rapid decay
+    for (const node of wmNodes) { node.dx *= 0.85; node.dy *= 0.85; }
+    typeCorrupt *= 0.85;
+    phaseDrift *= 0.85;
+    hudError *= 0.85;
+  }
+
+  // HUD updates
+  updateHUD();
+}
+
+// ── DRAW MAIN ──
+function drawMain() {
+  const W = VW, H = VH;
+  mainCtx.clearRect(0, 0, W, H);
+
+  // ── 1) DISTORTED GRID (node-based — vertices displaced, NOT cells) ──
+  if (layers.grid && mode !== 'mute') {
+    mainCtx.save();
+    mainCtx.strokeStyle = `rgba(16,16,16,${0.06 + worldEHud * 0.06})`;
+    mainCtx.lineWidth = 0.5;
+    const cellW = W / GRID_X;
+    const cellH = H / GRID_Y;
+
+    // Helper: compute screen-space position of node (ix, iy) including live wobble + residual
+    function nodeScreenPos(ix, iy) {
+      const n = wmNode(ix, iy);
+      const xNorm = ix / GRID_X;
+      const yNorm = iy / GRID_Y;
+      const local = sampleLocalWorldXY(xNorm, yNorm, 5);
+      const wob = local * 10;
+      const x = ix * cellW + n.dx + Math.sin(frameCount * 0.1 + iy) * wob;
+      const y = iy * cellH + n.dy + Math.cos(frameCount * 0.1 + ix) * wob;
+      return { x, y };
+    }
+
+    // Vertical lines (one for each column of nodes)
+    for (let ix = 0; ix < GRID_NODES_X; ix++) {
+      mainCtx.beginPath();
+      for (let iy = 0; iy < GRID_NODES_Y; iy++) {
+        const p = nodeScreenPos(ix, iy);
+        if (iy === 0) mainCtx.moveTo(p.x, p.y);
+        else mainCtx.lineTo(p.x, p.y);
+      }
+      mainCtx.stroke();
+    }
+    // Horizontal lines (one for each row of nodes)
+    for (let iy = 0; iy < GRID_NODES_Y; iy++) {
+      mainCtx.beginPath();
+      for (let ix = 0; ix < GRID_NODES_X; ix++) {
+        const p = nodeScreenPos(ix, iy);
+        if (ix === 0) mainCtx.moveTo(p.x, p.y);
+        else mainCtx.lineTo(p.x, p.y);
+      }
+      mainCtx.stroke();
+    }
+    mainCtx.restore();
+  }
+
+  // ── 2) SHOCK FRONT — horizontal expanding line from blade ──
+  if (layers.ring && mode !== 'mute') {
+    // The shock travels with delay +3fr from primary
+    const shockY = sampleHistoryAsBladePosition(3);
+    if (shockY > 0) {
+      // Find the y at which the blade WAS 3 frames ago
+      const Hpx = H;
+      const yPx = (1 - shockY) * Hpx;
+      const sLocal = sampleLocalWorldXY(0.5, shockY, 3);
+      mainCtx.save();
+      const alpha = Math.min(1, sLocal * 1.5);
+      mainCtx.strokeStyle = `rgba(120,120,120,${alpha * 0.5})`;
+      mainCtx.lineWidth = 0.8;
+      mainCtx.setLineDash([6, 8]);
+      mainCtx.beginPath();
+      mainCtx.moveTo(0, yPx);
+      mainCtx.lineTo(W, yPx);
+      mainCtx.stroke();
+      mainCtx.setLineDash([]);
+      // Small inner shock band
+      mainCtx.fillStyle = `rgba(120,120,120,${alpha * 0.08})`;
+      mainCtx.fillRect(0, yPx - 8, W, 16);
+      mainCtx.restore();
+    }
+  }
+
+  // ── 3) TYPOGRAPHY (corrupted labels — type glitch with phase shift) ──
+  if (layers.type && mode !== 'mute') {
+    const labels = [
+      { x:60, y:38, text:'KINETIC // PRIMARY', y_norm:0.05 },
+      { x:W-200, y:38, text:'SECONDARY.EXE', y_norm:0.05 },
+      { x:60, y:H*0.5, text:'WORLD_MEMORY: PERSISTING', y_norm:0.5 },
+      { x:W-220, y:H*0.5, text:'PHASE: '+ phaseDrift.toFixed(2), y_norm:0.5 },
+      { x:60, y:H-30, text:'CAUSAL_ECHO: ACTIVE', y_norm:0.95 },
+      { x:W-220, y:H-30, text:'PROPAGATION_FIELD', y_norm:0.95 },
+    ];
+    mainCtx.save();
+    mainCtx.font = '9px IBM Plex Mono, monospace';
+    for (const l of labels) {
+      const local = sampleLocalWorldXY(l.x/W, l.y_norm, 9);
+      const corrupt = Math.min(1, local + typeCorrupt * 0.5);
+      const jx = (Math.random()-0.5) * corrupt * 4;
+      const jy = (Math.random()-0.5) * corrupt * 3;
+      let txt = l.text;
+      // Phase shift: characters can drop / swap
+      if (corrupt > 0.15) {
+        const cs = txt.split('');
+        for (let i = 0; i < cs.length; i++) {
+          if (Math.random() < corrupt * 0.08) {
+            cs[i] = '_#%@!?'[Math.floor(Math.random()*6)];
+          } else if (Math.random() < corrupt * 0.05) {
+            cs[i] = ' ';
+          }
+        }
+        txt = cs.join('');
+      }
+      mainCtx.fillStyle = `rgba(16,16,16,${0.42 + corrupt * 0.35})`;
+      mainCtx.fillText(txt, l.x + jx, l.y + jy);
+    }
+    mainCtx.restore();
+  }
+
+  // ── 4) HUD DRIFT (corner crosshairs with delayed drift) ──
+  if (layers.hud && mode !== 'mute') {
+    mainCtx.save();
+    const positions = [
+      { x: 80, y: H*0.18, ynorm: 0.18 },
+      { x: W-80, y: H*0.18, ynorm: 0.18 },
+      { x: 80, y: H*0.82, ynorm: 0.82 },
+      { x: W-80, y: H*0.82, ynorm: 0.82 },
+    ];
+    for (const p of positions) {
+      const local = sampleLocalWorldXY(p.x/W, p.ynorm, 13);
+      const drift = local * 16 + hudError * 0.5;
+      const phase = (frameCount - firedAt) * 0.05;
+      const hx = p.x + Math.sin(phase + p.x*0.01) * drift;
+      const hy = p.y + Math.cos(phase * 1.3 + p.y*0.01) * drift * 0.7;
+      const alpha = 0.4 + local * 0.4;
+      mainCtx.strokeStyle = `rgba(122,136,0,${alpha})`;
+      mainCtx.lineWidth = 1;
+      mainCtx.beginPath();
+      mainCtx.moveTo(hx - 12, hy); mainCtx.lineTo(hx - 3, hy);
+      mainCtx.moveTo(hx + 3, hy); mainCtx.lineTo(hx + 12, hy);
+      mainCtx.moveTo(hx, hy - 12); mainCtx.lineTo(hx, hy - 3);
+      mainCtx.moveTo(hx, hy + 3); mainCtx.lineTo(hx, hy + 12);
+      mainCtx.stroke();
+      mainCtx.font = '8px IBM Plex Mono, monospace';
+      mainCtx.fillStyle = `rgba(122,136,0,${0.55 + local*0.3})`;
+      mainCtx.fillText(`Δ${drift.toFixed(1)}`, hx + 14, hy - 5);
+    }
+    mainCtx.restore();
+  }
+
+  // ── 5) PHASE SHIFT BANDS (subtle horizontal hue/contrast bands) ──
+  if (layers.phase && mode !== 'mute') {
+    const Hpx = H;
+    const stripes = 8;
+    mainCtx.save();
+    for (let i = 0; i < stripes; i++) {
+      const yNorm = i / stripes;
+      const yPx = yNorm * Hpx;
+      const local = sampleLocalWorldXY(0.5, yNorm, 17);
+      if (local < 0.05) continue;
+      const phaseShift = local * phaseDrift * 0.4;
+      const stripH = Hpx / stripes;
+      mainCtx.fillStyle = `rgba(16,16,16,${local * 0.03})`;
+      mainCtx.fillRect(Math.sin(phaseShift) * 3, yPx, W, stripH);
+      // Edge tick
+      mainCtx.strokeStyle = `rgba(16,16,16,${local * 0.1})`;
+      mainCtx.lineWidth = 0.5;
+      mainCtx.beginPath();
+      mainCtx.moveTo(0, yPx); mainCtx.lineTo(8, yPx);
+      mainCtx.moveTo(W-8, yPx); mainCtx.lineTo(W, yPx);
+      mainCtx.stroke();
+    }
+    mainCtx.restore();
+  }
+
+  // ── 6) THE BLADE (Primary) — vertical thin bar traveling up ──
+  if (mode !== 'only') {
+    const p = primaryProgressVal();
+    if (p > 0 && p < 1) {
+      const yPx = (1 - p) * H;
+      mainCtx.save();
+      // The blade is a HORIZONTAL line (full width) that travels UP
+      // It's a "cut" through space
+      const intensity = Math.sin(p * Math.PI);
+      // Main blade
+      mainCtx.fillStyle = '#101010';
+      mainCtx.fillRect(0, yPx - 1.5, W, 3);
+      // Accent edge
+      mainCtx.fillStyle = '#CADC00';
+      mainCtx.fillRect(0, yPx - 1.5, W, 1);
+      // Motion trail below (where blade has been)
+      const trailH = 22 * intensity;
+      const grad = mainCtx.createLinearGradient(0, yPx, 0, yPx + trailH);
+      grad.addColorStop(0, 'rgba(16,16,16,0.25)');
+      grad.addColorStop(1, 'rgba(16,16,16,0)');
+      mainCtx.fillStyle = grad;
+      mainCtx.fillRect(0, yPx, W, trailH);
+      // Center marker
+      mainCtx.fillStyle = '#CADC00';
+      mainCtx.fillRect(W*0.5 - 3, yPx - 4, 6, 8);
+      mainCtx.restore();
+    }
+  } else {
+    // SECONDARY ONLY — show a phantom indicator
+    mainCtx.save();
+    mainCtx.font = '10px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
+    mainCtx.textAlign = 'center';
+    mainCtx.fillText('// PRIMARY MUTED — WORLD STILL REACTS //', W*0.5, 28);
+    mainCtx.fillStyle = 'rgba(255,45,45,0.3)';
+    mainCtx.font = '8px IBM Plex Mono, monospace';
+    mainCtx.fillText('cause unknown', W*0.5, 42);
+    mainCtx.restore();
+  }
+
+  // ── 7) MODE OVERLAY ──
+  if (mode === 'mute') {
+    mainCtx.save();
+    mainCtx.font = 'bold 13px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(255,45,45,0.85)';
+    mainCtx.textAlign = 'center';
+    mainCtx.fillText('// TOO DEAD //', W*0.5, H*0.5 - 8);
+    mainCtx.font = '9px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
+    mainCtx.fillText('PRIMARY FIRES, WORLD DOES NOTHING', W*0.5, H*0.5 + 8);
+    mainCtx.restore();
+  }
+  if (mode === 'only') {
+    mainCtx.save();
+    mainCtx.font = 'bold 13px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(255,45,45,0.85)';
+    mainCtx.textAlign = 'center';
+    mainCtx.fillText('// GHOSTED WORLD //', W*0.5, H*0.5 - 8);
+    mainCtx.font = '9px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
+    mainCtx.fillText('SECONDARY WITHOUT CAUSE', W*0.5, H*0.5 + 8);
+    mainCtx.restore();
+  }
+
+  // ── 8) MOUSE FIELD INDICATOR (subtle) ──
+  if (mouseActive && worldEHud > 0.05) {
+    mainCtx.save();
+    const grad = mainCtx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 250);
+    grad.addColorStop(0, `rgba(122,136,0,${worldEHud * 0.18})`);
+    grad.addColorStop(0.5, `rgba(122,136,0,${worldEHud * 0.05})`);
+    grad.addColorStop(1, 'rgba(122,136,0,0)');
+    mainCtx.fillStyle = grad;
+    mainCtx.fillRect(mouseX - 250, mouseY - 250, 500, 500);
+    // small label
+    mainCtx.font = '7px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = `rgba(122,136,0,${0.55 + worldEHud * 0.3})`;
+    mainCtx.fillText('▸ SPACE WEAK POINT', mouseX + 14, mouseY - 14);
+    mainCtx.restore();
+  }
+}
+
+// Helper: returns the blade y (normalized 0..1) at frameCount - delay frames
+function sampleHistoryAsBladePosition(framesAgo) {
+  const t = (frameCount - framesAgo) - firedAt;
+  if (t < 0) return 0;
+  if (t >= PRIMARY_FRAMES) return 1;
+  return t / PRIMARY_FRAMES;
+}
+
+// ── DRAW GRAPH ──
+function drawGraph() {
+  const W = GVW, H = GVH;
+  graphCtx.clearRect(0, 0, W, H);
+
+  const pad = { l: 50, r: 130, t: 28, b: 22 };
+  const gw = W - pad.l - pad.r;
+  const gh = H - pad.t - pad.b;
+
+  // axis grid
+  graphCtx.strokeStyle = 'rgba(16,16,16,0.08)';
+  graphCtx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (gh / 4) * i;
+    graphCtx.beginPath();
+    graphCtx.moveTo(pad.l, y); graphCtx.lineTo(pad.l + gw, y);
+    graphCtx.stroke();
+  }
+
+  graphCtx.font = '8px IBM Plex Mono, monospace';
+  graphCtx.fillStyle = 'rgba(16,16,16,0.4)';
+  graphCtx.fillText('ENERGY', pad.l - 42, pad.t + 4);
+  graphCtx.fillText('1.0', pad.l - 22, pad.t + 4);
+  graphCtx.fillText('0.5', pad.l - 22, pad.t + gh/2 + 3);
+  graphCtx.fillText('0.0', pad.l - 22, pad.t + gh + 3);
+  graphCtx.fillText('← time', pad.l + gw - 36, pad.t + gh + 14);
+
+  graphCtx.strokeStyle = 'rgba(16,16,16,0.25)';
+  graphCtx.lineWidth = 0.5;
+  graphCtx.beginPath();
+  graphCtx.moveTo(pad.l, pad.t + gh);
+  graphCtx.lineTo(pad.l + gw, pad.t + gh);
+  graphCtx.stroke();
+
+  const histLen = Math.min(primaryHist.length, gw);
+
+  // Compute world energy history from primaryHist
+  // For graph, sample at center of stage (yNorm=0.5)
+  // Actually, we want to show what the WORLD did: this is the average response
+  // We approximate by low-pass filtering primary history with worldDecay
+  const worldHist = [];
+  let wAcc = 0;
+  for (let i = 0; i < primaryHist.length; i++) {
+    wAcc = wAcc * worldDecay + primaryHist[i] * (1 - worldDecay) * 4;
+    worldHist.push(wAcc);
+  }
+
+  // SECONDARY (filled area)
+  if (mode !== 'mute') {
+    graphCtx.fillStyle = 'rgba(122,136,0,0.18)';
+    graphCtx.strokeStyle = '#7a8800';
+    graphCtx.lineWidth = 1.2;
+    graphCtx.beginPath();
+    for (let i = 0; i < histLen; i++) {
+      const idx = worldHist.length - histLen + i;
+      const v = Math.min(1, worldHist[idx] || 0);
+      const x = pad.l + i;
+      const y = pad.t + gh - v * gh;
+      if (i === 0) graphCtx.moveTo(x, y); else graphCtx.lineTo(x, y);
+    }
+    graphCtx.stroke();
+    graphCtx.lineTo(pad.l + histLen - 1, pad.t + gh);
+    graphCtx.lineTo(pad.l, pad.t + gh);
+    graphCtx.closePath();
+    graphCtx.fill();
+  }
+
+  // PRIMARY (sharp spike)
+  if (mode !== 'only') {
+    graphCtx.strokeStyle = '#101010';
+    graphCtx.lineWidth = 1.5;
+    graphCtx.beginPath();
+    for (let i = 0; i < histLen; i++) {
+      const idx = primaryHist.length - histLen + i;
+      const v = Math.min(1, primaryHist[idx] || 0);
+      const x = pad.l + i;
+      const y = pad.t + gh - v * gh;
+      if (i === 0) graphCtx.moveTo(x, y); else graphCtx.lineTo(x, y);
+    }
+    graphCtx.stroke();
+  }
+
+  // FIRE marker
+  const sinceFire = frameCount - firedAt;
+  if (sinceFire < gw && sinceFire >= 0) {
+    const x = pad.l + gw - sinceFire;
+    graphCtx.strokeStyle = 'rgba(255,45,45,0.5)';
+    graphCtx.setLineDash([3,3]);
+    graphCtx.lineWidth = 0.8;
+    graphCtx.beginPath();
+    graphCtx.moveTo(x, pad.t);
+    graphCtx.lineTo(x, pad.t + gh);
+    graphCtx.stroke();
+    graphCtx.setLineDash([]);
+    graphCtx.fillStyle = 'rgba(255,45,45,0.7)';
+    graphCtx.font = '8px IBM Plex Mono, monospace';
+    graphCtx.fillText('FIRE', x + 2, pad.t + 10);
+  }
+}
+
+// ── HUD UPDATE ──
+function updateHUD() {
+  const ph = phaseLabel();
+  document.getElementById('h-primary').textContent = primaryE.toFixed(2);
+  document.getElementById('h-world').textContent = worldEHud.toFixed(2);
+  const residualVal = Math.max(typeCorrupt, phaseDrift / 5, Math.abs(hudError) / 10);
+  document.getElementById('h-resid').textContent = residualVal.toFixed(2);
+  document.getElementById('h-state').textContent = ph;
+  document.getElementById('phase-badge').textContent = 'PHASE: ' + ph;
+
+  document.getElementById('lv-phase').textContent = ph;
+  document.getElementById('lv-primary').textContent = primaryE.toFixed(3);
+  document.getElementById('lv-world').textContent = worldEHud.toFixed(3);
+  document.getElementById('lv-resid').textContent = residualVal.toFixed(3);
+  const bladeY = (firedAt > -9000 && frameCount - firedAt < PRIMARY_FRAMES) ?
+    (1 - bladeProgress).toFixed(2) : '—';
+  document.getElementById('lv-bladey').textContent = bladeY;
+  document.getElementById('lv-sdelay').textContent = spatialDelay.toFixed(2);
+  document.getElementById('lv-decay').textContent = worldDecay.toFixed(3);
+  document.getElementById('lv-frame').textContent = String(frameCount).padStart(3,'0');
+  document.getElementById('bb-fr').textContent = String(frameCount).padStart(3,'0');
+  document.getElementById('bb-state').textContent = ph;
+
+  // World memory readouts
+  let totalDisplace = 0;
+  for (const n of wmNodes) totalDisplace += Math.sqrt(n.dx*n.dx + n.dy*n.dy);
+  const gridPct = Math.min(100, Math.round(totalDisplace / (wmNodes.length * 0.4) * 100));
+  document.getElementById('wm-grid').textContent = gridPct + '%';
+  document.getElementById('wm-type').textContent = Math.round(typeCorrupt * 100) + '%';
+  document.getElementById('wm-phase').textContent = phaseDrift.toFixed(2);
+  document.getElementById('wm-hud').textContent = (hudError >= 0 ? '+' : '') + hudError.toFixed(1) + 'px';
+
+  // World tag bottom-right of stage
+  const wt = document.getElementById('wt-status');
+  const wtd = document.getElementById('wt-detail');
+  if (worldEHud > 0.20 || gridPct > 20 || typeCorrupt > 0.2) {
+    if (ph === 'PROPAGATING') {
+      wt.textContent = 'WORLD: PROPAGATING';
+      wtd.textContent = 'causal wave traveling';
+    } else if (ph === 'RESIDUAL') {
+      wt.textContent = 'WORLD: ALTERED';
+      wtd.textContent = 'residual distortion persists';
+    } else {
+      wt.textContent = 'WORLD: REACTING';
+      wtd.textContent = 'spatial response active';
+    }
+  } else if (residualVal > 0.05) {
+    wt.textContent = 'WORLD: SETTLING';
+    wtd.textContent = 'trace memory remains';
+  } else {
+    wt.textContent = 'WORLD: STABLE';
+    wtd.textContent = 'no residual disturbance';
+  }
+}
+
+// ── LOOP ──
+function loop() {
+  step();
+  drawMain();
+  drawGraph();
+  // Auto-fire on frame basis (avoids drift from setInterval vs RAF mismatch)
+  if (frameCount - firedAt > 320) fire();
+  requestAnimationFrame(loop);
+}
+
+// ── INPUT ──
+document.getElementById('btnFire').addEventListener('click', fire);
+document.getElementById('btnNormal').addEventListener('click', () => setMode('normal'));
+document.getElementById('btnMute').addEventListener('click', () => setMode('mute'));
+document.getElementById('btnOnly').addEventListener('click', () => setMode('only'));
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnNormal').classList.toggle('active', m==='normal');
+  document.getElementById('btnMute').classList.toggle('active', m==='mute');
+  document.getElementById('btnOnly').classList.toggle('active', m==='only');
+}
+setMode('normal');
+
+['ring','grid','type','hud','phase'].forEach(k => {
+  const cb = document.getElementById('lay-'+k);
+  cb.addEventListener('change', () => { layers[k] = cb.checked; });
+});
+
+const slPow = document.getElementById('sl-pow');
+slPow.addEventListener('input', () => {
+  primaryPower = slPow.value / 100;
+  document.getElementById('sl-pow-val').textContent = primaryPower.toFixed(2);
+});
+const slProp = document.getElementById('sl-prop');
+slProp.addEventListener('input', () => {
+  spatialDelay = slProp.value / 100;
+  document.getElementById('sl-prop-val').textContent = spatialDelay.toFixed(2);
+});
+const slDec = document.getElementById('sl-dec');
+slDec.addEventListener('input', () => {
+  worldDecay = slDec.value / 1000;
+  document.getElementById('sl-dec-val').textContent = worldDecay.toFixed(3);
+});
+const slRes = document.getElementById('sl-res');
+slRes.addEventListener('input', () => {
+  residualPersistence = slRes.value / 100;
+  document.getElementById('sl-res-val').textContent = residualPersistence.toFixed(2);
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') { window.location.href = 'index.html'; return; }
+  if (e.code === 'KeyF') { e.preventDefault(); fire(); }
+  if (e.code === 'KeyM') { setMode(mode==='mute'?'normal':'mute'); }
+  if (e.code === 'KeyO') { setMode(mode==='only'?'normal':'only'); }
+  if (e.code === 'KeyR') {
+    frameCount = 0; firedAt = -9999; primaryE = 0; worldEHud = 0;
+    primaryHist = []; initWM(); typeCorrupt = 0; phaseDrift = 0; hudError = 0;
+  }
+});
+
+fire();
+loop();
+</script>
+</body>
+</html>

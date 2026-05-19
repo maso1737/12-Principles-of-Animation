@@ -841,6 +841,7 @@ input[type=range].warn::-moz-range-thumb{background:var(--warn)}
           <div class="tog-row"><span class="lab">接地ライン</span><div class="tog on" data-feat="ground"></div></div>
           <div class="tog-row"><span class="lab">重心マーカー</span><div class="tog" data-feat="cog"></div></div>
           <div class="tog-row"><span class="lab">フレーム番号</span><div class="tog" data-feat="frame"></div></div>
+          <div class="tog-row"><span class="lab">中心マーカー ■</span><div class="tog on" data-feat="coreSquare"></div></div>
         </div>
 
         <!-- F BREAK -->
@@ -945,6 +946,7 @@ const state = {
   features: {
     diff:false, shadow:true, volume:false, bbox:false,
     arc:false, ground:true, cog:false, frame:false,
+    coreSquare:true,
   },
 };
 
@@ -953,7 +955,8 @@ const state = {
 // ════════════════════════════════════════════════════════════
 function easePow(u, power){ return Math.pow(u, power); }
 
-function getBallState(frame, params){
+function getBallState(frame, params, groundY){
+  groundY = (groundY !== undefined) ? groundY : GROUND_Y;
   const t = frame / state.totalFrames;
   const power = params.ease;
   const cycle = t % 1.0;
@@ -967,8 +970,8 @@ function getBallState(frame, params){
     eased = easePow(1 - u, power);
     phase = eased;
   }
-  const topY = GROUND_Y - BALL_R - params.height;
-  const bottomY = GROUND_Y - BALL_R;
+  const topY = groundY - BALL_R - params.height;
+  const bottomY = groundY - BALL_R;
   const cy = topY + (bottomY - topY) * phase;
   const dPhase = (cycle < 0.5)
     ? easePow((cycle/0.5)+0.01, power) - phase
@@ -1000,10 +1003,11 @@ function getSS(bs, params, isBreak){
   return { rx, ry, squashW, stretchW };
 }
 
-function getAdjustedCY(bs, ry){
+function getAdjustedCY(bs, ry, groundY){
+  groundY = (groundY !== undefined) ? groundY : GROUND_Y;
   const squashW = Math.max(0, (bs.phase - 0.82) / 0.18);
   if(squashW > 0.01){
-    const groundCY = GROUND_Y - ry;
+    const groundCY = groundY - ry;
     const freeCY = bs.cy;
     return freeCY + (groundCY - freeCY) * squashW;
   }
@@ -1014,8 +1018,16 @@ function getAdjustedCY(bs, ry){
 // RENDER PANEL (tDR palette)
 // ════════════════════════════════════════════════════════════
 function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
-  const bs = getBallState(state.frame, params);
-  const cx = SVG_W / 2;
+  // ── 実際のコンテナサイズからviewBoxを毎フレーム更新 ──
+  const stageEl = svgEl.parentElement;
+  const w = (stageEl && stageEl.clientWidth  > 0) ? stageEl.clientWidth  : SVG_W;
+  const h = (stageEl && stageEl.clientHeight > 0) ? stageEl.clientHeight : SVG_H;
+  svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  // 接地ラインは常に下端から6.5%に固定 → どのウィンドウサイズでも必ず表示内
+  const groundY = h - Math.max(18, Math.round(h * 0.065));
+
+  const bs = getBallState(state.frame, params, groundY);
+  const cx = w / 2;
 
   let rx, ry, squashW = 0, stretchW = 0;
   if(withSS){
@@ -1025,29 +1037,28 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
   } else {
     rx = ry = BALL_R;
   }
-  const cy = withSS ? getAdjustedCY(bs, ry) : bs.cy;
+  const cy = withSS ? getAdjustedCY(bs, ry, groundY) : bs.cy;
 
   const parts = [];
 
   // arc
   if(features.arc){
-    const topY = GROUND_Y - BALL_R - params.height;
-    const midY = (topY + GROUND_Y - BALL_R) / 2;
-    const arcH = (GROUND_Y - BALL_R - topY) / 2;
-    parts.push(`<ellipse cx="${cx}" cy="${midY}" rx="${SVG_W*0.18}" ry="${arcH}"
+    const topY = groundY - BALL_R - params.height;
+    const midY = (topY + groundY - BALL_R) / 2;
+    const arcH = (groundY - BALL_R - topY) / 2;
+    parts.push(`<ellipse cx="${cx}" cy="${midY}" rx="${w*0.18}" ry="${arcH}"
       fill="none" stroke="${C_INK}" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="4 4"/>`);
   }
 
   // ground
   if(features.ground){
-    parts.push(`<line x1="0" y1="${GROUND_Y}" x2="${SVG_W}" y2="${GROUND_Y}"
+    parts.push(`<line x1="0" y1="${groundY}" x2="${w}" y2="${groundY}"
       stroke="${C_INK}" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="6 3"/>`);
-    parts.push(`<text x="${SVG_W-6}" y="${GROUND_Y-4}" font-family="JetBrains Mono,monospace"
+    parts.push(`<text x="${w-6}" y="${groundY-4}" font-family="JetBrains Mono,monospace"
       font-size="8" fill="${C_INK}" fill-opacity="0.55" text-anchor="end" letter-spacing="1">GROUND</text>`);
-    // tDR scale ticks under the ground line
     for(let i=0;i<=12;i++){
-      const x = (i/12)*SVG_W;
-      parts.push(`<line x1="${x}" y1="${GROUND_Y}" x2="${x}" y2="${GROUND_Y+5}"
+      const x = (i/12)*w;
+      parts.push(`<line x1="${x}" y1="${groundY}" x2="${x}" y2="${groundY+5}"
         stroke="${C_INK}" stroke-opacity="${i%3===0?0.55:0.25}" stroke-width="1"/>`);
     }
   }
@@ -1056,7 +1067,7 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
   if(features.shadow){
     const shadowScale = 0.4 + bs.phase * 0.7;
     const shadowOp = 0.10 + bs.phase * 0.30;
-    parts.push(`<ellipse cx="${cx}" cy="${GROUND_Y}" rx="${BALL_R * shadowScale * 1.4}" ry="5"
+    parts.push(`<ellipse cx="${cx}" cy="${groundY}" rx="${BALL_R * shadowScale * 1.4}" ry="5"
       fill="${C_INK}" opacity="${shadowOp.toFixed(2)}"/>`);
   }
 
@@ -1084,13 +1095,14 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
   parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
     fill="${ballFill}" stroke="${ballStroke}" stroke-width="1.2"/>`);
 
-  // ink core square (tDR ball signature)
-  const coreR = Math.min(rx, ry) * 0.32;
-  parts.push(`<rect x="${cx-coreR}" y="${cy-coreR}" width="${coreR*2}" height="${coreR*2}"
-    fill="${panelKey==='wrong' ? C_ACC : C_INK}" opacity="0.95"/>`);
+  // ink core square (tDR ball signature) — DEBUG_GUIDES でON/OFF可
+  if(features.coreSquare){
+    const coreR = Math.min(rx, ry) * 0.32;
+    parts.push(`<rect x="${cx-coreR}" y="${cy-coreR}" width="${coreR*2}" height="${coreR*2}"
+      fill="${panelKey==='wrong' ? C_ACC : C_INK}" opacity="0.95"/>`);
+  }
 
   // halo ring (tDR signature)
-  const haloR = Math.max(rx,ry) + 8;
   parts.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx+8}" ry="${ry+8}"
     fill="none" stroke="${C_INK}" stroke-opacity="0.15" stroke-width="1"/>`);
 
@@ -1107,8 +1119,8 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
     const diff = Math.abs(parseFloat(vol) - 1);
     const vc = diff < 0.05 ? C_INK : diff < 0.15 ? C_INK : C_WARN;
     const vBg = diff < 0.05 ? C_ACC : '#fff';
-    parts.push(`<rect x="6" y="${SVG_H-26}" width="76" height="18" fill="${vBg}" stroke="${C_INK}" stroke-width="1"/>`);
-    parts.push(`<text x="10" y="${SVG_H-13}" font-family="JetBrains Mono,monospace"
+    parts.push(`<rect x="6" y="${h-26}" width="76" height="18" fill="${vBg}" stroke="${C_INK}" stroke-width="1"/>`);
+    parts.push(`<text x="10" y="${h-13}" font-family="JetBrains Mono,monospace"
       font-size="9" fill="${vc}" font-weight="700" letter-spacing="1">VOL · ${vol}×</text>`);
   }
 

@@ -1,0 +1,3467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APPEAL // STARDUST ENGINE — VTUBER MV BACKGROUND LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;700&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+@font-face{
+  font-family:'StageDisplay';
+  src:url('assets/bank-gothic-light-bt.ttf') format('truetype');
+  font-weight:300;font-style:normal;font-display:swap;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* DARK COSMIC PALETTE (VTuber stage) */
+  --bg-0:#06061c;
+  --bg-1:#0d0930;
+  --bg-2:#1c1349;
+  --bg-3:#2a1a6e;
+
+  --ink:#f3eaff;
+  --ink-soft:rgba(243,234,255,0.62);
+  --ink-mute:rgba(243,234,255,0.36);
+  --ink-faint:rgba(243,234,255,0.18);
+
+  --cyan:#7dd9ff;
+  --magenta:#ff7be0;
+  --gold:#ffd789;
+  --lilac:#b59cff;
+  --hot:#ff5a8a;
+  --good:#a8ffd6;
+
+  --border:rgba(181,156,255,0.18);
+  --border-strong:rgba(181,156,255,0.36);
+  --hairline:rgba(181,156,255,0.10);
+
+  --glow-lilac:0 0 14px rgba(181,156,255,0.55);
+  --glow-cyan:0 0 14px rgba(125,217,255,0.55);
+  --glow-gold:0 0 16px rgba(255,215,137,0.55);
+  --glow-magenta:0 0 14px rgba(255,123,224,0.55);
+
+  --mono:'IBM Plex Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+  --disp:'StageDisplay','Barlow Condensed',sans-serif;
+  --serif:'Cormorant Garamond',serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink);font-family:var(--mono)}
+
+/* Animated cosmic body — sits behind everything, only visible at edges */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 12%, rgba(125,217,255,0.18), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 82% 18%, rgba(255,123,224,0.16), transparent 65%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(181,156,255,0.22), transparent 70%),
+    linear-gradient(160deg, #06061c 0%, #0d0930 35%, #1a0e44 65%, #2a1a6e 100%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4;
+  background-image:
+    linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.04) 31%, rgba(255,255,255,0.04) 32%, transparent 33%),
+    linear-gradient(115deg, transparent 55%, rgba(125,217,255,0.06) 56%, rgba(125,217,255,0.06) 57.5%, transparent 58.5%),
+    linear-gradient(115deg, transparent 75%, rgba(255,123,224,0.05) 76%, rgba(255,123,224,0.05) 77%, transparent 78%);
+}
+
+#app{position:relative;z-index:1;display:grid;grid-template-rows:46px 1fr 38px;grid-template-columns:1fr 336px;height:100vh;width:100vw}
+
+/* ───────────────── TOP BAR ───────────────── */
+#topbar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;
+  background:linear-gradient(180deg, rgba(13,9,48,0.85) 0%, rgba(13,9,48,0.55) 100%);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  z-index:10;
+  box-shadow:0 1px 0 rgba(125,217,255,0.08), 0 8px 32px rgba(0,0,0,0.4);
+}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
+#topbar .brand{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--disp);font-size:13px;letter-spacing:0.32em;color:var(--ink);
+  text-shadow:0 0 8px rgba(181,156,255,0.4);
+}
+#topbar .brand .star{
+  width:14px;height:14px;display:inline-block;color:var(--gold);
+  filter:drop-shadow(0 0 6px rgba(255,215,137,0.7));
+}
+.sys-id{color:var(--ink-mute);font-size:9px;letter-spacing:0.14em}
+.title-tag{
+  font-family:var(--mono);font-size:10px;color:var(--cyan);
+  letter-spacing:0.18em;text-shadow:0 0 8px rgba(125,217,255,0.4);
+  padding-left:14px;border-left:1px solid var(--hairline);
+}
+.esc-btn{
+  color:var(--ink-mute);font-size:9px;letter-spacing:0.16em;
+  text-decoration:none;
+  border:1px solid var(--border);
+  padding:4px 10px;transition:all .2s;
+  background:rgba(181,156,255,0.04);
+}
+.esc-btn:hover{color:var(--ink);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+
+/* ───────────────── STAGE ───────────────── */
+#stage{position:relative;overflow:hidden;background:transparent}
+
+.stage-bignum{
+  position:absolute;font-family:var(--disp);font-weight:300;
+  font-size:clamp(220px,28vw,420px);
+  background:linear-gradient(180deg, rgba(181,156,255,0.13), rgba(181,156,255,0));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:0.85;bottom:-60px;left:-20px;
+  pointer-events:none;user-select:none;letter-spacing:-0.04em;z-index:0;
+}
+.stage-watermark{
+  position:absolute;top:18px;left:24px;z-index:1;pointer-events:none;
+  font-family:var(--serif);font-style:italic;font-size:13px;
+  color:var(--ink-mute);letter-spacing:0.04em;
+}
+.stage-watermark .tiny{font-family:var(--mono);font-size:8px;color:var(--ink-faint);letter-spacing:0.2em;margin-top:2px;display:block}
+
+.corner{position:absolute;width:18px;height:18px;pointer-events:none;z-index:6}
+.corner::before,.corner::after{content:'';position:absolute;background:linear-gradient(90deg,var(--lilac),transparent);box-shadow:var(--glow-lilac)}
+.corner::before{width:1px;height:18px;top:0}
+.corner::after{width:18px;height:1px;top:0;background:linear-gradient(90deg,var(--lilac),transparent)}
+.corner.tl{top:14px;left:14px}
+.corner.tr{top:14px;right:14px;transform:scaleX(-1)}
+.corner.bl{bottom:14px;left:14px;transform:scaleY(-1)}
+.corner.br{bottom:14px;right:14px;transform:scale(-1)}
+
+.po{position:absolute;top:18px;right:24px;text-align:right;pointer-events:none;z-index:6}
+.po-num{font-family:var(--mono);font-size:9px;color:var(--ink-mute);letter-spacing:0.22em}
+.po-en{
+  font-family:var(--disp);font-size:22px;color:var(--ink);
+  letter-spacing:0.32em;margin-top:2px;
+  text-shadow:0 0 12px rgba(255,215,137,0.45);
+}
+.po-jp{font-family:var(--jp);font-size:11px;color:var(--gold);letter-spacing:0.3em;margin-top:1px}
+
+#canvas-wrap{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:62px 32px 52px 32px}
+#canvas-frame{
+  position:relative;width:100%;height:100%;max-width:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+/* Glow under canvas */
+#canvas-frame::before{
+  content:'';position:absolute;inset:-30px;z-index:0;
+  background:radial-gradient(ellipse at center, rgba(181,156,255,0.28), transparent 65%);
+  filter:blur(20px);
+  pointer-events:none;
+}
+#mv-canvas{
+  display:block;cursor:crosshair;
+  position:relative;z-index:1;
+  border-radius:2px;
+  box-shadow:
+    0 0 0 1px rgba(181,156,255,0.32),
+    0 0 0 6px rgba(181,156,255,0.06),
+    0 24px 60px rgba(0,0,0,0.6),
+    0 0 80px rgba(125,217,255,0.18);
+}
+
+/* HUD overlays */
+#mode-badge{
+  position:absolute;top:74px;left:48px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;
+  padding:5px 10px;
+  border:1px solid rgba(255,255,255,0.22);
+  color:#fff;
+  background:rgba(13,9,48,0.55);
+  backdrop-filter:blur(8px);
+  pointer-events:none;z-index:5;
+  box-shadow:inset 0 0 16px rgba(125,217,255,0.1);
+}
+#mode-badge .lbl{color:rgba(255,255,255,0.5);margin-right:4px}
+#mode-badge #role-current{color:var(--cyan);text-shadow:0 0 6px rgba(125,217,255,0.6)}
+
+#bg-color-badge{
+  position:absolute;top:74px;right:48px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.16em;
+  display:flex;align-items:center;gap:8px;
+  padding:5px 10px;
+  border:1px solid rgba(255,255,255,0.22);
+  background:rgba(13,9,48,0.55);
+  backdrop-filter:blur(8px);
+  color:#fff;
+  pointer-events:none;z-index:5;
+}
+#bg-color-badge .swatch{
+  width:14px;height:14px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.4);
+  box-shadow:0 0 8px rgba(255,255,255,0.2);
+}
+
+#mv-hud{
+  position:absolute;bottom:48px;left:48px;
+  font-family:var(--mono);font-size:8px;color:rgba(255,255,255,0.85);
+  letter-spacing:0.12em;line-height:2.0;
+  pointer-events:none;z-index:5;
+  display:flex;gap:22px;
+  text-shadow:0 1px 6px rgba(0,0,0,0.5);
+}
+#mv-hud .val{color:var(--cyan);font-weight:700;text-shadow:0 0 6px rgba(125,217,255,0.5)}
+#mv-hud .key{color:rgba(255,255,255,0.55)}
+
+/* FUI overlay */
+#fui-overlay{
+  position:absolute;top:114px;right:48px;
+  pointer-events:none;z-index:5;
+  font-family:var(--mono);
+  width:268px;
+  transition:opacity .3s;
+}
+#fui-overlay.hide{opacity:0}
+.fui-panel{
+  background:linear-gradient(160deg, rgba(28,19,73,0.78), rgba(13,9,48,0.55));
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(181,156,255,0.28);
+  padding:11px 13px;margin-bottom:7px;
+  color:#fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 8px 28px rgba(0,0,0,0.45);
+  position:relative;
+}
+.fui-panel::before{
+  content:'';position:absolute;top:0;left:8px;right:8px;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(125,217,255,0.5), transparent);
+}
+.fui-panel .pl{font-size:8px;letter-spacing:0.22em;color:var(--cyan);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;text-shadow:0 0 6px rgba(125,217,255,0.4)}
+.fui-panel .pl .badge{color:var(--ink);letter-spacing:0.1em;background:rgba(181,156,255,0.18);padding:2px 6px;font-size:7.5px;border:1px solid rgba(181,156,255,0.28)}
+.fui-row{display:flex;align-items:center;gap:8px;font-size:8.5px;letter-spacing:0.1em;padding:3px 0;color:rgba(255,255,255,0.78)}
+.fui-row .name{flex:1}
+.fui-row .bar{width:78px;height:5px;background:rgba(255,255,255,0.08);border:1px solid rgba(181,156,255,0.22);position:relative;overflow:hidden}
+.fui-row .bar-fill{position:absolute;top:0;left:0;bottom:0;width:0%;background:linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0.95));transition:width .35s;box-shadow:0 0 8px rgba(255,255,255,0.4)}
+.fui-row .pct{width:34px;text-align:right;color:#fff;font-weight:700;font-size:9px}
+.fui-row.good .bar-fill{background:linear-gradient(90deg, rgba(168,255,214,0.5), var(--good));box-shadow:0 0 10px rgba(168,255,214,0.6)}
+.fui-row.good .pct{color:var(--good);text-shadow:0 0 6px rgba(168,255,214,0.5)}
+.fui-row.hot  .bar-fill{background:linear-gradient(90deg, rgba(255,90,138,0.5), var(--hot));box-shadow:0 0 10px rgba(255,90,138,0.6)}
+.fui-row.hot  .pct{color:var(--hot);text-shadow:0 0 6px rgba(255,90,138,0.5)}
+
+#fui-rail{
+  position:absolute;top:50%;right:48px;transform:translateY(-50%);
+  width:42px;height:46%;display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;z-index:5;opacity:0;transition:opacity .3s;
+}
+#fui-rail.show{opacity:1}
+.fr-lbl{font-family:var(--mono);font-size:8.5px;color:var(--ink);letter-spacing:0.32em;writing-mode:vertical-rl;text-shadow:0 0 6px rgba(125,217,255,0.5)}
+#fr-track{
+  position:relative;flex:1;width:10px;
+  border:1px solid rgba(181,156,255,0.36);
+  background:rgba(13,9,48,0.6);
+  backdrop-filter:blur(6px);
+  box-shadow:inset 0 0 12px rgba(0,0,0,0.5);
+}
+#fr-fill{
+  position:absolute;bottom:0;left:0;right:0;height:0%;
+  background:linear-gradient(to top, var(--gold) 0%, var(--magenta) 50%, var(--cyan) 100%);
+  transition:height .35s;
+  box-shadow:0 0 14px rgba(181,156,255,0.6);
+}
+#fr-pct{font-family:var(--disp);font-size:14px;color:var(--ink);letter-spacing:0.05em;text-align:center;text-shadow:0 0 8px rgba(125,217,255,0.5)}
+
+#verdict-flash{
+  position:absolute;top:22%;left:50%;transform:translateX(-50%);
+  font-family:var(--disp);font-size:48px;letter-spacing:0.24em;
+  color:var(--ink);
+  text-shadow:
+    0 0 18px rgba(125,217,255,0.7),
+    0 0 36px rgba(181,156,255,0.5),
+    0 2px 12px rgba(0,0,0,0.6);
+  pointer-events:none;z-index:5;opacity:0;transition:opacity .3s;text-align:center;
+}
+#verdict-flash.show{opacity:1}
+#verdict-flash .sub{display:block;font-family:var(--serif);font-style:italic;font-size:14px;letter-spacing:0.12em;color:var(--gold);margin-top:8px;text-shadow:0 0 12px rgba(255,215,137,0.6)}
+
+#instr{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.85);
+  letter-spacing:0.24em;text-align:center;pointer-events:none;z-index:5;
+  transition:opacity .4s;
+}
+#instr.hide{opacity:0!important}
+#instr .big{
+  font-family:var(--disp);font-size:24px;color:var(--ink);
+  letter-spacing:0.36em;margin-bottom:14px;
+  text-shadow:0 0 18px rgba(125,217,255,0.6), 0 0 36px rgba(181,156,255,0.4);
+}
+#instr .glyph{
+  display:block;width:48px;height:48px;margin:0 auto 18px;
+  color:var(--gold);
+  filter:drop-shadow(0 0 12px rgba(255,215,137,0.7));
+  animation:twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{opacity:0.7;transform:scale(0.95) rotate(0deg)}
+  50%{opacity:1;transform:scale(1.05) rotate(180deg)}
+}
+
+/* ───────────────── PANEL ───────────────── */
+#panel{
+  position:relative;z-index:2;
+  border-left:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(13,9,48,0.85) 0%, rgba(6,6,28,0.92) 100%);
+  backdrop-filter:blur(20px);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--lilac) transparent;
+  box-shadow:-1px 0 0 rgba(125,217,255,0.08), -16px 0 32px rgba(0,0,0,0.4);
+}
+#panel::-webkit-scrollbar{width:3px}
+#panel::-webkit-scrollbar-thumb{background:var(--lilac);border-radius:2px}
+#panel::-webkit-scrollbar-track{background:transparent}
+
+.psec{
+  position:relative;
+  border-bottom:1px solid var(--hairline);
+  padding:16px 18px;
+}
+.psec:last-child{border-bottom:none}
+.psec::before{
+  content:'';position:absolute;top:0;left:18px;right:18px;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(181,156,255,0.25), transparent);
+}
+
+.sec-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.32em;
+  color:var(--cyan);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+  text-shadow:0 0 8px rgba(125,217,255,0.35);
+}
+.sec-label::before{
+  content:'';width:6px;height:6px;
+  background:var(--gold);transform:rotate(45deg);
+  box-shadow:var(--glow-gold);
+}
+.sec-label .num{color:var(--ink-mute);font-weight:300;margin-right:4px}
+
+.sec-title{
+  font-family:var(--disp);font-size:22px;letter-spacing:0.28em;
+  color:var(--ink);line-height:1;margin-bottom:8px;
+  text-shadow:0 0 14px rgba(181,156,255,0.4);
+}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.95;color:var(--ink-soft);margin-bottom:8px}
+.body-text strong{color:var(--gold);font-weight:700}
+.body-en{
+  font-family:var(--serif);font-style:italic;font-size:12px;line-height:1.7;
+  color:var(--ink-mute);letter-spacing:0.02em;
+  border-left:1px solid var(--border-strong);padding-left:10px;
+}
+
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.16em;
+  border:1px solid var(--border);
+  padding:6px 10px;cursor:pointer;
+  color:var(--ink-soft);
+  background:rgba(181,156,255,0.04);
+  transition:all .18s;margin-right:3px;margin-bottom:3px;
+  position:relative;
+}
+.btn:hover{
+  color:var(--ink);border-color:var(--cyan);
+  background:rgba(125,217,255,0.08);
+  box-shadow:var(--glow-cyan);
+}
+.btn.active{
+  color:var(--bg-0);
+  background:linear-gradient(135deg, var(--gold), var(--magenta));
+  border-color:var(--gold);
+  font-weight:700;
+  text-shadow:none;
+  box-shadow:var(--glow-gold), inset 0 0 12px rgba(255,255,255,0.3);
+}
+.btn.export{
+  background:linear-gradient(135deg, rgba(125,217,255,0.18), rgba(181,156,255,0.18));
+  color:var(--ink);border-color:var(--cyan);font-weight:700;
+  box-shadow:var(--glow-cyan), inset 0 0 12px rgba(125,217,255,0.15);
+  display:block;width:100%;text-align:center;margin-bottom:4px;
+}
+.btn.export:hover{
+  background:linear-gradient(135deg, var(--cyan), var(--lilac));
+  color:var(--bg-0);border-color:var(--cyan);
+}
+.btn.preset{
+  padding:8px 12px;font-size:9px;display:flex;align-items:center;justify-content:space-between;
+  width:100%;text-align:left;margin-bottom:4px;letter-spacing:0.1em;
+}
+.btn.preset .arrow{color:var(--gold);margin-right:8px;text-shadow:var(--glow-gold)}
+.btn.preset .tag{color:var(--ink-faint);font-size:7.5px;letter-spacing:0.2em}
+
+.role-btn{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:0.14em;
+  border:1px solid var(--border);
+  padding:8px 10px;cursor:pointer;
+  color:var(--ink-soft);
+  background:rgba(181,156,255,0.04);
+  transition:all .2s;margin-bottom:5px;width:100%;
+  position:relative;
+}
+.role-btn:hover{
+  color:var(--ink);border-color:var(--cyan);
+  background:rgba(125,217,255,0.07);
+  box-shadow:var(--glow-cyan);
+}
+.role-btn.active{
+  color:var(--ink);
+  background:linear-gradient(90deg, rgba(255,123,224,0.18), rgba(125,217,255,0.12));
+  border-color:var(--magenta);
+  box-shadow:var(--glow-magenta), inset 0 0 16px rgba(255,123,224,0.1);
+}
+.role-btn.active .icon{color:var(--gold);text-shadow:var(--glow-gold)}
+.role-btn .icon{
+  width:18px;height:18px;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-size:14px;color:var(--lilac);
+  text-shadow:0 0 6px rgba(181,156,255,0.5);
+}
+.role-btn .name{flex:1;letter-spacing:0.2em}
+.role-btn .desc{color:var(--ink-faint);font-size:8px;font-family:var(--jp);letter-spacing:0.04em}
+
+.sl-row{margin-bottom:10px}
+.sl-label{
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:8.5px;letter-spacing:0.14em;
+  color:var(--ink-mute);margin-bottom:4px;
+}
+.sl-label .name{color:var(--ink-soft)}
+.sl-label .val{color:var(--gold);font-weight:700;text-shadow:var(--glow-gold)}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:4px;cursor:pointer;
+  background:linear-gradient(90deg, rgba(181,156,255,0.4), rgba(125,217,255,0.4));
+  border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold);
+  border:2px solid var(--bg-0);
+  box-shadow:var(--glow-gold);
+  cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold);
+  border:2px solid var(--bg-0);
+  box-shadow:var(--glow-gold);
+  cursor:grab;
+}
+
+.color-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.color-swatch{
+  width:26px;height:26px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.18);
+  cursor:pointer;transition:all .15s;
+  box-shadow:inset 0 -4px 8px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.4);
+}
+.color-swatch:hover{transform:scale(1.18);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+.color-swatch.active{
+  border:2px solid var(--gold);transform:scale(1.18);
+  box-shadow:var(--glow-gold);
+}
+
+.insight{
+  background:linear-gradient(160deg, rgba(255,215,137,0.06), rgba(181,156,255,0.08));
+  border:1px solid var(--border-strong);
+  padding:12px;
+  font-family:var(--jp);font-size:11px;line-height:1.85;
+  color:var(--ink-soft);margin-top:8px;
+  position:relative;
+}
+.insight::before{
+  content:'';position:absolute;top:0;left:0;width:24px;height:1px;
+  background:var(--gold);box-shadow:var(--glow-gold);
+}
+.insight strong{color:var(--gold);display:block;margin-bottom:6px;letter-spacing:0.18em;font-family:var(--mono);font-size:9px;text-shadow:var(--glow-gold)}
+
+.helptext{
+  margin-top:8px;font-family:var(--mono);font-size:8.5px;
+  color:var(--ink-faint);letter-spacing:0.08em;line-height:1.7;
+}
+.helptext strong{color:var(--lilac)}
+
+/* Pattern button grid: subtle icon hint via ::before */
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.btn-grid .btn{margin:0;text-align:left;padding:7px 9px}
+
+.danger-btn{
+  background:linear-gradient(135deg, rgba(255,90,138,0.15), rgba(255,90,138,0.05));
+  border-color:rgba(255,90,138,0.5)!important;
+  color:var(--hot)!important;
+}
+.danger-btn:hover{
+  background:linear-gradient(135deg, rgba(255,90,138,0.3), rgba(255,90,138,0.1));
+  box-shadow:0 0 14px rgba(255,90,138,0.5)!important;
+}
+
+/* ───────────────── BOTTOM BAR ───────────────── */
+#bottombar{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;
+  border-top:1px solid var(--border);
+  background:linear-gradient(0deg, rgba(13,9,48,0.85) 0%, rgba(13,9,48,0.55) 100%);
+  backdrop-filter:blur(14px);
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  box-shadow:0 -1px 0 rgba(125,217,255,0.08);
+}
+.bl{color:var(--ink-mute);display:flex;gap:18px}
+.bl .v{color:var(--cyan)}
+.bc{color:var(--gold);font-weight:700;text-shadow:var(--glow-gold);letter-spacing:0.2em}
+.br{color:var(--ink-faint)}
+.kbd{
+  display:inline-block;
+  border:1px solid var(--hairline);
+  background:rgba(181,156,255,0.05);
+  padding:1px 6px;font-size:8px;
+  color:var(--lilac);margin-left:3px;margin-right:1px;
+  letter-spacing:0.1em;
+}
+
+#toast{
+  position:fixed;bottom:64px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.2em;
+  padding:12px 24px;
+  background:linear-gradient(135deg, rgba(125,217,255,0.18), rgba(255,123,224,0.18));
+  backdrop-filter:blur(14px);
+  color:var(--ink);
+  border:1px solid var(--cyan);
+  box-shadow:var(--glow-cyan), 0 10px 30px rgba(0,0,0,0.5);
+  z-index:50;opacity:0;transition:opacity .3s;
+}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header id="topbar">
+  <div class="left">
+    <span class="brand">
+      <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.4 7.4H22l-6.2 4.5 2.4 7.4-6.2-4.6-6.2 4.6 2.4-7.4L2 8.4h7.6z"/></svg>
+      STARDUST ENGINE
+    </span>
+    <span class="title-tag">10 // APPEAL — VTUBER MV LAB</span>
+  </div>
+  <div class="right">
+    <span class="sys-id" id="topbar-state">SHARDS · 0 // ROLE · HERO</span>
+    <a class="esc-btn" href="index.html">← INDEX</a>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="stage-bignum">10</div>
+  <div class="stage-watermark">
+    Music<br>becoming light.
+    <span class="tiny">— PRINCIPLE OF APPEAL</span>
+  </div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="po">
+    <div class="po-num">10 / 12 · PRINCIPLES OF ANIMATION</div>
+    <div class="po-en">APPEAL</div>
+    <div class="po-jp">魅 力</div>
+  </div>
+
+  <div id="canvas-wrap">
+    <div id="canvas-frame">
+      <canvas id="mv-canvas"></canvas>
+    </div>
+  </div>
+
+  <div id="mode-badge"><span class="lbl">ROLE</span><span id="role-current">HERO</span></div>
+  <div id="bg-color-badge"><span class="swatch" id="bg-swatch"></span><span id="bg-name">NIGHT SKY</span></div>
+
+  <!-- FUI overlay panels on top of canvas -->
+  <div id="fui-overlay">
+    <div class="fui-panel" id="fui-appeal">
+      <div class="pl"><span>APPEAL ／ ANALYSIS</span><span class="badge" id="fui-verdict-mini">—</span></div>
+      <div class="fui-row" id="fui-hero">
+        <span class="name">HERO FOCUS</span>
+        <span class="bar"><span class="bar-fill"></span></span>
+        <span class="pct">0%</span>
+      </div>
+      <div class="fui-row" id="fui-sil">
+        <span class="name">SILHOUETTE</span>
+        <span class="bar"><span class="bar-fill"></span></span>
+        <span class="pct">0%</span>
+      </div>
+      <div class="fui-row" id="fui-rhythm">
+        <span class="name">RHYTHM</span>
+        <span class="bar"><span class="bar-fill"></span></span>
+        <span class="pct">0%</span>
+      </div>
+      <div class="fui-row" id="fui-density">
+        <span class="name">DENSITY MIX</span>
+        <span class="bar"><span class="bar-fill"></span></span>
+        <span class="pct">0%</span>
+      </div>
+      <div class="fui-row" id="fui-flow-coh">
+        <span class="name">FLOW COHESION</span>
+        <span class="bar"><span class="bar-fill"></span></span>
+        <span class="pct">0%</span>
+      </div>
+    </div>
+    <div class="fui-panel" id="fui-rhythm-analysis">
+      <div class="pl"><span>RHYTHM ／ DETAIL</span><span class="badge" id="fui-flow-deg">-25°</span></div>
+      <div class="fui-row"><span class="name">SIZE VARIANCE</span><span class="pct" id="fui-svar">—</span></div>
+      <div class="fui-row"><span class="name">SPACING VARIANCE</span><span class="pct" id="fui-spacing">—</span></div>
+      <div class="fui-row"><span class="name">TOO EVEN</span><span class="pct" id="fui-even">no</span></div>
+    </div>
+  </div>
+
+  <!-- Appeal rail (right edge) -->
+  <div id="fui-rail">
+    <div class="fr-lbl">APPEAL ／ 魅力</div>
+    <div id="fr-track"><div id="fr-fill"></div></div>
+    <div id="fr-pct">—%</div>
+  </div>
+
+  <div id="mv-hud">
+    <div><span class="key">SHARDS</span>&nbsp;<span class="val" id="h-elem">0</span></div>
+    <div><span class="key">HERO</span>&nbsp;<span class="val" id="h-hero">0</span></div>
+    <div><span class="key">FLOW</span>&nbsp;<span class="val" id="h-flow">0</span></div>
+    <div><span class="key">RHYTHM</span>&nbsp;<span class="val" id="h-rhythm">0</span></div>
+    <div><span class="key">NOISE</span>&nbsp;<span class="val" id="h-noise">0</span></div>
+    <div><span class="key">FLOW∠</span>&nbsp;<span class="val" id="h-angle">-25°</span></div>
+  </div>
+
+  <div id="verdict-flash">
+    <span id="verdict-text">—</span>
+    <span class="sub" id="verdict-sub"></span>
+  </div>
+
+  <div id="instr">
+    <svg class="glyph" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.4 7.4H22l-6.2 4.5 2.4 7.4-6.2-4.6-6.2 4.6 2.4-7.4L2 8.4h7.6z"/></svg>
+    <div class="big">CONJURE A SKY</div>
+    <div>pick a role · click the stage<br>— or summon a preset →</div>
+  </div>
+</main>
+
+<aside id="panel">
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">A</span> THEORY</div>
+    <div class="sec-title">APPEAL</div>
+    <div class="body-text">
+      綺麗な配置じゃない。<br>
+      <strong>存在したくなる感じ</strong>。<br>
+      音楽が光になった状態を作る。
+    </div>
+    <div class="body-en">
+      Music becoming light.<br>
+      Not arrangement — presence.
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">B</span> GRAPHIC ROLE</div>
+    <button class="role-btn active" data-role="hero" onclick="setRole('hero')">
+      <span class="icon">★</span><span class="name">HERO</span><span class="desc">主役・大</span>
+    </button>
+    <button class="role-btn" data-role="cloud" onclick="setRole('cloud')">
+      <span class="icon">☁</span><span class="name">CLOUD</span><span class="desc">丸の集合</span>
+    </button>
+    <button class="role-btn" data-role="flow" onclick="setRole('flow')">
+      <span class="icon">⫽</span><span class="name">FLOW</span><span class="desc">光の流線</span>
+    </button>
+    <button class="role-btn" data-role="rhythm" onclick="setRole('rhythm')">
+      <span class="icon">⋯</span><span class="name">RHYTHM</span><span class="desc">点列</span>
+    </button>
+    <button class="role-btn" data-role="noise" onclick="setRole('noise')">
+      <span class="icon">✦</span><span class="name">NOISE</span><span class="desc">きらめき</span>
+    </button>
+    <button class="role-btn" data-role="frame" onclick="setRole('frame')">
+      <span class="icon">◯</span><span class="name">FRAME</span><span class="desc">UI/円弧</span>
+    </button>
+    <button class="role-btn" data-role="texture" onclick="setRole('texture')">
+      <span class="icon">▦</span><span class="name">TEXTURE</span><span class="desc">halftone</span>
+    </button>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">C</span> SCENE PRESETS</div>
+    <button class="btn preset" onclick="loadPreset('vtuber')"><span><span class="arrow">✦</span>VTUBER OPENING</span><span class="tag">COSMIC</span></button>
+    <button class="btn preset" onclick="loadPreset('pop')"><span><span class="arrow">✦</span>POP CONCERT</span><span class="tag">IDOL</span></button>
+    <button class="btn preset" onclick="loadPreset('starfall')"><span><span class="arrow">✦</span>STARFALL</span><span class="tag">RAIN</span></button>
+    <button class="btn preset" onclick="loadPreset('dreamclouds')"><span><span class="arrow">✦</span>DREAM CLOUDS</span><span class="tag">SOFT</span></button>
+    <button class="btn preset" onclick="loadPreset('cosmic')"><span><span class="arrow">✦</span>COSMIC DREAM</span><span class="tag">DEEP</span></button>
+    <button class="btn preset" onclick="loadPreset('magichour')"><span><span class="arrow">✦</span>MAGIC HOUR</span><span class="tag">WARM</span></button>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">D</span> GLOBAL FLOW · 風</div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">FLOW ANGLE</span><span class="val" id="sl-flow-val">-25°</span></div>
+      <input type="range" id="sl-flow" min="-90" max="90" value="-25">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">ROTATION SPEED · ★◯</span><span class="val" id="sl-rot-val">0.30</span></div>
+      <input type="range" id="sl-rot" min="0" max="100" value="30">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">STRIPE ROT JITTER</span><span class="val" id="sl-stripeJ-val">0.40</span></div>
+      <input type="range" id="sl-stripeJ" min="0" max="200" value="40">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">MOTION SPEED</span><span class="val" id="sl-speed-val">1.00</span></div>
+      <input type="range" id="sl-speed" min="0" max="300" value="100">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">GLITCH SPEED</span><span class="val" id="sl-glitch-val">0.50</span></div>
+      <input type="range" id="sl-glitch" min="0" max="100" value="50">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">GLOW STRENGTH</span><span class="val" id="sl-glow-val">0.60</span></div>
+      <input type="range" id="sl-glow" min="0" max="120" value="60">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">PARALLAX</span><span class="val" id="sl-parallax-val">0 px</span></div>
+      <input type="range" id="sl-parallax" min="0" max="120" value="0">
+    </div>
+    <div class="helptext">
+      <strong>GLITCH 0</strong> で完全停止 ／ <strong>WHEEL</strong> でパララックス
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">E</span> LAYOUT · 一括</div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">DENSITY · 粗⇆密</span><span class="val" id="sl-density-val">1.00x</span></div>
+      <input type="range" id="sl-density" min="40" max="200" value="100">
+    </div>
+    <div class="sl-row">
+      <div class="sl-label"><span class="name">SCALE · 小⇆大</span><span class="val" id="sl-scale-val">1.00x</span></div>
+      <input type="range" id="sl-scale" min="30" max="200" value="100">
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">F</span> HERO GENERATOR</div>
+    <div class="btn-grid">
+      <button class="btn" onclick="spawnHero('dominant')">DOMINANT</button>
+      <button class="btn" onclick="spawnHero('shy')">SHY</button>
+      <button class="btn" onclick="spawnHero('chaotic')">CHAOTIC</button>
+      <button class="btn" onclick="spawnHero('elegant')">ELEGANT</button>
+    </div>
+    <button class="btn" onclick="spawnHero('mascot')" style="width:100%;margin-top:4px;text-align:center">MASCOT</button>
+    <div class="helptext">性格別の主役を即配置。</div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">G</span> PATTERN LAYERS · 装飾</div>
+    <div class="btn-grid">
+      <button class="btn" onclick="addPattern('star-rain')">STAR RAIN</button>
+      <button class="btn" onclick="addPattern('sparkle-field')">SPARKLE FIELD</button>
+      <button class="btn" onclick="addPattern('hanging-stars')">HANGING STARS</button>
+      <button class="btn" onclick="addPattern('glow-orbs')">GLOW ORBS</button>
+      <button class="btn" onclick="addPattern('aurora-streaks')">AURORA</button>
+      <button class="btn" onclick="addPattern('halftone-band')">HALFTONE BAND</button>
+      <button class="btn" onclick="addPattern('radial-dots')">RADIAL DOTS</button>
+      <button class="btn" onclick="addPattern('speedline-burst')">LIGHT BURST</button>
+      <button class="btn" onclick="addPattern('gradient-veil')">GRADIENT VEIL</button>
+      <button class="btn" onclick="addPattern('star-field')">STAR DUST</button>
+    </div>
+    <button class="btn" onclick="clearPatterns()" style="margin-top:4px;width:100%;text-align:center">CLEAR PATTERNS</button>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">H</span> COMPOSITION</div>
+    <div class="btn-grid">
+      <button class="btn comp-btn active" data-comp="free" onclick="setComposition('free')">FREE</button>
+      <button class="btn comp-btn" data-comp="center-burst" onclick="setComposition('center-burst')">CENTER BURST</button>
+      <button class="btn comp-btn" data-comp="edge-fade" onclick="setComposition('edge-fade')">EDGE FADE</button>
+      <button class="btn comp-btn" data-comp="tunnel" onclick="setComposition('tunnel')">TUNNEL</button>
+    </div>
+    <button class="btn comp-btn" data-comp="diagonal-stream" onclick="setComposition('diagonal-stream')" style="width:100%;margin-top:4px;text-align:center">DIAGONAL STREAM</button>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">I</span> CAMERA FLOW · 編集</div>
+    <div class="btn-grid">
+      <button class="btn cam-btn active" data-cam="diagonal" onclick="setCameraFlow('diagonal')">↘ DIAGONAL</button>
+      <button class="btn cam-btn" data-cam="scroll" onclick="setCameraFlow('scroll')">→ SCROLL</button>
+      <button class="btn cam-btn" data-cam="orbit" onclick="setCameraFlow('orbit')">↻ ORBIT</button>
+      <button class="btn cam-btn" data-cam="rise" onclick="setCameraFlow('rise')">↑ RISE</button>
+      <button class="btn cam-btn" data-cam="impact" onclick="setCameraFlow('impact')">⚡ IMPACT</button>
+      <button class="btn cam-btn" data-cam="static" onclick="setCameraFlow('static')">— STATIC</button>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">J</span> RELATIONSHIPS</div>
+    <button class="btn" id="toggle-drama" onclick="toggleDrama()" style="width:100%;text-align:center">DRAMA · OFF</button>
+    <div class="helptext">
+      <strong>cloud / rhythm</strong> → hero に寄り添う<br>
+      <strong>noise</strong> → hero を避ける<br>
+      <strong>frame</strong> → 静止して構図を支える
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">K</span> BACKGROUND</div>
+    <div class="color-swatches" id="bg-swatches"></div>
+    <button class="btn" id="toggle-halftone" onclick="toggleAutoHalftone()" style="margin-top:8px;width:100%;text-align:center">AUTO HALFTONE · ON</button>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">L</span> PALETTE</div>
+    <div class="color-swatches" id="palette-swatches"></div>
+    <div class="helptext">クリックで色を増減 · <strong>塗りは同系トーンで自動展開</strong></div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">M</span> TOOLS</div>
+    <div class="btn-grid">
+      <button class="btn" onclick="undoLast()">UNDO ←</button>
+      <button class="btn" onclick="clearAll()">CLEAR ×</button>
+      <button class="btn" onclick="randomize()">RANDOMIZE</button>
+      <button class="btn" id="toggle-motion" onclick="toggleMotion()">MOTION · ON</button>
+    </div>
+    <button class="btn" id="toggle-fui" onclick="toggleFUI()" style="width:100%;margin-top:4px;text-align:center">FUI · ON</button>
+    <button class="btn danger-btn" onclick="makeBadAppeal()" style="width:100%;margin-top:4px;text-align:center">⚠ MAKE BAD APPEAL</button>
+    <div class="helptext">等間隔・同サイズで魅力が崩壊する例 (教材用)</div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">N</span> EXPORT · FOR AE</div>
+    <button class="btn export" onclick="exportSVG('all')">↓ EXPORT SVG · LAYERED</button>
+    <button class="btn export" onclick="exportPNG()">↓ EXPORT PNG</button>
+    <div class="helptext">
+      ROLE別に <strong>&lt;g id="hero-layer"&gt;</strong> で書き出し。<br>
+      AEで個別に質感処理可能。
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="num">O</span> INSIGHT</div>
+    <div class="insight">
+      <strong>STARDUST ENGINE</strong>
+      MV背景 = <em style="font-style:normal;color:var(--gold)">音楽が光になった状態</em>。<br><br>
+      <span style="color:var(--lilac)">大・中・小・極小</span> が同時存在し、<br>
+      <span style="color:var(--cyan)">全要素が同じ風向き</span> を持ち、<br>
+      役割の階層が <strong style="color:var(--magenta)">魅力</strong> を生む。
+    </div>
+  </div>
+
+</aside>
+
+<footer id="bottombar">
+  <div class="bl">
+    <span>SHARDS <span class="v" id="bb-elem">0</span></span>
+    <span>ROLE <span class="v" id="bb-role">HERO</span></span>
+    <span>FLOW <span class="v" id="bb-flow">-25°</span></span>
+  </div>
+  <div class="bc" id="bb-state">READY</div>
+  <div class="br">
+    <span class="kbd">1-7</span>ROLE
+    <span class="kbd">CLICK</span>PLACE
+    <span class="kbd">D</span>DRAMA
+    <span class="kbd">M</span>MOTION
+    <span class="kbd">U</span>FUI
+    <span class="kbd">E</span>EXPORT
+    &nbsp;&nbsp;ID · STARDUST-2026-VLS.10
+  </div>
+</footer>
+</div>
+
+<div id="toast">SVG EXPORTED ↓</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// APPEAL v3.1 — MV BACKGROUND ENGINE
+// Fixes:
+// - No flickering (removed random alpha)
+// - Tonal fills (light/base/dark variants of palette colors)
+// - Parallel flow lines (no individual angleOffset for flow-aligned shapes)
+// - Density / Scale sliders (re-layout after placement)
+// - Striped-circle: body + white stripes as separate SVG groups
+// - Slow rotation for ★ and striped-circle
+// - Stripe rotation jitter slider
+// - FUI overlay (live APPEAL analysis on canvas)
+// ═══════════════════════════════════════════════════════════════
+
+const BG_PRESETS = [
+  // Each can have:
+  //   color: solid OR
+  //   gradient: 'linear'|'radial', stops: [[t, hex], ...], angle (linear)
+  { name: 'NIGHT SKY',  gradient:'linear', angle: 160, stops:[[0,'#06061c'],[0.45,'#0d0930'],[0.85,'#1a0e44'],[1,'#2a1a6e']], halftone:'#7dd9ff', halftoneOpacity:0.10 },
+  { name: 'COSMIC',     gradient:'radial', stops:[[0,'#2a1a6e'],[0.6,'#0d0930'],[1,'#06061c']], halftone:'#b59cff', halftoneOpacity:0.12 },
+  { name: 'MAGIC HOUR', gradient:'linear', angle: 175, stops:[[0,'#3d1551'],[0.4,'#6a1f5e'],[0.75,'#a32f5e'],[1,'#ff7be0']], halftone:'#ffd789', halftoneOpacity:0.14 },
+  { name: 'STARFALL',   gradient:'linear', angle: 200, stops:[[0,'#0a1240'],[0.5,'#1a2b6e'],[1,'#3a4eb0']], halftone:'#ffffff', halftoneOpacity:0.10 },
+  { name: 'AURORA',     gradient:'linear', angle: 140, stops:[[0,'#0a1a3a'],[0.5,'#1a4a6e'],[1,'#a8ffd6']], halftone:'#7dd9ff', halftoneOpacity:0.10 },
+  { name: 'KAWAII SKY', gradient:'linear', angle: 180, stops:[[0,'#5cc8ff'],[0.55,'#b8aaff'],[1,'#ffc5e0']], halftone:'#ffffff', halftoneOpacity:0.18 },
+  { name: 'AMETHYST',   gradient:'linear', angle: 170, stops:[[0,'#1a0a3a'],[0.5,'#4a1f8e'],[1,'#8e4fce']], halftone:'#ffd789', halftoneOpacity:0.12 },
+  { name: 'POP RED',    color:'#E83B4A', halftone:'#FFD0E5', halftoneOpacity:0.18 },
+  { name: 'INK BLACK',  color:'#070512', halftone:'#b59cff', halftoneOpacity:0.16 },
+];
+
+const PALETTE_DEFAULT = [
+  '#FFFFFF', '#FFD789', '#FF7BE0', '#7DD9FF', '#B59CFF', '#A8FFD6', '#FF5A8A',
+];
+
+let bgIndex = 0;
+let activePalette = [...PALETTE_DEFAULT];
+
+// ── TONAL COLOR HELPERS ──
+// Convert any color to HSL, then return light / base / dark / accent tones
+function hexToHsl(hex) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h, s, l = (max+min)/2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return [h*360, s*100, l*100];
+}
+function hslToHex(h, s, l) {
+  h /= 360; s /= 100; l /= 100;
+  let r, g, b;
+  if (s === 0) { r = g = b = l; }
+  else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  const toHex = x => Math.round(x*255).toString(16).padStart(2,'0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+// Get tonal variants of a color: 0=light, 1=base, 2=dark
+function tone(hex, level) {
+  const [h, s, l] = hexToHsl(hex);
+  // For white/very light colors, just return the base
+  if (l > 90) return hex;
+  if (level === 'light')  return hslToHex(h, Math.max(20, s*0.9), Math.min(94, l + 18));
+  if (level === 'dark')   return hslToHex(h, Math.min(100, s*1.05), Math.max(8, l - 14));
+  return hex;
+}
+
+// ── STATE ──
+let elements = [];
+let patternLayers = []; // pattern overlays (separate from elements)
+let currentRole = 'hero';
+let globalFlowAngle = -25 * Math.PI / 180;
+let rotSpeed = 0.30;
+let stripeRotJitter = 0.40;
+let motionSpeed = 1.0;
+let motionEnabled = true;
+let autoHalftone = true;
+let fuiVisible = true;
+let layoutDensity = 1.0;
+let layoutScale = 1.0;
+let compositionMode = 'free';
+let cameraFlow = 'diagonal';
+let dramaEnabled = false;
+let glitchSpeed = 0.5;   // 0 = frozen, 1 = full chaos
+let glowStrength = 0.6;  // 0-1.2 — bloom intensity for stage preview
+let parallaxX = 0;       // wheel-controlled parallax offset
+let parallaxY = 0;
+let parallaxTargetX = 0;
+let parallaxTargetY = 0;
+let lastVerdict = null;
+let verdictTimeout = null;
+let frameTime = 0;
+let startTime = performance.now();
+
+// Canvas
+const canvas = document.getElementById('mv-canvas');
+const ctx = canvas.getContext('2d');
+let VW = 0, VH = 0, DPR = 1;
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  const wrap = document.getElementById('canvas-frame');
+  const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
+  const ratio = 16 / 9;
+  let cw, ch;
+  if (wrapW / wrapH > ratio) { ch = wrapH; cw = ch * ratio; }
+  else { cw = wrapW; ch = cw / ratio; }
+  VW = Math.round(cw); VH = Math.round(ch);
+  canvas.width = VW * DPR; canvas.height = VH * DPR;
+  canvas.style.width = VW + 'px'; canvas.style.height = VH + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── ROLE CONFIG ──
+const ROLE_SHAPES = {
+  hero:    ['star', 'striped-circle', 'big-ring', 'big-star-outline', 'sparkle-big'],
+  cloud:   ['cloud-cluster', 'cloud-puff', 'orb-trio'],
+  flow:    ['speed-line', 'stripe-bar', 'dashed-line', 'thin-stripe', 'light-streak'],
+  rhythm:  ['dot-row', 'small-circle-row', 'tick-line', 'hanging-stars-row'],
+  noise:   ['confetti', 'small-star', 'small-dot', 'tiny-ring', 'cross', 'sparkle'],
+  frame:   ['ring', 'dashed-ring', 'arc', 'corner-bracket', 'glow-orb'],
+  texture: ['halftone-patch', 'dot-grid', 'checker-strip', 'halftone-orb'],
+};
+const ROLE_SIZE_RANGE = {
+  hero:    [80, 140],
+  cloud:   [180, 360],
+  flow:    [180, 320],
+  rhythm:  [120, 240],
+  noise:   [10, 26],
+  frame:   [80, 140],
+  texture: [120, 200],
+};
+
+// Shapes that should follow globalFlow angle exactly (parallel)
+const FLOW_ALIGNED_SHAPES = new Set([
+  'speed-line', 'thin-stripe', 'dashed-line', 'stripe-bar', 'light-streak',
+  'dot-row', 'small-circle-row', 'tick-line', 'checker-strip',
+  'corner-bracket', 'dot-grid', 'hanging-stars-row',
+]);
+
+// Shapes that have INDEPENDENT internal rotation (stars, striped circles)
+function shouldRotateSlowly(shape) {
+  return shape === 'star' || shape === 'big-star-outline' || shape === 'striped-circle' || shape === 'small-star';
+}
+
+function makeElement(x, y, role, opts) {
+  const shapes = ROLE_SHAPES[role];
+  const shape = (opts && opts.shape) || shapes[Math.floor(Math.random() * shapes.length)];
+  const [sMin, sMax] = ROLE_SIZE_RANGE[role];
+  const size = (opts && opts.size) || (sMin + Math.random() * (sMax - sMin));
+  const color = (opts && opts.color) || activePalette[Math.floor(Math.random() * activePalette.length)];
+
+  // depth: 0=far back, 1=front. Used for parallax + camera flow strength
+  // hero/frame = mid, flow/noise = mixed, texture/rhythm = far
+  const depthMap = {
+    hero: 0.7,
+    cloud: 0.35,
+    flow: 0.55,
+    rhythm: 0.45,
+    noise: 0.85,
+    frame: 0.6,
+    texture: 0.25,
+  };
+  const depth = depthMap[role] + (Math.random() - 0.5) * 0.18;
+
+  const el = {
+    x, y,
+    baseX: x, baseY: y,
+    role, shape, size,
+    baseSize: size,
+    width: size,
+    height: shape.includes('stripe') || shape.includes('line') || shape === 'light-streak' ? (shape.includes('thin') ? 6 + Math.random()*4 : 12 + Math.random()*14) : size,
+    color,
+    depth: Math.max(0.05, Math.min(1, depth)),
+    stripeRotOffset: (Math.random() - 0.5) * 0.6,
+    rotPhase: Math.random() * Math.PI * 2,
+    rotDir: Math.random() < 0.5 ? -1 : 1,
+    phase: Math.random() * Math.PI * 2,
+    floatAmt: 0.5 + Math.random() * 0.5,
+    pieces: shape === 'confetti' ? makeConfettiPieces(8 + Math.floor(Math.random()*8)) : null,
+    count: shape.includes('row') || shape.includes('dashed') ? 6 + Math.floor(Math.random()*6) : 1,
+  };
+
+  // CLOUD shapes: generate puff arrangement once at creation
+  if (role === 'cloud') {
+    el.puffs = makeCloudPuffs(shape, size);
+  }
+  return el;
+}
+
+// Cloud cluster: overlapping circles forming a cloud silhouette.
+// 'cloud-cluster' = wider, more layered. 'cloud-puff' = single soft cluster.
+// 'orb-trio' = three orbs at varied scales for breathing rhythm.
+function makeCloudPuffs(shape, size) {
+  const puffs = [];
+  if (shape === 'cloud-cluster') {
+    // Asymmetric cloud — biggest center-low, smaller on edges
+    const base = size * 0.32;
+    puffs.push({ ox: 0,             oy:  base * 0.1, r: base * 1.05 });
+    puffs.push({ ox: -base * 0.95,  oy:  base * 0.45, r: base * 0.78 });
+    puffs.push({ ox:  base * 1.05,  oy:  base * 0.40, r: base * 0.82 });
+    puffs.push({ ox: -base * 0.4,   oy: -base * 0.45, r: base * 0.62 });
+    puffs.push({ ox:  base * 0.55,  oy: -base * 0.55, r: base * 0.70 });
+    puffs.push({ ox: -base * 1.55,  oy:  base * 0.10, r: base * 0.45 });
+    puffs.push({ ox:  base * 1.60,  oy:  base * 0.05, r: base * 0.48 });
+    // tiny floaters
+    puffs.push({ ox:  base * 0.20,  oy: -base * 1.10, r: base * 0.30 });
+    puffs.push({ ox: -base * 0.70,  oy: -base * 1.00, r: base * 0.25 });
+  } else if (shape === 'cloud-puff') {
+    // Compact, 4 circles
+    const base = size * 0.28;
+    puffs.push({ ox: 0,            oy: 0,            r: base * 0.95 });
+    puffs.push({ ox: -base * 0.70, oy: base * 0.25,  r: base * 0.70 });
+    puffs.push({ ox:  base * 0.70, oy: base * 0.20,  r: base * 0.75 });
+    puffs.push({ ox: 0,            oy: -base * 0.70, r: base * 0.55 });
+  } else if (shape === 'orb-trio') {
+    // Three orbs at varied scales
+    const base = size * 0.20;
+    puffs.push({ ox: -base * 1.4, oy: -base * 0.3, r: base * 0.85 });
+    puffs.push({ ox: 0,           oy: 0,           r: base * 1.25 });
+    puffs.push({ ox:  base * 1.1, oy:  base * 0.4, r: base * 0.55 });
+  }
+  return puffs;
+}
+
+function makeConfettiPieces(n) {
+  const pieces = [];
+  for (let i = 0; i < n; i++) {
+    pieces.push({
+      ox: (Math.random()-0.5) * 100,
+      oy: (Math.random()-0.5) * 100,
+      size: 5 + Math.random()*6,
+      color: activePalette[Math.floor(Math.random() * activePalette.length)],
+      rot: Math.random() * Math.PI * 2,
+      phaseSpeed: 0.5 + Math.random() * 1.5,
+    });
+  }
+  return pieces;
+}
+
+// ── HERO GENERATOR — make a hero with a specific personality ──
+// dominant / shy / chaotic / elegant / mascot
+function generateHero(x, y, personality) {
+  const base = { x, y, baseX: x, baseY: y, role: 'hero',
+                 phase: Math.random()*Math.PI*2, rotPhase: Math.random()*Math.PI*2,
+                 rotDir: Math.random() < 0.5 ? -1 : 1,
+                 stripeRotOffset: 0, floatAmt: 0.5, count: 1, pieces: null };
+  const pickColor = (cands) => cands[Math.floor(Math.random()*cands.length)];
+
+  if (personality === 'dominant') {
+    // Huge, bold, confident — star or striped-circle, near max size
+    base.shape = Math.random() < 0.5 ? 'star' : 'striped-circle';
+    base.size = 150 + Math.random() * 40;
+    base.baseSize = base.size;
+    base.width = base.size; base.height = base.size;
+    base.color = pickColor(['#FFC93B', '#FF49C5', '#FFFFFF']);
+    base.floatAmt = 0.3; // stable
+  } else if (personality === 'shy') {
+    // Small, outline-only, near edge
+    base.shape = 'big-star-outline';
+    base.size = 60 + Math.random() * 25;
+    base.baseSize = base.size;
+    base.width = base.size; base.height = base.size;
+    base.color = pickColor(['#FFFFFF', '#FFD0E5', '#FFC93B']);
+    // Bias toward edge
+    if (Math.random() < 0.5) base.baseX = Math.random() < 0.5 ? VW * 0.1 + Math.random()*40 : VW * 0.9 - Math.random()*40;
+    base.x = base.baseX;
+    base.floatAmt = 0.7; // subtle motion
+  } else if (personality === 'chaotic') {
+    // Off-balance, big-star-outline, rotated heavily
+    base.shape = 'big-star-outline';
+    base.size = 100 + Math.random() * 40;
+    base.baseSize = base.size;
+    base.width = base.size; base.height = base.size;
+    base.color = pickColor(['#FF49C5', '#5CC8FF', '#FF6B3B']);
+    base.rotPhase = (Math.random()-0.5) * 0.6; // tilted
+    base.floatAmt = 1.2;
+  } else if (personality === 'elegant') {
+    // Subtle, ring or arc, lots of white space around
+    base.shape = Math.random() < 0.5 ? 'big-ring' : 'big-star-outline';
+    base.size = 110 + Math.random() * 30;
+    base.baseSize = base.size;
+    base.width = base.size; base.height = base.size;
+    base.color = pickColor(['#FFFFFF', '#FFC93B', '#9B82FF']);
+    base.floatAmt = 0.4;
+  } else if (personality === 'mascot') {
+    // Friendly: striped-circle, bright color, central area
+    base.shape = 'striped-circle';
+    base.size = 130 + Math.random() * 30;
+    base.baseSize = base.size;
+    base.width = base.size; base.height = base.size;
+    base.color = pickColor(['#FFC93B', '#00D38A', '#5CC8FF']);
+    base.floatAmt = 0.8; // playful bounce
+  }
+  base.personality = personality;
+  return base;
+}
+
+// ── COMPUTE EFFECTIVE ANGLE FOR ELEMENT ──
+function effectiveAngle(el, t) {
+  // For flow-aligned shapes: pure globalFlow + small stripe-jitter for non-strict shapes
+  if (FLOW_ALIGNED_SHAPES.has(el.shape)) {
+    // stripe-bar gets jitter (stripes are decorative, can vary)
+    if (el.shape === 'stripe-bar' || el.shape === 'thin-stripe' || el.shape === 'dashed-line') {
+      return globalFlowAngle + el.stripeRotOffset * stripeRotJitter;
+    }
+    // strict parallel for speed-line and rows (avoid uneven look)
+    return globalFlowAngle;
+  }
+  // For stars/striped-circles: slow independent rotation
+  if (shouldRotateSlowly(el.shape) && motionEnabled) {
+    return el.rotPhase + t * rotSpeed * el.rotDir * 0.5;
+  }
+  return el.rotPhase;
+}
+
+// Compute layout-adjusted position based on density slider
+function adjustedPos(el) {
+  if (layoutDensity === 1.0) return { x: el.baseX, y: el.baseY };
+  const cx = VW / 2, cy = VH / 2;
+  const dx = el.baseX - cx, dy = el.baseY - cy;
+  return { x: cx + dx * layoutDensity, y: cy + dy * layoutDensity };
+}
+
+// Compute effective size from layoutScale
+function adjustedSize(el) {
+  return el.baseSize * layoutScale;
+}
+function adjustedWidth(el) {
+  return el.width * layoutScale;
+}
+function adjustedHeight(el) {
+  return el.height * layoutScale;
+}
+
+// ── PRIMITIVES ──
+function drawStar(ctx, cx, cy, r, points, innerR, fill) {
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const ang = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+    const rad = i % 2 === 0 ? r : innerR;
+    const x = cx + Math.cos(ang) * rad;
+    const y = cy + Math.sin(ang) * rad;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function drawStarOutline(ctx, cx, cy, r, points, innerR, color, lineWidth) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const ang = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+    const rad = i % 2 === 0 ? r : innerR;
+    const x = cx + Math.cos(ang) * rad;
+    const y = cy + Math.sin(ang) * rad;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSpeedLine(ctx, x, y, len, height, angle, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const w = len, h = height, r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(-w/2 + r, -h/2);
+  ctx.lineTo(w/2 - r, -h/2);
+  ctx.arc(w/2 - r, 0, r, -Math.PI/2, Math.PI/2);
+  ctx.lineTo(-w/2 + r, h/2);
+  ctx.arc(-w/2 + r, 0, r, Math.PI/2, -Math.PI/2);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawStripeBar(ctx, x, y, len, h, angle, color1) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const stripes = 6;
+  const stripeW = len / stripes;
+  for (let i = 0; i < stripes; i++) {
+    if (i % 2 === 0) {
+      ctx.fillStyle = color1;
+      ctx.beginPath();
+      const x1 = -len/2 + i * stripeW;
+      ctx.moveTo(x1, -h/2);
+      ctx.lineTo(x1 + stripeW, -h/2);
+      ctx.lineTo(x1 + stripeW - h*0.4, h/2);
+      ctx.lineTo(x1 - h*0.4, h/2);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// Striped-circle: body color + WHITE stripes drawn as SEPARATE elements
+// This is a multi-pass shape
+function drawStripedCircle(ctx, cx, cy, r, color1, stripeRotation) {
+  ctx.save();
+  // 1) body circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = color1;
+  ctx.fill();
+  // 2) white stripes with their OWN rotation
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.clip();
+  ctx.translate(cx, cy);
+  ctx.rotate(stripeRotation);
+  const stripeH = r * 0.18;
+  ctx.fillStyle = '#FFFFFF';
+  for (let y = -r * 1.5; y < r * 1.5; y += stripeH * 2) {
+    ctx.fillRect(-r * 1.5, y, r * 3, stripeH);
+  }
+  ctx.restore();
+  ctx.restore();
+}
+
+function drawRing(ctx, cx, cy, r, color, lineWidth, dashed) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  if (dashed) ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDotRow(ctx, x, y, length, count, angle, color, dotSize) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = color;
+  const step = length / Math.max(1, count - 1);
+  for (let i = 0; i < count; i++) {
+    ctx.beginPath();
+    ctx.arc(-length/2 + i * step, 0, dotSize, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawDashedLine(ctx, x, y, length, angle, color, dashSize, gapSize, thickness) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = color;
+  let xc = -length / 2;
+  while (xc < length / 2) {
+    ctx.fillRect(xc, -thickness/2, dashSize, thickness);
+    xc += dashSize + gapSize;
+  }
+  ctx.restore();
+}
+
+function drawCorner(ctx, x, y, size, angle, color, lineWidth) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.moveTo(-size/2, -size/2 + size);
+  ctx.lineTo(-size/2, -size/2);
+  ctx.lineTo(-size/2 + size, -size/2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawArc(ctx, cx, cy, r, startAng, endAng, color, lineWidth, dashed) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  if (dashed) ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAng, endAng);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCross(ctx, cx, cy, size, angle, color, lineWidth) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-size/2, 0); ctx.lineTo(size/2, 0);
+  ctx.moveTo(0, -size/2); ctx.lineTo(0, size/2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawHalftoneSpot(ctx, cx, cy, r, color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  const stepSize = 6;
+  for (let yy = -r; yy <= r; yy += stepSize) {
+    for (let xx = -r; xx <= r; xx += stepSize) {
+      const d = Math.sqrt(xx*xx + yy*yy);
+      if (d > r) continue;
+      const t = d / r;
+      const dotR = (1 - t * 0.8) * 2;
+      if (dotR > 0.2) {
+        ctx.beginPath();
+        ctx.arc(cx + xx, cy + yy, dotR, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawCheckerStrip(ctx, x, y, w, h, angle, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const cells = 8;
+  const cw = w / cells, ch = h / 2;
+  ctx.fillStyle = color;
+  for (let i = 0; i < cells; i++) {
+    for (let j = 0; j < 2; j++) {
+      if ((i + j) % 2 === 0) {
+        ctx.fillRect(-w/2 + i*cw, -h/2 + j*ch, cw, ch);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawConfettiPiece(ctx, ox, oy, size, rot, color) {
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.rotate(rot);
+  ctx.fillStyle = color;
+  ctx.fillRect(-size/2, -size/2, size, size);
+  ctx.restore();
+}
+
+// ── 4-POINT SPARKLE (twinkle) — VTuber-style ──
+function drawSparkle(ctx, cx, cy, size, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  // Diamond-like 4-point star with concave sides
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  const r = size / 2;
+  const inner = r * 0.18;
+  ctx.moveTo(0, -r);
+  ctx.quadraticCurveTo(inner, -inner, r, 0);
+  ctx.quadraticCurveTo(inner, inner, 0, r);
+  ctx.quadraticCurveTo(-inner, inner, -r, 0);
+  ctx.quadraticCurveTo(-inner, -inner, 0, -r);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── CLOUD PUFFS — overlapping circles ──
+function drawCloudPuffs(ctx, cx, cy, puffs, color, lightColor) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  // Soft body: each puff as filled circle with a subtle inner highlight
+  for (let i = 0; i < puffs.length; i++) {
+    const p = puffs[i];
+    ctx.beginPath();
+    ctx.arc(p.ox * layoutScale, p.oy * layoutScale, p.r * layoutScale, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  // Top-edge highlight (light comes from above)
+  for (let i = 0; i < puffs.length; i++) {
+    const p = puffs[i];
+    const r = p.r * layoutScale;
+    if (r < 18) continue;
+    const grad = ctx.createRadialGradient(
+      p.ox * layoutScale - r * 0.25, p.oy * layoutScale - r * 0.5, r * 0.05,
+      p.ox * layoutScale, p.oy * layoutScale - r * 0.2, r * 1.0
+    );
+    grad.addColorStop(0, lightColor);
+    grad.addColorStop(0.55, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(p.ox * layoutScale, p.oy * layoutScale, r, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ── GLOW ORB — soft luminous ball with halo ──
+function drawGlowOrb(ctx, cx, cy, r, color) {
+  ctx.save();
+  // Outer halo
+  const halo = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
+  halo.addColorStop(0, color);
+  halo.addColorStop(0.4, hexToRgba(color, 0.55));
+  halo.addColorStop(1, hexToRgba(color, 0));
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fill();
+  // Bright core
+  const core = ctx.createRadialGradient(cx - r*0.1, cy - r*0.1, 0, cx, cy, r * 0.45);
+  core.addColorStop(0, '#FFFFFF');
+  core.addColorStop(0.5, hexToRgba(color, 0.85));
+  core.addColorStop(1, hexToRgba(color, 0));
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── HALFTONE ORB — gradient halftone sphere (like purple reference) ──
+function drawHalftoneOrb(ctx, cx, cy, r, color) {
+  ctx.save();
+  const stepSize = 5;
+  ctx.fillStyle = color;
+  for (let yy = -r; yy <= r; yy += stepSize) {
+    for (let xx = -r; xx <= r; xx += stepSize) {
+      const d = Math.sqrt(xx*xx + yy*yy);
+      if (d > r) continue;
+      // Gradient: dense at one edge, sparse opposite
+      const t = (xx + r) / (2 * r); // 0 at left, 1 at right
+      const dotR = (1 - Math.abs(t - 0.4) * 1.4) * 2.4;
+      if (dotR > 0.2) {
+        ctx.globalAlpha = Math.max(0, 1 - d / r * 0.6) * Math.max(0.1, dotR / 2.4);
+        ctx.beginPath();
+        ctx.arc(cx + xx, cy + yy, Math.max(0.3, dotR), 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+// ── LIGHT STREAK — speed-line with gradient fade (sample reference) ──
+function drawLightStreak(ctx, x, y, len, h, angle, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  const grad = ctx.createLinearGradient(-len/2, 0, len/2, 0);
+  grad.addColorStop(0, hexToRgba(color, 0));
+  grad.addColorStop(0.3, hexToRgba(color, 0.9));
+  grad.addColorStop(0.65, color);
+  grad.addColorStop(1, hexToRgba(color, 0));
+  ctx.fillStyle = grad;
+  const r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(-len/2 + r, -h/2);
+  ctx.lineTo(len/2 - r, -h/2);
+  ctx.arc(len/2 - r, 0, r, -Math.PI/2, Math.PI/2);
+  ctx.lineTo(-len/2 + r, h/2);
+  ctx.arc(-len/2 + r, 0, r, Math.PI/2, -Math.PI/2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── HANGING STARS ROW — vertical threads with star at tip ──
+function drawHangingStarsRow(ctx, x, y, length, count, angle, color, dropDepth) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.strokeStyle = hexToRgba(color, 0.45);
+  ctx.lineWidth = 1;
+  ctx.fillStyle = color;
+  const step = length / Math.max(1, count - 1);
+  for (let i = 0; i < count; i++) {
+    const px = -length/2 + i * step;
+    const drop = dropDepth * (0.5 + ((i * 7.3) % 7) / 7 * 0.8);
+    // thread
+    ctx.beginPath();
+    ctx.moveTo(px, -length * 0.2);
+    ctx.lineTo(px, drop);
+    ctx.stroke();
+    // small star at tip
+    const r = 5 + (i % 3) * 1.5;
+    drawStar(ctx, px, drop + r, r, 5, r * 0.45, color);
+  }
+  ctx.restore();
+}
+
+// Helper: hex -> rgba string
+function hexToRgba(hex, alpha) {
+  if (!hex || hex[0] !== '#') return `rgba(255,255,255,${alpha})`;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function drawDotGrid(ctx, cx, cy, w, h, angle, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.fillStyle = color;
+  const step = 12;
+  for (let yy = -h/2; yy <= h/2; yy += step) {
+    for (let xx = -w/2; xx <= w/2; xx += step) {
+      ctx.beginPath();
+      ctx.arc(xx, yy, 1.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// ═══════════ PATTERN LAYERS (full-canvas decoration system) ═══════════
+// Patterns spread across the whole canvas, independent from element shapes.
+// They serve as MV ambient texture and rhythm.
+
+function drawPattern(p, t) {
+  ctx.save();
+  if (p.type === 'halftone-band') {
+    // A diagonal band of halftone dots crossing the canvas
+    const ang = globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const bandH = p.height || 220;
+    const bandW = Math.sqrt(VW*VW + VH*VH);
+    ctx.fillStyle = p.color;
+    const stepSize = 10;
+    const centerY = 0;
+    for (let y = -bandH/2; y <= bandH/2; y += stepSize) {
+      const offsetX = ((Math.abs(y/stepSize) % 2) | 0) * (stepSize/2);
+      for (let x = -bandW/2 + offsetX; x <= bandW/2; x += stepSize) {
+        const t2 = Math.abs(y - centerY) / (bandH/2);
+        const dotR = (1 - t2) * 2.2;
+        if (dotR > 0.2) {
+          ctx.globalAlpha = (1 - t2) * (p.opacity || 0.5);
+          ctx.beginPath();
+          ctx.arc(x, y, dotR, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+  } else if (p.type === 'radial-dots') {
+    // Concentric dots radiating from a point (sample2 style)
+    const cx = p.cx || VW/2;
+    const cy = p.cy || VH/2;
+    const maxR = p.radius || Math.min(VW, VH) * 0.5;
+    ctx.fillStyle = p.color;
+    const ringStep = 18;
+    for (let r = ringStep; r <= maxR; r += ringStep) {
+      const circumference = 2 * Math.PI * r;
+      const count = Math.max(6, Math.round(circumference / 18));
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2 + (r * 0.03);
+        const x = cx + Math.cos(ang) * r;
+        const y = cy + Math.sin(ang) * r;
+        // Dots smaller toward edge
+        const t2 = r / maxR;
+        const dotR = (1 - t2 * 0.7) * 2.5;
+        if (dotR > 0.3) {
+          ctx.globalAlpha = (1 - t2 * 0.5) * (p.opacity || 0.6);
+          ctx.beginPath();
+          ctx.arc(x, y, dotR, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+  } else if (p.type === 'zigzag') {
+    // Zigzag band crossing the canvas
+    const ang = globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const segW = p.segW || 24;
+    const segH = p.segH || 18;
+    const yOff = p.yOffset || 0;
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = p.lineWidth || 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = p.opacity || 0.75;
+    ctx.beginPath();
+    let x = -len/2;
+    let goUp = true;
+    ctx.moveTo(x, yOff + (goUp ? -segH/2 : segH/2));
+    while (x < len/2) {
+      x += segW;
+      goUp = !goUp;
+      ctx.lineTo(x, yOff + (goUp ? -segH/2 : segH/2));
+    }
+    ctx.stroke();
+  } else if (p.type === 'glitch-bars') {
+    // Horizontal glitch bars across canvas — seeded, with controllable speed
+    const ang = p.angle !== undefined ? p.angle : globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.opacity || 0.7;
+    const bars = p.barCount || 5;
+    const baseY = p.yOffset || 0;
+    // Quantize time so bars only update at intervals based on glitchSpeed
+    // glitchSpeed = 0 → never updates (static), 1 → updates every 0.08s
+    const updatePeriod = glitchSpeed > 0.01 ? Math.max(0.08, 1.2 - glitchSpeed * 1.1) : Infinity;
+    const tickIdx = isFinite(updatePeriod) ? Math.floor(frameTime / updatePeriod) : 0;
+    // Use deterministic per-bar seeded pseudo-random
+    for (let i = 0; i < bars; i++) {
+      const y = baseY + (i - bars/2) * (p.spacing || 22);
+      const seed = p.id * 13.37 + i * 7.31 + tickIdx * 2.1;
+      const r1 = Math.abs(Math.sin(seed) * 1000) % 1;
+      const r2 = Math.abs(Math.cos(seed * 1.7) * 1000) % 1;
+      const w = (0.3 + r1 * 0.7) * len * 0.8;
+      const x = (r2 - 0.5) * len * 0.3;
+      const h = p.barHeight || 6;
+      ctx.fillRect(x - w/2, y - h/2, w, h);
+    }
+  } else if (p.type === 'star-field') {
+    // Sparse field of small stars
+    const count = p.count || 30;
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.opacity || 0.75;
+    // Use deterministic positions seeded by id
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.731;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1) * VH;
+      const size = 3 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 7;
+      // mini star
+      ctx.beginPath();
+      for (let j = 0; j < 10; j++) {
+        const ang = (j / 10) * Math.PI * 2 - Math.PI/2;
+        const r = j % 2 === 0 ? size : size * 0.45;
+        const x = sx + Math.cos(ang) * r;
+        const y = sy + Math.sin(ang) * r;
+        if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (p.type === 'speedline-burst') {
+    // Multiple thin speed lines radiating
+    const cx = p.cx || VW/2;
+    const cy = p.cy || VH/2;
+    const count = p.count || 12;
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = p.lineWidth || 3;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = p.opacity || 0.6;
+    for (let i = 0; i < count; i++) {
+      const ang = (i / count) * Math.PI * 2 + (p.rotation || 0);
+      const r1 = p.innerR || 80;
+      const r2 = p.outerR || 280;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+      ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+      ctx.stroke();
+    }
+  } else if (p.type === 'checker-band') {
+    const ang = globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const bandH = p.height || 30;
+    const cells = Math.floor(len / 20);
+    const cellW = len / cells;
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.opacity || 0.7;
+    const yOff = p.yOffset || 0;
+    for (let i = 0; i < cells; i++) {
+      if (i % 2 === 0) {
+        ctx.fillRect(-len/2 + i*cellW, yOff - bandH/2, cellW, bandH);
+      }
+    }
+  } else if (p.type === 'star-rain') {
+    // Diagonal falling stars + light streaks (sample blue/white reference)
+    const ang = p.angle !== undefined ? p.angle : globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const count = p.count || 60;
+    // Light streaks first
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.741;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1 - 0.5) * len;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1 - 0.5) * len * 1.1;
+      const streakLen = 18 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 60;
+      const w = 1.5 + (Math.abs(Math.sin(seed * 3.7) * 100) % 1) * 1.5;
+      const grad = ctx.createLinearGradient(sx - streakLen/2, sy, sx + streakLen/2, sy);
+      grad.addColorStop(0, hexToRgba(p.color, 0));
+      grad.addColorStop(0.55, hexToRgba(p.color, (p.opacity || 0.7) * 0.85));
+      grad.addColorStop(1, hexToRgba(p.color, 0));
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx - streakLen/2, sy - w/2, streakLen, w);
+    }
+    // Then bright stars at end of streaks
+    const starCount = p.starCount || 22;
+    for (let i = 0; i < starCount; i++) {
+      const seed = p.id * 2.13 + i * 0.913;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1 - 0.5) * len;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1 - 0.5) * len * 1.1;
+      const size = 4 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 10;
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.opacity || 0.85;
+      drawStar(ctx, sx, sy, size, 5, size * 0.42, p.color);
+    }
+  } else if (p.type === 'sparkle-field') {
+    // 4-point sparkles scattered, varied sizes
+    const count = p.count || 24;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 1.317;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.6) * 10000) % 1) * VH;
+      const size = 8 + (Math.abs(Math.sin(seed * 2.9) * 100) % 1) * 28;
+      // Twinkle phase (slow pulse)
+      const twinkle = motionEnabled ? 0.5 + 0.5 * Math.sin(frameTime * 1.2 + seed * 6.28) : 1;
+      ctx.globalAlpha = (p.opacity || 0.85) * (0.5 + twinkle * 0.5);
+      drawSparkle(ctx, sx, sy, size, p.color);
+    }
+  } else if (p.type === 'hanging-stars') {
+    // Vertical threads with stars dangling — sample dark sky reference
+    const count = p.count || 16;
+    const tipColor = p.color;
+    ctx.globalAlpha = p.opacity || 0.85;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.413;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sTop = -10;
+      const sDrop = VH * (0.18 + (Math.abs(Math.cos(seed * 2.1) * 100) % 1) * 0.55);
+      const threadGrad = ctx.createLinearGradient(sx, sTop, sx, sDrop);
+      threadGrad.addColorStop(0, hexToRgba(tipColor, 0));
+      threadGrad.addColorStop(1, hexToRgba(tipColor, 0.55));
+      ctx.strokeStyle = threadGrad;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx, sTop);
+      ctx.lineTo(sx, sDrop);
+      ctx.stroke();
+      // tip star
+      const r = 4 + (Math.abs(Math.sin(seed * 4) * 100) % 1) * 10;
+      ctx.fillStyle = tipColor;
+      drawStar(ctx, sx, sDrop + r, r, 5, r * 0.42, tipColor);
+    }
+  } else if (p.type === 'glow-orbs') {
+    // Soft glowing orbs scattered
+    const count = p.count || 8;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 1.91;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.8) * 10000) % 1) * VH;
+      const size = 60 + (Math.abs(Math.sin(seed * 2.4) * 100) % 1) * 140;
+      ctx.globalAlpha = (p.opacity || 0.65);
+      drawGlowOrb(ctx, sx, sy, size, p.color);
+    }
+  } else if (p.type === 'aurora-streaks') {
+    // Diagonal soft color streaks (aurora veil)
+    const ang = globalFlowAngle;
+    ctx.translate(VW/2, VH/2);
+    ctx.rotate(ang);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const count = p.count || 5;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.713;
+      const yOff = (i - count/2) * (VH * 0.18) + (Math.sin(seed) * 40);
+      const thickness = 60 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 80;
+      const grad = ctx.createLinearGradient(-len/2, yOff, len/2, yOff);
+      grad.addColorStop(0, hexToRgba(p.color, 0));
+      grad.addColorStop(0.4, hexToRgba(p.color, (p.opacity || 0.5) * 0.7));
+      grad.addColorStop(0.7, hexToRgba(p.color, (p.opacity || 0.5)));
+      grad.addColorStop(1, hexToRgba(p.color, 0));
+      ctx.fillStyle = grad;
+      const grad2 = ctx.createLinearGradient(0, yOff - thickness/2, 0, yOff + thickness/2);
+      grad2.addColorStop(0, hexToRgba(p.color, 0));
+      grad2.addColorStop(0.5, hexToRgba(p.color, p.opacity || 0.5));
+      grad2.addColorStop(1, hexToRgba(p.color, 0));
+      // composite: gradient * gradient — use the perpendicular gradient
+      ctx.fillStyle = grad2;
+      ctx.fillRect(-len/2, yOff - thickness/2, len, thickness);
+    }
+  } else if (p.type === 'gradient-veil') {
+    // Soft tinted veil overlay
+    const cx = p.cx || VW * 0.5;
+    const cy = p.cy || VH * 0.5;
+    const r = p.radius || Math.max(VW, VH) * 0.7;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0, hexToRgba(p.color, p.opacity || 0.35));
+    grad.addColorStop(0.6, hexToRgba(p.color, (p.opacity || 0.35) * 0.4));
+    grad.addColorStop(1, hexToRgba(p.color, 0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, VW, VH);
+  }
+  ctx.restore();
+}
+
+function makePattern(type, opts = {}) {
+  return Object.assign({
+    type,
+    color: opts.color || '#FFFFFF',
+    opacity: 0.6,
+    id: Math.random() * 1000,
+  }, opts);
+}
+
+// ═══════════ CAMERA FLOW — global motion overlay ═══════════
+// Adds a flow vector to all elements based on camera mode
+function cameraOffset(el, t) {
+  if (!motionEnabled || cameraFlow === 'static') return { x: 0, y: 0 };
+  const speed = motionSpeed * 0.5;
+  const phase = t * speed + el.phase;
+  if (cameraFlow === 'diagonal') {
+    // Slow drift along flow angle
+    const drift = Math.sin(t * speed * 0.3) * 12;
+    return { x: Math.cos(globalFlowAngle) * drift, y: Math.sin(globalFlowAngle) * drift };
+  } else if (cameraFlow === 'scroll') {
+    // Horizontal side-scroll feel
+    return { x: Math.sin(phase) * 8, y: 0 };
+  } else if (cameraFlow === 'orbit') {
+    // Slow orbital — different per element
+    const r = 6;
+    return { x: Math.cos(phase * 0.7) * r, y: Math.sin(phase * 0.7) * r };
+  } else if (cameraFlow === 'rise') {
+    // Upward drift
+    return { x: 0, y: -Math.abs(Math.sin(phase * 0.5)) * 6 + Math.sin(phase) * 2 };
+  } else if (cameraFlow === 'impact') {
+    // Pulse outward from center on a slow beat
+    const beat = (Math.sin(t * 1.5) * 0.5 + 0.5);
+    const dx = el.baseX - VW/2;
+    const dy = el.baseY - VH/2;
+    const d = Math.sqrt(dx*dx + dy*dy) + 0.1;
+    return { x: (dx/d) * beat * 8, y: (dy/d) * beat * 8 };
+  }
+  return { x: 0, y: 0 };
+}
+
+// ═══════════ DRAMA — relationship-based motion offsets ═══════════
+// Each element nudges position based on its role's "feeling" toward heroes
+function dramaOffset(el, t) {
+  if (!dramaEnabled) return { x: 0, y: 0 };
+  const heroes = elements.filter(e => e.role === 'hero');
+  if (heroes.length === 0) return { x: 0, y: 0 };
+  // Find nearest hero
+  let nearest = heroes[0];
+  let minD = Infinity;
+  for (const h of heroes) {
+    const dx = h.baseX - el.baseX;
+    const dy = h.baseY - el.baseY;
+    const d = dx*dx + dy*dy;
+    if (d < minD) { minD = d; nearest = h; }
+  }
+  const dx = nearest.baseX - el.baseX;
+  const dy = nearest.baseY - el.baseY;
+  const dist = Math.sqrt(dx*dx + dy*dy) + 0.1;
+  const nx = dx / dist, ny = dy / dist;
+  const breathe = Math.sin(t * 1.2 + el.phase) * 0.5 + 0.5;
+
+  if (el.role === 'support' || el.role === 'cloud') {
+    // "likes hero" — gentle lean toward hero
+    const pull = Math.min(40, 1500 / dist) * breathe * 0.6;
+    return { x: nx * pull, y: ny * pull };
+  } else if (el.role === 'noise') {
+    // "avoids hero" — slight repulsion
+    if (dist < 200) {
+      const push = (200 - dist) * 0.15 * breathe;
+      return { x: -nx * push, y: -ny * push };
+    }
+    return { x: 0, y: 0 };
+  } else if (el.role === 'frame') {
+    // "stays still, frames hero" — barely moves
+    return { x: 0, y: 0 };
+  } else if (el.role === 'rhythm') {
+    // "supports the beat" — small oscillation toward hero direction
+    return { x: nx * Math.sin(t * 2 + el.phase) * 4, y: ny * Math.sin(t * 2 + el.phase) * 4 };
+  }
+  return { x: 0, y: 0 };
+}
+
+
+function renderElement(el, t) {
+  const pos = adjustedPos(el);
+  const size = adjustedSize(el);
+  const wid = adjustedWidth(el);
+  const hgt = adjustedHeight(el);
+
+  // Subtle float (no flicker, just slow drift)
+  const baseFloat = motionEnabled
+    ? { x: Math.sin(t * motionSpeed * 0.5 + el.phase) * 3 * el.floatAmt,
+        y: Math.cos(t * motionSpeed * 0.4 + el.phase * 1.3) * 3 * el.floatAmt }
+    : { x: 0, y: 0 };
+  const cam = cameraOffset(el, t);
+  const drama = dramaOffset(el, t);
+  // Parallax: closer objects (high depth) move more, far objects barely move
+  const px = parallaxX * el.depth;
+  const py = parallaxY * el.depth;
+  const x = pos.x + baseFloat.x + cam.x + drama.x + px;
+  const y = pos.y + baseFloat.y + cam.y + drama.y + py;
+
+  const ang = effectiveAngle(el, t);
+  const shape = el.shape;
+  const c1 = el.color;
+
+  // Tonal variants for layering
+  const cLight = tone(c1, 'light');
+  const cDark  = tone(c1, 'dark');
+
+  if (shape === 'star') {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    drawStar(ctx, 0, 0, size/2, 5, size/4.2, c1);
+    ctx.restore();
+  } else if (shape === 'big-star-outline') {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    drawStarOutline(ctx, 0, 0, size/2, 5, size/4.2, c1, Math.max(4, size*0.07));
+    ctx.restore();
+  } else if (shape === 'striped-circle') {
+    // Body + stripes with INDEPENDENT internal rotation
+    // angle here is for the WHOLE thing's lazy rotation (very slow)
+    const stripeRot = motionEnabled ? t * rotSpeed * el.rotDir * 0.4 + el.rotPhase : el.rotPhase;
+    drawStripedCircle(ctx, x, y, size/2, c1, stripeRot);
+  } else if (shape === 'big-ring') {
+    drawRing(ctx, x, y, size/2, c1, Math.max(3, size*0.06), false);
+  } else if (shape === 'ring') {
+    drawRing(ctx, x, y, size/2, c1, Math.max(2, size*0.05), false);
+  } else if (shape === 'dashed-ring') {
+    drawRing(ctx, x, y, size/2, c1, Math.max(2, size*0.04), true);
+  } else if (shape === 'arc') {
+    drawArc(ctx, x, y, size/2, 0, Math.PI*1.3, c1, Math.max(3, size*0.05), false);
+  } else if (shape === 'corner-bracket') {
+    drawCorner(ctx, x, y, size, ang, c1, Math.max(3, size*0.04));
+  } else if (shape === 'speed-line') {
+    // Build with tone layering — instead of alpha
+    // Light tone underneath, base on top: subtle "highlight" effect
+    drawSpeedLine(ctx, x, y, wid, hgt, ang, c1);
+  } else if (shape === 'thin-stripe') {
+    drawSpeedLine(ctx, x, y, wid, hgt * 0.5, ang, c1);
+  } else if (shape === 'stripe-bar') {
+    drawStripeBar(ctx, x, y, wid, hgt * 1.6, ang, c1);
+  } else if (shape === 'dashed-line') {
+    drawDashedLine(ctx, x, y, wid, ang, c1, 14, 8, Math.max(2, hgt*0.18));
+  } else if (shape === 'dot-row') {
+    drawDotRow(ctx, x, y, wid, el.count, ang, c1, 4);
+  } else if (shape === 'small-circle-row') {
+    drawDotRow(ctx, x, y, wid, el.count, ang, c1, 6);
+  } else if (shape === 'tick-line') {
+    drawDotRow(ctx, x, y, wid, el.count, ang, c1, 2.5);
+  } else if (shape === 'confetti') {
+    ctx.save();
+    ctx.translate(x, y);
+    for (const piece of el.pieces) {
+      const pt = motionEnabled
+        ? { dx: Math.sin(t * piece.phaseSpeed) * 4, dy: Math.cos(t * piece.phaseSpeed * 0.9) * 4 }
+        : { dx: 0, dy: 0 };
+      drawConfettiPiece(ctx, (piece.ox + pt.dx) * layoutScale, (piece.oy + pt.dy) * layoutScale,
+        piece.size * layoutScale, piece.rot + (motionEnabled ? t * 0.5 * piece.phaseSpeed : 0),
+        piece.color);
+    }
+    ctx.restore();
+  } else if (shape === 'cloud-cluster' || shape === 'cloud-puff' || shape === 'orb-trio') {
+    // Cloud built from overlapping circles. Light highlight on top.
+    if (el.puffs) {
+      const high = hexToRgba(cLight, 0.85);
+      drawCloudPuffs(ctx, x, y, el.puffs, c1, high);
+    }
+  } else if (shape === 'sparkle-big') {
+    // VTuber-style 4-point twinkle, layered. Slow rotation.
+    const sparkleAng = motionEnabled ? t * rotSpeed * el.rotDir * 0.25 + el.rotPhase : el.rotPhase;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(sparkleAng);
+    drawSparkle(ctx, 0, 0, size * 0.4, hexToRgba(c1, 0.6));
+    ctx.rotate(Math.PI / 4);
+    drawSparkle(ctx, 0, 0, size, c1);
+    ctx.restore();
+  } else if (shape === 'sparkle') {
+    const sparkleAng = motionEnabled ? t * rotSpeed * el.rotDir * 0.3 + el.rotPhase : el.rotPhase;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(sparkleAng);
+    drawSparkle(ctx, 0, 0, size, c1);
+    ctx.restore();
+  } else if (shape === 'light-streak') {
+    drawLightStreak(ctx, x, y, wid, hgt, ang, c1);
+  } else if (shape === 'hanging-stars-row') {
+    drawHangingStarsRow(ctx, x, y, wid, el.count, ang, c1, size * 0.6);
+  } else if (shape === 'glow-orb') {
+    drawGlowOrb(ctx, x, y, size * 0.7, c1);
+  } else if (shape === 'halftone-orb') {
+    drawHalftoneOrb(ctx, x, y, size * 0.55, c1);
+  } else if (shape === 'small-star') {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    drawStar(ctx, 0, 0, size*0.5, 5, size*0.22, c1);
+    ctx.restore();
+  } else if (shape === 'small-dot') {
+    ctx.beginPath();
+    ctx.arc(x, y, size*0.4, 0, Math.PI*2);
+    ctx.fillStyle = c1;
+    ctx.fill();
+  } else if (shape === 'tiny-ring') {
+    drawRing(ctx, x, y, size*0.5, c1, 2, false);
+  } else if (shape === 'cross') {
+    drawCross(ctx, x, y, size, ang, c1, Math.max(1.5, size*0.08));
+  } else if (shape === 'halftone-patch') {
+    drawHalftoneSpot(ctx, x, y, size*0.6, c1);
+  } else if (shape === 'dot-grid') {
+    drawDotGrid(ctx, x, y, wid, hgt, ang, c1);
+  } else if (shape === 'checker-strip') {
+    drawCheckerStrip(ctx, x, y, wid, hgt*0.5, ang, c1);
+  }
+}
+
+// ── BG ──
+function drawBackground() {
+  const bg = BG_PRESETS[bgIndex];
+
+  // Fill: solid OR gradient
+  if (bg.gradient === 'linear') {
+    const a = (bg.angle || 180) * Math.PI / 180;
+    // Compute gradient endpoints across the canvas
+    const cx = VW/2, cy = VH/2;
+    const len = Math.sqrt(VW*VW + VH*VH) / 2;
+    const dx = Math.cos(a) * len, dy = Math.sin(a) * len;
+    const grad = ctx.createLinearGradient(cx - dx, cy - dy, cx + dx, cy + dy);
+    for (const [t, c] of bg.stops) grad.addColorStop(t, c);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, VW, VH);
+  } else if (bg.gradient === 'radial') {
+    const cx = VW/2, cy = VH/2;
+    const r = Math.sqrt(VW*VW + VH*VH) / 2;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    for (const [t, c] of bg.stops) grad.addColorStop(t, c);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, VW, VH);
+  } else {
+    ctx.fillStyle = bg.color;
+    ctx.fillRect(0, 0, VW, VH);
+  }
+
+  if (autoHalftone) {
+    ctx.save();
+    const stepSize = 16;
+    const cx = VW / 2, cy = VH / 2;
+    const maxDist = Math.sqrt(VW*VW + VH*VH) / 2;
+    ctx.fillStyle = bg.halftone;
+    ctx.globalAlpha = bg.halftoneOpacity;
+    let rowIdx = 0;
+    for (let y = -stepSize; y <= VH + stepSize; y += stepSize) {
+      const offsetX = (rowIdx % 2) * (stepSize / 2);
+      for (let x = -stepSize + offsetX; x <= VW + stepSize; x += stepSize) {
+        const dx = x - cx, dy = y - cy;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        const t = Math.min(1, d / maxDist);
+        const dotR = Math.max(0.3, (1 - t * 0.85) * 3.2);
+        if (dotR > 0.3) {
+          ctx.beginPath();
+          ctx.arc(x, y, dotR, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      rowIdx++;
+    }
+    ctx.restore();
+  }
+}
+
+function drawAll(t) {
+  // Smooth parallax interpolation
+  parallaxX += (parallaxTargetX - parallaxX) * 0.12;
+  parallaxY += (parallaxTargetY - parallaxY) * 0.12;
+  // Slowly decay parallax back to 0 (so it doesn't stick)
+  parallaxTargetX *= 0.985;
+  parallaxTargetY *= 0.985;
+
+  drawBackground();
+
+  // Deep patterns get reduced parallax (background depth ~0.3)
+  const deepPatterns = patternLayers.filter(p => p.depth === 'deep');
+  if (deepPatterns.length > 0) {
+    ctx.save();
+    ctx.translate(parallaxX * 0.3, parallaxY * 0.3);
+    for (const p of deepPatterns) drawPattern(p, t);
+    ctx.restore();
+  }
+
+  // Elements rendered. We do TWO passes when glow > 0:
+  //   1) glow pass: shapes drawn with shadowBlur, lighter composite
+  //   2) main pass: clean shapes on top
+  const ORDER = ['texture', 'cloud', 'frame', 'rhythm', 'flow', 'noise', 'hero'];
+  const sorted = [...elements].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
+
+  if (glowStrength > 0.02) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = Math.min(1, glowStrength * 0.6);
+    for (const el of sorted) {
+      // Only glow on visually-luminous shapes — skip dark textures/clouds (those have their own light)
+      if (el.role === 'texture' || el.role === 'cloud') continue;
+      ctx.shadowColor = el.color;
+      ctx.shadowBlur = 14 + glowStrength * 28;
+      renderElement(el, t);
+    }
+    ctx.restore();
+  }
+
+  // Main clean pass
+  for (const el of sorted) renderElement(el, t);
+
+  // Top patterns get stronger parallax (foreground depth ~0.85)
+  const topPatterns = patternLayers.filter(p => p.depth !== 'deep');
+  if (topPatterns.length > 0) {
+    ctx.save();
+    ctx.translate(parallaxX * 0.85, parallaxY * 0.85);
+    for (const p of topPatterns) drawPattern(p, t);
+    ctx.restore();
+  }
+}
+
+// ── INPUT ──
+// ── PARALLAX wheel ──
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const sx = e.deltaX || 0;
+  const sy = e.deltaY || 0;
+  if (e.shiftKey && sx === 0) {
+    parallaxTargetX -= sy * 0.5;
+  } else {
+    parallaxTargetX -= sx * 0.5;
+    parallaxTargetY -= sy * 0.5;
+  }
+  const maxOff = 120;
+  parallaxTargetX = Math.max(-maxOff, Math.min(maxOff, parallaxTargetX));
+  parallaxTargetY = Math.max(-maxOff, Math.min(maxOff, parallaxTargetY));
+}, { passive: false });
+
+canvas.addEventListener('click', (e) => {
+  const r = canvas.getBoundingClientRect();
+  let x = (e.clientX - r.left) * (VW / r.width);
+  let y = (e.clientY - r.top) * (VH / r.height);
+
+  // Composition Composer: nudge position based on mode
+  if (compositionMode !== 'free') {
+    const cx = VW/2, cy = VH/2;
+    if (compositionMode === 'center-burst') {
+      // Pull toward center with falloff
+      const dx = x - cx, dy = y - cy;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      const maxD = Math.sqrt(VW*VW + VH*VH) / 2;
+      const pull = Math.min(0.4, d / maxD * 0.6);
+      x = x - dx * pull;
+      y = y - dy * pull;
+    } else if (compositionMode === 'edge-fade') {
+      // Push toward edges
+      const dx = x - cx, dy = y - cy;
+      x = x + dx * 0.25;
+      y = y + dy * 0.25;
+    } else if (compositionMode === 'tunnel') {
+      // Push outward from a horizontal vanishing axis
+      const offsetFromAxis = y - cy;
+      y = cy + offsetFromAxis * 1.4;
+    } else if (compositionMode === 'diagonal-stream') {
+      // Snap toward the flow line through center
+      const fa = globalFlowAngle;
+      const dirX = Math.cos(fa), dirY = Math.sin(fa);
+      // project (x-cx, y-cy) onto flow direction
+      const dx = x - cx, dy = y - cy;
+      const proj = dx * dirX + dy * dirY;
+      // Perpendicular distance pulled back
+      const perpX = dx - proj * dirX;
+      const perpY = dy - proj * dirY;
+      x = x - perpX * 0.5;
+      y = y - perpY * 0.5;
+    }
+  }
+
+  const cx = VW/2, cy = VH/2;
+  const baseX = cx + (x - cx) / layoutDensity;
+  const baseY = cy + (y - cy) / layoutDensity;
+  const el = makeElement(baseX, baseY, currentRole);
+  elements.push(el);
+  document.getElementById('instr').classList.add('hide');
+  updateHUD();
+});
+
+window.addEventListener('keydown', (e) => {
+  const keyMap = { 'Digit1':'hero', 'Digit2':'cloud', 'Digit3':'flow', 'Digit4':'rhythm', 'Digit5':'noise', 'Digit6':'frame', 'Digit7':'texture' };
+  if (keyMap[e.code]) setRole(keyMap[e.code]);
+  if (e.code === 'KeyM') toggleMotion();
+  if (e.code === 'KeyU') toggleFUI();
+  if (e.code === 'KeyD') toggleDrama();
+  if (e.code === 'KeyE') exportSVG('all');
+  if (e.code === 'KeyZ') undoLast();
+  if (e.code === 'KeyR') clearAll();
+});
+
+window.setRole = function(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.role === role));
+  document.getElementById('role-current').textContent = role.toUpperCase();
+  document.getElementById('bb-role').textContent = role.toUpperCase();
+  document.getElementById('topbar-state').textContent = `SHARDS · ${elements.length} // ROLE · ${role.toUpperCase()}`;
+};
+window.undoLast = function() { elements.pop(); updateHUD(); };
+window.clearAll = function() {
+  elements = [];
+  patternLayers = [];
+  document.getElementById('instr').classList.remove('hide');
+  updateHUD();
+};
+window.toggleMotion = function() {
+  motionEnabled = !motionEnabled;
+  document.getElementById('toggle-motion').textContent = 'MOTION · ' + (motionEnabled ? 'ON' : 'OFF');
+};
+window.toggleAutoHalftone = function() {
+  autoHalftone = !autoHalftone;
+  document.getElementById('toggle-halftone').textContent = 'AUTO HALFTONE · ' + (autoHalftone ? 'ON' : 'OFF');
+};
+window.toggleFUI = function() {
+  fuiVisible = !fuiVisible;
+  document.getElementById('fui-overlay').classList.toggle('hide', !fuiVisible);
+  document.getElementById('fui-rail').classList.toggle('show', fuiVisible && elements.length >= 2);
+  document.getElementById('toggle-fui').textContent = 'FUI · ' + (fuiVisible ? 'ON' : 'OFF');
+};
+window.toggleDrama = function() {
+  dramaEnabled = !dramaEnabled;
+  document.getElementById('toggle-drama').textContent = 'DRAMA · ' + (dramaEnabled ? 'ON' : 'OFF');
+  document.getElementById('toggle-drama').classList.toggle('active', dramaEnabled);
+};
+window.setComposition = function(mode) {
+  compositionMode = mode;
+  document.querySelectorAll('.comp-btn').forEach(b => b.classList.toggle('active', b.dataset.comp === mode));
+};
+window.setCameraFlow = function(mode) {
+  cameraFlow = mode;
+  document.querySelectorAll('.cam-btn').forEach(b => b.classList.toggle('active', b.dataset.cam === mode));
+};
+window.spawnHero = function(personality) {
+  const el = generateHero(VW * (0.3 + Math.random()*0.4), VH * (0.3 + Math.random()*0.4), personality);
+  elements.push(el);
+  document.getElementById('instr').classList.add('hide');
+  updateHUD();
+};
+window.addPattern = function(type) {
+  let opts = { color: activePalette[Math.floor(Math.random()*activePalette.length)], opacity: 0.55 };
+  if (type === 'halftone-band') { opts.height = 240; opts.color = '#FFFFFF'; opts.opacity = 0.32; opts.depth = 'deep'; }
+  else if (type === 'radial-dots') { opts.cx = VW * (0.3 + Math.random()*0.4); opts.cy = VH * (0.3 + Math.random()*0.4); opts.radius = 240; opts.depth = 'deep'; opts.color = '#B59CFF'; opts.opacity = 0.55; }
+  else if (type === 'star-field') { opts.color = '#FFFFFF'; opts.count = 36; opts.opacity = 0.7; opts.depth = 'deep'; }
+  else if (type === 'speedline-burst') { opts.cx = VW * (0.3 + Math.random()*0.4); opts.cy = VH * (0.3 + Math.random()*0.4); opts.count = 16; opts.opacity = 0.55; opts.color = '#7DD9FF'; opts.depth = 'deep'; }
+  else if (type === 'star-rain') { opts.color = '#FFFFFF'; opts.count = 70; opts.starCount = 24; opts.opacity = 0.8; opts.depth = 'deep'; opts.angle = (-65 + Math.random()*10) * Math.PI / 180; }
+  else if (type === 'sparkle-field') { opts.color = '#FFD789'; opts.count = 24; opts.opacity = 0.85; }
+  else if (type === 'hanging-stars') { opts.color = '#FFD789'; opts.count = 14; opts.opacity = 0.85; }
+  else if (type === 'glow-orbs') { opts.color = ['#7DD9FF','#FF7BE0','#B59CFF'][Math.floor(Math.random()*3)]; opts.count = 7; opts.opacity = 0.55; opts.depth = 'deep'; }
+  else if (type === 'aurora-streaks') { opts.color = ['#7DD9FF','#FF7BE0','#A8FFD6'][Math.floor(Math.random()*3)]; opts.count = 4; opts.opacity = 0.4; opts.depth = 'deep'; }
+  else if (type === 'gradient-veil') { opts.color = ['#7DD9FF','#FF7BE0','#B59CFF'][Math.floor(Math.random()*3)]; opts.cx = VW * (0.2 + Math.random()*0.6); opts.cy = VH * (0.2 + Math.random()*0.6); opts.radius = Math.max(VW,VH) * 0.65; opts.opacity = 0.35; opts.depth = 'deep'; }
+  patternLayers.push(makePattern(type, opts));
+};
+window.clearPatterns = function() { patternLayers = []; };
+
+// MAKE BAD APPEAL — for teaching
+window.makeBadAppeal = function() {
+  elements = []; patternLayers = [];
+  bgIndex = 0;
+  // 4 identical-size shapes in a perfectly even row, all centered, all same size
+  for (let i = 0; i < 5; i++) {
+    const el = makeElement(VW * (0.15 + i * 0.175), VH * 0.5, 'hero', {
+      shape: 'star',
+      size: 90, baseSize: 90,
+      color: '#FFC93B'
+    });
+    el.rotPhase = 0; // perfectly upright
+    elements.push(el);
+  }
+  document.getElementById('instr').classList.add('hide');
+  setupSwatches();
+  updateHUD();
+};
+window.randomize = function() {
+  for (const el of elements) {
+    el.baseX = Math.random() * VW;
+    el.baseY = Math.random() * VH;
+    el.rotPhase = Math.random() * Math.PI * 2;
+    el.phase = Math.random() * Math.PI * 2;
+  }
+};
+
+// ── PRESETS ──
+window.loadPreset = function(name) {
+  elements = [];
+  patternLayers = [];
+  layoutDensity = 1.0; layoutScale = 1.0;
+  document.getElementById('sl-density').value = 100;
+  document.getElementById('sl-density-val').textContent = '1.00x';
+  document.getElementById('sl-scale').value = 100;
+  document.getElementById('sl-scale-val').textContent = '1.00x';
+
+  function add(x, y, role, opts) {
+    const el = makeElement(x, y, role, opts);
+    if (opts) Object.assign(el, opts);
+    // regenerate puffs if cloud role
+    if (role === 'cloud') el.puffs = makeCloudPuffs(el.shape, el.size);
+    elements.push(el);
+    return el;
+  }
+
+  // ───── VTUBER OPENING — deep cosmic stage with starfall ─────
+  if (name === 'vtuber') {
+    bgIndex = 0; // NIGHT SKY
+    // Big hero sparkle
+    add(VW*0.32, VH*0.42, 'hero', { shape:'sparkle-big', size:170, baseSize:170, color:'#FFD789' });
+    add(VW*0.74, VH*0.30, 'hero', { shape:'big-star-outline', size:100, baseSize:100, color:'#FFFFFF' });
+    add(VW*0.66, VH*0.66, 'hero', { shape:'striped-circle', size:120, baseSize:120, color:'#B59CFF' });
+    // halftone orb
+    add(VW*0.18, VH*0.78, 'texture', { shape:'halftone-orb', size:240, baseSize:240, color:'#B59CFF' });
+    // light streaks
+    for (let i = 0; i < 10; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'flow', {
+        shape:'light-streak', width: 220 + Math.random()*220,
+        color:['#FFFFFF','#7DD9FF','#FF7BE0'][Math.floor(Math.random()*3)]
+      });
+    }
+    // noise sparkles
+    for (let i = 0; i < 22; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'noise', {
+        shape: i % 3 === 0 ? 'sparkle' : ['small-star','small-dot'][Math.floor(Math.random()*2)],
+        size:8+Math.random()*18, baseSize:8+Math.random()*18,
+        color:['#FFD789','#FFFFFF','#FF7BE0','#7DD9FF'][Math.floor(Math.random()*4)]
+      });
+    }
+    // glow frames
+    for (let i = 0; i < 5; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'frame', {
+        shape:'glow-orb', size:40+Math.random()*60, baseSize:40+Math.random()*60,
+        color:['#FFD789','#FF7BE0','#7DD9FF'][Math.floor(Math.random()*3)]
+      });
+    }
+    // patterns
+    patternLayers.push(makePattern('star-rain', { color:'#FFFFFF', count:60, starCount:18, opacity:0.55, depth:'deep', angle:-1.15 }));
+    patternLayers.push(makePattern('gradient-veil', { color:'#FF7BE0', cx:VW*0.85, cy:VH*0.15, radius:VH*0.85, opacity:0.28, depth:'deep' }));
+    patternLayers.push(makePattern('gradient-veil', { color:'#7DD9FF', cx:VW*0.15, cy:VH*0.85, radius:VH*0.85, opacity:0.25, depth:'deep' }));
+    patternLayers.push(makePattern('sparkle-field', { color:'#FFD789', count:14, opacity:0.7 }));
+
+  // ───── POP CONCERT — idol/concert energy, but redesigned in cosmic palette ─────
+  } else if (name === 'pop') {
+    bgIndex = 2; // MAGIC HOUR
+    add(VW*0.22, VH*0.32, 'hero', { shape:'star', size:140, baseSize:140, color:'#FFD789' });
+    add(VW*0.78, VH*0.62, 'hero', { shape:'striped-circle', size:130, baseSize:130, color:'#FF7BE0' });
+    add(VW*0.50, VH*0.20, 'hero', { shape:'sparkle-big', size:100, baseSize:100, color:'#FFFFFF' });
+    // light streaks like stage lights
+    for (let i = 0; i < 14; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'flow', {
+        shape: i % 2 === 0 ? 'light-streak' : 'speed-line',
+        width: 200 + Math.random()*220,
+        color:['#FFFFFF','#FFD789','#FFCFE6'][Math.floor(Math.random()*3)]
+      });
+    }
+    for (let i = 0; i < 4; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'flow', {
+        shape:'stripe-bar', width: 110, color:'#FF7BE0'
+      });
+    }
+    // confetti
+    for (let i = 0; i < 4; i++) {
+      const el = add(Math.random()*VW, Math.random()*VH, 'noise', { shape:'confetti' });
+      el.pieces = makeConfettiPieces(12);
+    }
+    // small sparkles + stars
+    for (let i = 0; i < 22; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'noise', {
+        shape: ['sparkle','small-star','small-dot','cross'][Math.floor(Math.random()*4)],
+        size:8+Math.random()*14, baseSize:8+Math.random()*14,
+        color:['#FFFFFF','#FFD789','#FF7BE0'][Math.floor(Math.random()*3)]
+      });
+    }
+    // glow frames
+    for (let i = 0; i < 4; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'frame', {
+        shape:'glow-orb', size:50+Math.random()*50, baseSize:50+Math.random()*50,
+        color:['#FFD789','#FF7BE0'][Math.floor(Math.random()*2)]
+      });
+    }
+    patternLayers.push(makePattern('speedline-burst', { color:'#FFFFFF', cx:VW*0.5, cy:VH*0.5, count:18, innerR:100, outerR:Math.max(VW,VH)*0.55, opacity:0.32, depth:'deep' }));
+    patternLayers.push(makePattern('sparkle-field', { color:'#FFD789', count:18, opacity:0.7 }));
+
+  // ───── STARFALL — diagonal rain of stars (blue/white reference) ─────
+  } else if (name === 'starfall') {
+    bgIndex = 3; // STARFALL
+    add(VW*0.32, VH*0.55, 'hero', { shape:'sparkle-big', size:160, baseSize:160, color:'#FFFFFF' });
+    add(VW*0.70, VH*0.32, 'hero', { shape:'big-star-outline', size:90, baseSize:90, color:'#FFFFFF' });
+    // light streaks
+    for (let i = 0; i < 14; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'flow', {
+        shape:'light-streak', width:200+Math.random()*220, color:'#FFFFFF'
+      });
+    }
+    // hanging stars rows
+    for (let i = 0; i < 3; i++) {
+      add(VW*(0.2+Math.random()*0.6), VH*(0.15+i*0.25), 'rhythm', {
+        shape:'hanging-stars-row', width:300+Math.random()*120,
+        size:80+Math.random()*60, color:'#FFFFFF'
+      });
+    }
+    for (let i = 0; i < 24; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'noise', {
+        shape: i % 3 === 0 ? 'sparkle' : 'small-star',
+        size:6+Math.random()*14, baseSize:6+Math.random()*14,
+        color:['#FFFFFF','#7DD9FF'][Math.floor(Math.random()*2)]
+      });
+    }
+    patternLayers.push(makePattern('star-rain', { color:'#FFFFFF', count:80, starCount:26, opacity:0.85, depth:'deep' }));
+    patternLayers.push(makePattern('aurora-streaks', { color:'#7DD9FF', count:3, opacity:0.3, depth:'deep' }));
+
+  // ───── DREAM CLOUDS — soft cloud landscape (blue/white reference) ─────
+  } else if (name === 'dreamclouds') {
+    bgIndex = 5; // KAWAII SKY
+    // Floor of clouds
+    add(VW*0.15, VH*0.78, 'cloud', { shape:'cloud-cluster', size:340, baseSize:340, color:'#FFFFFF' });
+    add(VW*0.55, VH*0.85, 'cloud', { shape:'cloud-cluster', size:280, baseSize:280, color:'#FFFFFF' });
+    add(VW*0.88, VH*0.78, 'cloud', { shape:'cloud-puff', size:240, baseSize:240, color:'#FFFFFF' });
+    add(VW*0.30, VH*0.62, 'cloud', { shape:'cloud-puff', size:180, baseSize:180, color:'#E6EEFF' });
+    add(VW*0.78, VH*0.55, 'cloud', { shape:'orb-trio', size:220, baseSize:220, color:'#FFFFFF' });
+    // Hero stars in upper sky
+    add(VW*0.42, VH*0.28, 'hero', { shape:'star', size:90, baseSize:90, color:'#7DD9FF' });
+    add(VW*0.68, VH*0.20, 'hero', { shape:'sparkle-big', size:80, baseSize:80, color:'#FFFFFF' });
+    // Diagonal streaks
+    for (let i = 0; i < 8; i++) {
+      add(Math.random()*VW, VH*Math.random()*0.5, 'flow', {
+        shape:'light-streak', width:180+Math.random()*180, color:'#FFFFFF'
+      });
+    }
+    // Scattered stars
+    for (let i = 0; i < 18; i++) {
+      add(Math.random()*VW, VH*Math.random()*0.55, 'noise', {
+        shape: ['small-star','sparkle','small-dot'][Math.floor(Math.random()*3)],
+        size:6+Math.random()*12, baseSize:6+Math.random()*12,
+        color:['#FFFFFF','#7DD9FF'][Math.floor(Math.random()*2)]
+      });
+    }
+    patternLayers.push(makePattern('star-rain', { color:'#FFFFFF', count:50, starCount:14, opacity:0.5, depth:'deep', angle:-1.1 }));
+
+  // ───── COSMIC DREAM — deep purple, halftone orbs, sparkles ─────
+  } else if (name === 'cosmic') {
+    bgIndex = 1; // COSMIC
+    add(VW*0.28, VH*0.50, 'hero', { shape:'sparkle-big', size:180, baseSize:180, color:'#FFD789' });
+    add(VW*0.72, VH*0.34, 'hero', { shape:'big-star-outline', size:110, baseSize:110, color:'#B59CFF' });
+    // halftone orbs
+    for (let i = 0; i < 4; i++) {
+      add(VW*(0.15+Math.random()*0.7), VH*(0.2+Math.random()*0.6), 'texture', {
+        shape:'halftone-orb', size:180+Math.random()*140, baseSize:180+Math.random()*140,
+        color:['#B59CFF','#FF7BE0','#7DD9FF'][Math.floor(Math.random()*3)]
+      });
+    }
+    // light streaks
+    for (let i = 0; i < 10; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'flow', {
+        shape: i%2===0?'light-streak':'thin-stripe', width:200+Math.random()*200,
+        color:['#FFFFFF','#B59CFF'][Math.floor(Math.random()*2)]
+      });
+    }
+    // glow orbs
+    for (let i = 0; i < 5; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'frame', {
+        shape:'glow-orb', size:60+Math.random()*60, baseSize:60+Math.random()*60,
+        color:['#7DD9FF','#FF7BE0','#FFD789'][Math.floor(Math.random()*3)]
+      });
+    }
+    // sparkles & dust
+    for (let i = 0; i < 26; i++) {
+      add(Math.random()*VW, Math.random()*VH, 'noise', {
+        shape: i%3===0?'sparkle':['small-star','small-dot','tiny-ring'][Math.floor(Math.random()*3)],
+        size:6+Math.random()*16, baseSize:6+Math.random()*16,
+        color:['#FFFFFF','#FFD789','#FF7BE0'][Math.floor(Math.random()*3)]
+      });
+    }
+    patternLayers.push(makePattern('aurora-streaks', { color:'#B59CFF', count:4, opacity:0.35, depth:'deep' }));
+    patternLayers.push(makePattern('gradient-veil', { color:'#FF7BE0', cx:VW*0.2, cy:VH*0.2, radius:VH*0.8, opacity:0.32, depth:'deep' }));
+    patternLayers.push(makePattern('sparkle-field', { color:'#FFD789', count:18, opacity:0.85 }));
+
+  // ───── MAGIC HOUR — warm purple→pink, hanging stars, golden glow ─────
+  } else if (name === 'magichour') {
+    bgIndex = 6; // AMETHYST
+    add(VW*0.30, VH*0.50, 'hero', { shape:'striped-circle', size:160, baseSize:160, color:'#FFD789' });
+    add(VW*0.70, VH*0.35, 'hero', { shape:'sparkle-big', size:120, baseSize:120, color:'#FFD789' });
+    add(VW*0.50, VH*0.72, 'hero', { shape:'star', size:80, baseSize:80, color:'#FFFFFF' });
+    // clouds at base
+    add(VW*0.20, VH*0.88, 'cloud', { shape:'cloud-puff', size:260, baseSize:260, color:'#FF7BE0' });
+    add(VW*0.80, VH*0.92, 'cloud', { shape:'cloud-puff', size:240, baseSize:240, color:'#B59CFF' });
+    // gentle streaks
+    for (let i = 0; i < 8; i++) {
+      add(Math.random()*VW, Math.random()*VH * 0.7, 'flow', {
+        shape:'light-streak', width:200+Math.random()*180,
+        color:['#FFD789','#FFFFFF','#FFCFE6'][Math.floor(Math.random()*3)]
+      });
+    }
+    for (let i = 0; i < 18; i++) {
+      add(Math.random()*VW, Math.random()*VH * 0.85, 'noise', {
+        shape: i%3===0?'sparkle':'small-star',
+        size:8+Math.random()*14, baseSize:8+Math.random()*14,
+        color:['#FFD789','#FFFFFF'][Math.floor(Math.random()*2)]
+      });
+    }
+    patternLayers.push(makePattern('hanging-stars', { color:'#FFD789', count:14, opacity:0.9 }));
+    patternLayers.push(makePattern('glow-orbs', { color:'#FFD789', count:5, opacity:0.5, depth:'deep' }));
+    patternLayers.push(makePattern('gradient-veil', { color:'#FFD789', cx:VW*0.5, cy:VH*0.85, radius:VH*0.9, opacity:0.3, depth:'deep' }));
+  }
+  setupSwatches();
+  document.getElementById('instr').classList.add('hide');
+  updateHUD();
+};
+
+// Convert a BG preset to a CSS gradient/color string for swatches
+function bgToCss(bg) {
+  if (bg.gradient === 'linear') {
+    const stops = bg.stops.map(([t, c]) => `${c} ${(t*100).toFixed(0)}%`).join(', ');
+    return `linear-gradient(${bg.angle || 180}deg, ${stops})`;
+  } else if (bg.gradient === 'radial') {
+    const stops = bg.stops.map(([t, c]) => `${c} ${(t*100).toFixed(0)}%`).join(', ');
+    return `radial-gradient(circle, ${stops})`;
+  }
+  return bg.color;
+}
+
+// ── SWATCHES ──
+function setupSwatches() {
+  const bgs = document.getElementById('bg-swatches');
+  bgs.innerHTML = '';
+  BG_PRESETS.forEach((bg, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (i === bgIndex ? ' active' : '');
+    sw.style.background = bgToCss(bg);
+    sw.title = bg.name;
+    sw.onclick = () => { bgIndex = i; setupSwatches(); updateBgBadge(); };
+    bgs.appendChild(sw);
+  });
+  const ps = document.getElementById('palette-swatches');
+  ps.innerHTML = '';
+  PALETTE_DEFAULT.forEach((col) => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (activePalette.includes(col) ? ' active' : '');
+    sw.style.background = col;
+    sw.onclick = () => {
+      if (activePalette.includes(col)) { if (activePalette.length > 1) activePalette = activePalette.filter(c => c !== col); }
+      else activePalette.push(col);
+      setupSwatches();
+    };
+    ps.appendChild(sw);
+  });
+  updateBgBadge();
+}
+function updateBgBadge() {
+  const bg = BG_PRESETS[bgIndex];
+  document.getElementById('bg-swatch').style.background = bgToCss(bg);
+  document.getElementById('bg-name').textContent = bg.name;
+}
+setupSwatches();
+
+// ── SLIDERS ──
+document.getElementById('sl-flow').addEventListener('input', (e) => {
+  const v = parseInt(e.target.value);
+  globalFlowAngle = v * Math.PI / 180;
+  document.getElementById('sl-flow-val').textContent = v + '°';
+  document.getElementById('h-angle').textContent = v + '°';
+  document.getElementById('bb-flow').textContent = v + '°';
+  document.getElementById('fui-flow-deg').textContent = v + '°';
+});
+document.getElementById('sl-rot').addEventListener('input', (e) => {
+  rotSpeed = e.target.value / 100;
+  document.getElementById('sl-rot-val').textContent = rotSpeed.toFixed(2);
+});
+document.getElementById('sl-stripeJ').addEventListener('input', (e) => {
+  stripeRotJitter = e.target.value / 100;
+  document.getElementById('sl-stripeJ-val').textContent = stripeRotJitter.toFixed(2);
+});
+document.getElementById('sl-speed').addEventListener('input', (e) => {
+  motionSpeed = e.target.value / 100;
+  document.getElementById('sl-speed-val').textContent = motionSpeed.toFixed(2);
+});
+document.getElementById('sl-density').addEventListener('input', (e) => {
+  layoutDensity = e.target.value / 100;
+  document.getElementById('sl-density-val').textContent = layoutDensity.toFixed(2) + 'x';
+});
+document.getElementById('sl-scale').addEventListener('input', (e) => {
+  layoutScale = e.target.value / 100;
+  document.getElementById('sl-scale-val').textContent = layoutScale.toFixed(2) + 'x';
+});
+document.getElementById('sl-glitch').addEventListener('input', (e) => {
+  glitchSpeed = e.target.value / 100;
+  document.getElementById('sl-glitch-val').textContent = glitchSpeed.toFixed(2);
+});
+document.getElementById('sl-glow').addEventListener('input', (e) => {
+  glowStrength = e.target.value / 100;
+  document.getElementById('sl-glow-val').textContent = glowStrength.toFixed(2);
+});
+document.getElementById('sl-parallax').addEventListener('input', (e) => {
+  const v = parseInt(e.target.value);
+  document.getElementById('sl-parallax-val').textContent = v + ' px';
+  // Manual parallax — set Y offset (X stays at current value)
+  parallaxTargetY = v;
+});
+
+// ── APPEAL ANALYSIS ──
+function analyseAppeal() {
+  if (elements.length < 2) return null;
+  const N = elements.length;
+
+  // 1. HERO FOCUS
+  const heroes = elements.filter(el => el.role === 'hero');
+  const heroCount = heroes.length;
+  let heroFocus = 0;
+  if (heroCount >= 1) {
+    // best hero is the largest
+    const biggest = Math.max(...heroes.map(el => el.baseSize));
+    const others = elements.filter(el => el.role !== 'hero').map(el => el.baseSize);
+    const maxOther = others.length > 0 ? Math.max(...others) : 0;
+    heroFocus = Math.min(1, Math.max(0, (biggest - maxOther * 0.8) / (biggest + 1)));
+    // too many heroes hurts
+    if (heroCount > 3) heroFocus *= 0.5;
+  }
+
+  // 2. SILHOUETTE — well-separated elements (not too crowded)
+  let overlap = 0;
+  for (let i = 0; i < N; i++) {
+    for (let j = i+1; j < N; j++) {
+      const dx = elements[i].baseX - elements[j].baseX;
+      const dy = elements[i].baseY - elements[j].baseY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const minClear = (elements[i].baseSize + elements[j].baseSize) * 0.5;
+      if (dist < minClear) overlap++;
+    }
+  }
+  const silScore = Math.max(0, 1 - overlap / Math.max(1, N * 0.5));
+
+  // 3. RHYTHM — variance
+  const sizes = elements.map(el => el.baseSize);
+  const meanSize = sizes.reduce((a,b)=>a+b, 0)/N;
+  const sizeVar = Math.sqrt(sizes.reduce((a,b)=>a+(b-meanSize)**2,0)/N)/meanSize;
+  const xs = elements.map(el => el.baseX).sort((a,b)=>a-b);
+  const spacings = [];
+  for (let i=1; i<xs.length; i++) spacings.push(xs[i]-xs[i-1]);
+  const meanSp = spacings.reduce((a,b)=>a+b,0)/Math.max(1,spacings.length);
+  const spVar = spacings.length > 1
+    ? Math.sqrt(spacings.reduce((a,b)=>a+(b-meanSp)**2,0)/spacings.length)/(meanSp+1)
+    : 0;
+  const rhythmScore = Math.min(1, 0.5 * Math.min(1, sizeVar*1.5) + 0.5 * Math.min(1, spVar*0.8));
+
+  // 4. DENSITY MIX — are multiple size scales present? (macro/medium/micro/dust)
+  // Bin sizes into 4 buckets relative to canvas
+  const refScale = Math.min(VW, VH);
+  const buckets = [0,0,0,0]; // micro, small, med, large
+  for (const el of elements) {
+    const s = el.baseSize / refScale;
+    if (s < 0.03) buckets[0]++;
+    else if (s < 0.08) buckets[1]++;
+    else if (s < 0.18) buckets[2]++;
+    else buckets[3]++;
+  }
+  const usedBuckets = buckets.filter(b => b > 0).length;
+  const densityMix = usedBuckets / 4;
+
+  // 5. FLOW COHESION — how many flow-aligned elements are present
+  const flowCount = elements.filter(el => FLOW_ALIGNED_SHAPES.has(el.shape)).length;
+  const flowCoh = Math.min(1, flowCount / Math.max(3, N * 0.35));
+
+  // 6. TOO EVEN check
+  const tooEven = spVar < 0.12 && N >= 3;
+
+  // Total
+  const raw = heroFocus*28 + silScore*20 + rhythmScore*18 + densityMix*16 + flowCoh*18 - (tooEven?15:0);
+  const score = Math.max(0, Math.min(100, Math.round(raw)));
+
+  // Verdict
+  let verdict, verdictSub;
+  if (heroCount === 0) {
+    verdict = 'NO CLEAR HERO'; verdictSub = 'who should I look at?';
+  } else if (heroCount > 3) {
+    verdict = 'TOO MANY LEADERS'; verdictSub = 'competing for attention';
+  } else if (densityMix < 0.5) {
+    verdict = 'ONE-NOTE DENSITY'; verdictSub = 'add big + small variety';
+  } else if (flowCoh < 0.3 && N > 6) {
+    verdict = 'NEEDS FLOW'; verdictSub = 'add speed lines';
+  } else if (score >= 78) {
+    verdict = 'STRONG CHARACTER'; verdictSub = 'this composition breathes';
+  } else if (score >= 60) {
+    verdict = 'GOOD RHYTHM'; verdictSub = 'a personality is forming';
+  } else if (tooEven) {
+    verdict = 'TOO STIFF'; verdictSub = 'vary your spacing';
+  } else if (score >= 40) {
+    verdict = 'POTENTIAL'; verdictSub = 'add more hierarchy';
+  } else {
+    verdict = 'NO APPEAL YET'; verdictSub = 'a hero needs to emerge';
+  }
+
+  return { score, heroFocus, silScore, rhythmScore, densityMix, flowCoh, sizeVar, spVar, tooEven, verdict, verdictSub };
+}
+
+// ── HUD UPDATE ──
+function updateHUD() {
+  document.getElementById('h-elem').textContent = elements.length;
+  document.getElementById('bb-elem').textContent = elements.length;
+  const counts = {hero:0, flow:0, rhythm:0, noise:0, frame:0, texture:0};
+  for (const el of elements) counts[el.role]++;
+  document.getElementById('h-hero').textContent = counts.hero;
+  document.getElementById('h-flow').textContent = counts.flow;
+  document.getElementById('h-rhythm').textContent = counts.rhythm;
+  document.getElementById('h-noise').textContent = counts.noise;
+  document.getElementById('topbar-state').textContent = `SHARDS · ${elements.length} // ROLE · ${currentRole.toUpperCase()}`;
+}
+
+function updateFUI() {
+  const a = analyseAppeal();
+  const railEl = document.getElementById('fui-rail');
+  if (!a) {
+    railEl.classList.remove('show');
+    document.getElementById('fui-verdict-mini').textContent = '—';
+    return;
+  }
+  if (fuiVisible) railEl.classList.add('show');
+
+  function setBar(id, val, threshGood, threshHot) {
+    const row = document.getElementById(id);
+    const pct = Math.round(val * 100);
+    row.querySelector('.bar-fill').style.width = pct + '%';
+    row.querySelector('.pct').textContent = pct + '%';
+    row.classList.remove('good','hot','cool');
+    if (val >= threshGood) row.classList.add('good');
+    else if (val < threshHot) row.classList.add('hot');
+  }
+  setBar('fui-hero',     a.heroFocus,   0.55, 0.2);
+  setBar('fui-sil',      a.silScore,    0.65, 0.3);
+  setBar('fui-rhythm',   a.rhythmScore, 0.55, 0.25);
+  setBar('fui-density',  a.densityMix,  0.65, 0.3);
+  setBar('fui-flow-coh', a.flowCoh,     0.55, 0.2);
+
+  document.getElementById('fui-svar').textContent = Math.round(a.sizeVar*100) + '%';
+  document.getElementById('fui-spacing').textContent = Math.round(a.spVar*100) + '%';
+  document.getElementById('fui-even').textContent = a.tooEven ? 'YES' : 'no';
+
+  document.getElementById('fr-fill').style.height = a.score + '%';
+  document.getElementById('fr-pct').textContent = a.score + '%';
+  document.getElementById('fui-verdict-mini').textContent = a.verdict;
+
+  // Verdict flash on change
+  if (a.verdict !== lastVerdict) {
+    lastVerdict = a.verdict;
+    if (fuiVisible) {
+      const vf = document.getElementById('verdict-flash');
+      document.getElementById('verdict-text').textContent = a.verdict;
+      document.getElementById('verdict-sub').textContent = a.verdictSub;
+      vf.classList.add('show');
+      if (verdictTimeout) clearTimeout(verdictTimeout);
+      verdictTimeout = setTimeout(() => vf.classList.remove('show'), 2000);
+    }
+  }
+}
+
+// ── SVG EXPORT ──
+window.exportSVG = function() {
+  const bg = BG_PRESETS[bgIndex];
+  let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  svg += `<svg xmlns="http://www.w3.org/2000/svg" width="${VW}" height="${VH}" viewBox="0 0 ${VW} ${VH}">\n`;
+
+  // Background
+  svg += `<g id="background">\n`;
+  if (bg.gradient === 'linear') {
+    const angle = bg.angle || 180;
+    // SVG linearGradient coords: 0..1; angle 0=top→bottom; convert
+    const rad = (angle - 90) * Math.PI / 180;
+    const x1 = 0.5 - Math.cos(rad) * 0.5;
+    const y1 = 0.5 - Math.sin(rad) * 0.5;
+    const x2 = 0.5 + Math.cos(rad) * 0.5;
+    const y2 = 0.5 + Math.sin(rad) * 0.5;
+    svg += `<defs><linearGradient id="bg-grad" x1="${x1.toFixed(3)}" y1="${y1.toFixed(3)}" x2="${x2.toFixed(3)}" y2="${y2.toFixed(3)}">\n`;
+    for (const [t, c] of bg.stops) svg += `  <stop offset="${(t*100).toFixed(1)}%" stop-color="${c}"/>\n`;
+    svg += `</linearGradient></defs>\n`;
+    svg += `<rect width="${VW}" height="${VH}" fill="url(#bg-grad)"/>\n`;
+  } else if (bg.gradient === 'radial') {
+    svg += `<defs><radialGradient id="bg-grad" cx="0.5" cy="0.5" r="0.7">\n`;
+    for (const [t, c] of bg.stops) svg += `  <stop offset="${(t*100).toFixed(1)}%" stop-color="${c}"/>\n`;
+    svg += `</radialGradient></defs>\n`;
+    svg += `<rect width="${VW}" height="${VH}" fill="url(#bg-grad)"/>\n`;
+  } else {
+    svg += `<rect width="${VW}" height="${VH}" fill="${bg.color}"/>\n`;
+  }
+  if (autoHalftone) {
+    svg += `<g id="halftone" opacity="${bg.halftoneOpacity}">\n`;
+    const stepSize = 14;
+    const cx = VW/2, cy = VH/2;
+    const maxDist = Math.sqrt(VW*VW + VH*VH) / 2;
+    let rowIdx = 0;
+    for (let y = -stepSize; y <= VH + stepSize; y += stepSize) {
+      const offsetX = (rowIdx % 2) * (stepSize / 2);
+      for (let x = -stepSize + offsetX; x <= VW + stepSize; x += stepSize) {
+        const dx = x - cx, dy = y - cy;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        const t2 = Math.min(1, d / maxDist);
+        const dotR = Math.max(0.5, (1 - t2 * 0.85) * 4.5);
+        if (dotR > 0.3) svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${dotR.toFixed(2)}" fill="${bg.halftone}"/>\n`;
+      }
+      rowIdx++;
+    }
+    svg += `</g>\n`;
+  }
+  svg += `</g>\n`;
+
+  const ORDER = ['texture', 'cloud', 'frame', 'rhythm', 'flow', 'noise', 'hero'];
+  const deepPatterns = patternLayers.filter(p => p.depth === 'deep');
+  if (deepPatterns.length > 0) {
+    svg += `<g id="pattern-deep-layer">\n`;
+    for (const p of deepPatterns) svg += patternToSVG(p);
+    svg += `</g>\n`;
+  }
+
+  for (const role of ORDER) {
+    const roleEls = elements.filter(el => el.role === role);
+    if (roleEls.length === 0) continue;
+    svg += `<g id="${role}-layer">\n`;
+    for (const el of roleEls) svg += elementToSVG(el);
+    svg += `</g>\n`;
+  }
+
+  // Top pattern layers (on top of most elements)
+  const topPatterns = patternLayers.filter(p => p.depth !== 'deep');
+  if (topPatterns.length > 0) {
+    svg += `<g id="pattern-top-layer">\n`;
+    for (const p of topPatterns) svg += patternToSVG(p);
+    svg += `</g>\n`;
+  }
+
+  svg += `</svg>\n`;
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `appeal-mv-${Date.now()}.svg`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('SVG EXPORTED ↓');
+};
+
+window.exportPNG = function() {
+  const tmp = document.createElement('canvas');
+  tmp.width = VW * 2; tmp.height = VH * 2;
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(canvas, 0, 0, tmp.width, tmp.height);
+  tmp.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `appeal-mv-${Date.now()}.png`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('PNG EXPORTED ↓');
+  });
+};
+
+function elementToSVG(el) {
+  const pos = adjustedPos(el);
+  const size = adjustedSize(el);
+  const wid = adjustedWidth(el);
+  const hgt = adjustedHeight(el);
+  const ang = effectiveAngle(el, frameTime);
+  const angDeg = (ang * 180 / Math.PI).toFixed(2);
+  const x = pos.x, y = pos.y;
+  const c1 = el.color;
+  const shape = el.shape;
+
+  if (shape === 'star') {
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})">${starPathSVG(0, 0, size/2, 5, size/4.2, c1)}</g>\n`;
+  } else if (shape === 'big-star-outline') {
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})">${starPathSVG(0, 0, size/2, 5, size/4.2, 'none', c1, Math.max(4, size*0.07))}</g>\n`;
+  } else if (shape === 'striped-circle') {
+    // Body + stripes as SEPARATE groups
+    const id = 'clip-' + Math.floor(Math.random() * 1e9);
+    const stripeRot = (motionEnabled ? frameTime * rotSpeed * el.rotDir * 0.4 + el.rotPhase : el.rotPhase) * 180 / Math.PI;
+    let out = `<g class="striped-circle-group">\n`;
+    out += `  <defs><clipPath id="${id}"><circle cx="${x}" cy="${y}" r="${size/2}"/></clipPath></defs>\n`;
+    out += `  <g class="circle-body"><circle cx="${x}" cy="${y}" r="${size/2}" fill="${c1}"/></g>\n`;
+    out += `  <g class="circle-stripes" clip-path="url(#${id})">\n`;
+    out += `    <g transform="translate(${x} ${y}) rotate(${stripeRot.toFixed(2)})">\n`;
+    const stripeH = size/2 * 0.18;
+    for (let yy = -size*0.75; yy < size*0.75; yy += stripeH * 2) {
+      out += `      <rect x="${(-size*0.75).toFixed(1)}" y="${yy.toFixed(1)}" width="${(size*1.5).toFixed(1)}" height="${stripeH.toFixed(2)}" fill="#FFFFFF"/>\n`;
+    }
+    out += `    </g>\n  </g>\n</g>\n`;
+    return out;
+  } else if (shape === 'big-ring' || shape === 'ring') {
+    const lw = Math.max(2, size * (shape === 'big-ring' ? 0.06 : 0.05));
+    return `<circle cx="${x}" cy="${y}" r="${size/2}" fill="none" stroke="${c1}" stroke-width="${lw}"/>\n`;
+  } else if (shape === 'dashed-ring') {
+    return `<circle cx="${x}" cy="${y}" r="${size/2}" fill="none" stroke="${c1}" stroke-width="${Math.max(2,size*0.04)}" stroke-dasharray="8 6"/>\n`;
+  } else if (shape === 'arc') {
+    const r = size/2;
+    const startAng = 0, endAng = Math.PI*1.3;
+    const x1 = x + Math.cos(startAng)*r, y1 = y + Math.sin(startAng)*r;
+    const x2 = x + Math.cos(endAng)*r, y2 = y + Math.sin(endAng)*r;
+    const large = endAng-startAng > Math.PI ? 1 : 0;
+    return `<path d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}" fill="none" stroke="${c1}" stroke-width="${Math.max(3,size*0.05)}"/>\n`;
+  } else if (shape === 'corner-bracket') {
+    const lw = Math.max(3, size*0.04);
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})"><polyline points="${-size/2},${size/2} ${-size/2},${-size/2} ${size/2},${-size/2}" fill="none" stroke="${c1}" stroke-width="${lw}"/></g>\n`;
+  } else if (shape === 'speed-line' || shape === 'thin-stripe') {
+    const h = shape === 'thin-stripe' ? hgt * 0.5 : hgt;
+    const r = h / 2;
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})"><rect x="${-wid/2}" y="${-h/2}" width="${wid}" height="${h}" rx="${r}" fill="${c1}"/></g>\n`;
+  } else if (shape === 'stripe-bar') {
+    let out = `<g transform="translate(${x} ${y}) rotate(${angDeg})">\n`;
+    const stripes = 6, h = hgt * 1.6;
+    const stripeW = wid / stripes;
+    for (let i = 0; i < stripes; i++) {
+      if (i % 2 === 0) {
+        const x1 = -wid/2 + i*stripeW;
+        const points = `${x1.toFixed(2)},${(-h/2).toFixed(2)} ${(x1+stripeW).toFixed(2)},${(-h/2).toFixed(2)} ${(x1+stripeW-h*0.4).toFixed(2)},${(h/2).toFixed(2)} ${(x1-h*0.4).toFixed(2)},${(h/2).toFixed(2)}`;
+        out += `<polygon points="${points}" fill="${c1}"/>\n`;
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'dashed-line') {
+    const thickness = Math.max(2, hgt*0.18);
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})"><line x1="${-wid/2}" y1="0" x2="${wid/2}" y2="0" stroke="${c1}" stroke-width="${thickness}" stroke-dasharray="14 8"/></g>\n`;
+  } else if (shape === 'dot-row' || shape === 'small-circle-row' || shape === 'tick-line') {
+    const dotSize = shape === 'small-circle-row' ? 6 : shape === 'tick-line' ? 2.5 : 4;
+    let out = `<g transform="translate(${x} ${y}) rotate(${angDeg})">\n`;
+    const step = wid / Math.max(1, el.count - 1);
+    for (let i = 0; i < el.count; i++) {
+      out += `<circle cx="${(-wid/2 + i*step).toFixed(2)}" cy="0" r="${dotSize}" fill="${c1}"/>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'confetti') {
+    let out = `<g transform="translate(${x} ${y})">\n`;
+    for (const piece of el.pieces) {
+      const rotDeg = (piece.rot * 180 / Math.PI).toFixed(2);
+      out += `<g transform="translate(${(piece.ox*layoutScale).toFixed(2)} ${(piece.oy*layoutScale).toFixed(2)}) rotate(${rotDeg})"><rect x="${(-piece.size*layoutScale/2).toFixed(2)}" y="${(-piece.size*layoutScale/2).toFixed(2)}" width="${(piece.size*layoutScale).toFixed(2)}" height="${(piece.size*layoutScale).toFixed(2)}" fill="${piece.color}"/></g>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'cloud-cluster' || shape === 'cloud-puff' || shape === 'orb-trio') {
+    if (!el.puffs) return '';
+    let out = `<g class="cloud-group" transform="translate(${x} ${y})">\n`;
+    // body circles
+    for (const p of el.puffs) {
+      out += `  <circle cx="${(p.ox*layoutScale).toFixed(2)}" cy="${(p.oy*layoutScale).toFixed(2)}" r="${(p.r*layoutScale).toFixed(2)}" fill="${c1}"/>\n`;
+    }
+    // top highlights
+    const cLight = tone(c1, 'light');
+    let i = 0;
+    for (const p of el.puffs) {
+      const r = p.r * layoutScale;
+      if (r < 18) { i++; continue; }
+      const gid = `cgr-${Math.floor(Math.random()*1e9)}-${i}`;
+      out += `  <defs><radialGradient id="${gid}" cx="${(0.5 - 0.25).toFixed(2)}" cy="${(0.5 - 0.5).toFixed(2)}" r="0.7"><stop offset="0%" stop-color="${cLight}" stop-opacity="0.85"/><stop offset="55%" stop-color="${cLight}" stop-opacity="0"/></radialGradient></defs>\n`;
+      out += `  <circle cx="${(p.ox*layoutScale).toFixed(2)}" cy="${(p.oy*layoutScale).toFixed(2)}" r="${r.toFixed(2)}" fill="url(#${gid})"/>\n`;
+      i++;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'sparkle' || shape === 'sparkle-big') {
+    const r = (shape === 'sparkle-big' ? size : size) / 2;
+    const inner = r * 0.18;
+    const path = `M 0 ${(-r).toFixed(2)} Q ${inner.toFixed(2)} ${(-inner).toFixed(2)} ${r.toFixed(2)} 0 Q ${inner.toFixed(2)} ${inner.toFixed(2)} 0 ${r.toFixed(2)} Q ${(-inner).toFixed(2)} ${inner.toFixed(2)} ${(-r).toFixed(2)} 0 Q ${(-inner).toFixed(2)} ${(-inner).toFixed(2)} 0 ${(-r).toFixed(2)} Z`;
+    if (shape === 'sparkle-big') {
+      // Layered: small at 0°, big at 45°
+      const innerR = size * 0.4 / 2;
+      const innerInner = innerR * 0.18;
+      const path2 = `M 0 ${(-innerR).toFixed(2)} Q ${innerInner.toFixed(2)} ${(-innerInner).toFixed(2)} ${innerR.toFixed(2)} 0 Q ${innerInner.toFixed(2)} ${innerInner.toFixed(2)} 0 ${innerR.toFixed(2)} Q ${(-innerInner).toFixed(2)} ${innerInner.toFixed(2)} ${(-innerR).toFixed(2)} 0 Q ${(-innerInner).toFixed(2)} ${(-innerInner).toFixed(2)} 0 ${(-innerR).toFixed(2)} Z`;
+      return `<g class="sparkle-big" transform="translate(${x} ${y}) rotate(${angDeg})">
+  <path d="${path2}" fill="${c1}" opacity="0.6"/>
+  <g transform="rotate(45)"><path d="${path}" fill="${c1}"/></g>
+</g>\n`;
+    }
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})"><path d="${path}" fill="${c1}"/></g>\n`;
+  } else if (shape === 'light-streak') {
+    const r = hgt / 2;
+    const gid = `lsg-${Math.floor(Math.random()*1e9)}`;
+    const rgb = (h) => {
+      const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+      return `${r},${g},${b}`;
+    };
+    const c = rgb(c1);
+    let out = `<defs><linearGradient id="${gid}" x1="0" y1="0.5" x2="1" y2="0.5">
+  <stop offset="0%" stop-color="rgba(${c},0)"/>
+  <stop offset="30%" stop-color="rgba(${c},0.9)"/>
+  <stop offset="65%" stop-color="${c1}"/>
+  <stop offset="100%" stop-color="rgba(${c},0)"/>
+</linearGradient></defs>\n`;
+    out += `<g transform="translate(${x} ${y}) rotate(${angDeg})"><rect x="${-wid/2}" y="${-hgt/2}" width="${wid}" height="${hgt}" rx="${r}" fill="url(#${gid})"/></g>\n`;
+    return out;
+  } else if (shape === 'hanging-stars-row') {
+    let out = `<g class="hanging-stars" transform="translate(${x} ${y}) rotate(${angDeg})">\n`;
+    const step = wid / Math.max(1, el.count - 1);
+    const dropDepth = size * 0.6;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(c1);
+    for (let i = 0; i < el.count; i++) {
+      const px = -wid/2 + i * step;
+      const drop = dropDepth * (0.5 + ((i * 7.3) % 7) / 7 * 0.8);
+      out += `  <line x1="${px.toFixed(2)}" y1="${(-wid*0.2).toFixed(2)}" x2="${px.toFixed(2)}" y2="${drop.toFixed(2)}" stroke="rgba(${c},0.45)" stroke-width="1"/>\n`;
+      const r = 5 + (i % 3) * 1.5;
+      out += `  ${starPathSVG(px, drop + r, r, 5, r * 0.45, c1)}\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'glow-orb') {
+    const r = size * 0.7;
+    const gid = `glow-${Math.floor(Math.random()*1e9)}`;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(c1);
+    let out = `<defs><radialGradient id="${gid}" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0%" stop-color="${c1}" stop-opacity="1"/>
+  <stop offset="40%" stop-color="rgba(${c},0.55)"/>
+  <stop offset="100%" stop-color="rgba(${c},0)"/>
+</radialGradient></defs>\n`;
+    out += `<circle cx="${x}" cy="${y}" r="${r.toFixed(2)}" fill="url(#${gid})"/>\n`;
+    // bright core
+    const gid2 = `glow-c-${Math.floor(Math.random()*1e9)}`;
+    out += `<defs><radialGradient id="${gid2}" cx="0.4" cy="0.4" r="0.55">
+  <stop offset="0%" stop-color="#FFFFFF"/>
+  <stop offset="50%" stop-color="rgba(${c},0.85)"/>
+  <stop offset="100%" stop-color="rgba(${c},0)"/>
+</radialGradient></defs>\n`;
+    out += `<circle cx="${x}" cy="${y}" r="${(r*0.5).toFixed(2)}" fill="url(#${gid2})"/>\n`;
+    return out;
+  } else if (shape === 'halftone-orb') {
+    const r = size * 0.55;
+    let out = `<g class="halftone-orb" opacity="0.85">\n`;
+    const stepSize = 5;
+    for (let yy = -r; yy <= r; yy += stepSize) {
+      for (let xx = -r; xx <= r; xx += stepSize) {
+        const d = Math.sqrt(xx*xx + yy*yy);
+        if (d > r) continue;
+        const t = (xx + r) / (2 * r);
+        const dotR = (1 - Math.abs(t - 0.4) * 1.4) * 2.4;
+        if (dotR > 0.2) {
+          const alpha = Math.max(0, 1 - d / r * 0.6) * Math.max(0.1, dotR / 2.4);
+          out += `<circle cx="${(x+xx).toFixed(2)}" cy="${(y+yy).toFixed(2)}" r="${Math.max(0.3, dotR).toFixed(2)}" fill="${c1}" opacity="${alpha.toFixed(2)}"/>\n`;
+        }
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'small-star') {
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})">${starPathSVG(0, 0, size*0.5, 5, size*0.22, c1)}</g>\n`;
+  } else if (shape === 'small-dot') {
+    return `<circle cx="${x}" cy="${y}" r="${size*0.4}" fill="${c1}"/>\n`;
+  } else if (shape === 'tiny-ring') {
+    return `<circle cx="${x}" cy="${y}" r="${size*0.5}" fill="none" stroke="${c1}" stroke-width="2"/>\n`;
+  } else if (shape === 'cross') {
+    const lw = Math.max(1.5, size*0.08);
+    const s = size/2;
+    return `<g transform="translate(${x} ${y}) rotate(${angDeg})"><line x1="${-s}" y1="0" x2="${s}" y2="0" stroke="${c1}" stroke-width="${lw}" stroke-linecap="round"/><line x1="0" y1="${-s}" x2="0" y2="${s}" stroke="${c1}" stroke-width="${lw}" stroke-linecap="round"/></g>\n`;
+  } else if (shape === 'halftone-patch') {
+    let out = `<g opacity="0.4">\n`;
+    const stepSize = 6;
+    const radius = size*0.6;
+    for (let yy = -radius; yy <= radius; yy += stepSize) {
+      for (let xx = -radius; xx <= radius; xx += stepSize) {
+        const d = Math.sqrt(xx*xx+yy*yy);
+        if (d > radius) continue;
+        const t2 = d/radius;
+        const dotR = (1 - t2*0.8) * 2;
+        if (dotR > 0.2) out += `<circle cx="${(x+xx).toFixed(2)}" cy="${(y+yy).toFixed(2)}" r="${dotR.toFixed(2)}" fill="${c1}"/>\n`;
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'dot-grid') {
+    let out = `<g transform="translate(${x} ${y}) rotate(${angDeg})" opacity="0.35">\n`;
+    const step = 12;
+    for (let yy = -hgt/2; yy <= hgt/2; yy += step) {
+      for (let xx = -wid/2; xx <= wid/2; xx += step) {
+        out += `<circle cx="${xx}" cy="${yy}" r="1.5" fill="${c1}"/>\n`;
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (shape === 'checker-strip') {
+    const cells = 8, cw = wid/cells, ch = hgt*0.5/2;
+    let out = `<g transform="translate(${x} ${y}) rotate(${angDeg})">\n`;
+    for (let i = 0; i < cells; i++) {
+      for (let j = 0; j < 2; j++) {
+        if ((i+j) % 2 === 0) out += `<rect x="${(-wid/2 + i*cw).toFixed(2)}" y="${(-hgt*0.25 + j*ch).toFixed(2)}" width="${cw.toFixed(2)}" height="${ch.toFixed(2)}" fill="${c1}"/>\n`;
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  }
+  return '';
+}
+
+function starPathSVG(cx, cy, r, points, innerR, fill, stroke, strokeWidth) {
+  let pts = '';
+  for (let i = 0; i < points * 2; i++) {
+    const ang = (i / (points*2)) * Math.PI*2 - Math.PI/2;
+    const rad = i % 2 === 0 ? r : innerR;
+    const x = cx + Math.cos(ang)*rad;
+    const y = cy + Math.sin(ang)*rad;
+    pts += `${x.toFixed(2)},${y.toFixed(2)} `;
+  }
+  const fillAttr = fill === 'none' ? 'fill="none"' : `fill="${fill}"`;
+  const strokeAttr = stroke ? ` stroke="${stroke}" stroke-width="${strokeWidth || 3}" stroke-linejoin="round"` : '';
+  return `<polygon points="${pts.trim()}" ${fillAttr}${strokeAttr}/>`;
+}
+
+function patternToSVG(p) {
+  const angDeg = (globalFlowAngle * 180 / Math.PI).toFixed(2);
+  if (p.type === 'halftone-band') {
+    const bandH = p.height || 220;
+    const bandW = Math.sqrt(VW*VW + VH*VH);
+    let out = `<g class="pattern-halftone-band" transform="translate(${VW/2} ${VH/2}) rotate(${angDeg})">\n`;
+    const stepSize = 10;
+    for (let y = -bandH/2; y <= bandH/2; y += stepSize) {
+      const offsetX = ((Math.abs(y/stepSize) % 2) | 0) * (stepSize/2);
+      for (let x = -bandW/2 + offsetX; x <= bandW/2; x += stepSize) {
+        const t2 = Math.abs(y) / (bandH/2);
+        const dotR = (1 - t2) * 2.2;
+        if (dotR > 0.2) {
+          out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${dotR.toFixed(2)}" fill="${p.color}" opacity="${((1-t2) * (p.opacity || 0.5)).toFixed(2)}"/>\n`;
+        }
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'radial-dots') {
+    const cx = p.cx || VW/2;
+    const cy = p.cy || VH/2;
+    const maxR = p.radius || Math.min(VW, VH) * 0.5;
+    let out = `<g class="pattern-radial-dots">\n`;
+    const ringStep = 18;
+    for (let r = ringStep; r <= maxR; r += ringStep) {
+      const circumference = 2 * Math.PI * r;
+      const count = Math.max(6, Math.round(circumference / 18));
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2 + (r * 0.03);
+        const x = cx + Math.cos(ang) * r;
+        const y = cy + Math.sin(ang) * r;
+        const t2 = r / maxR;
+        const dotR = (1 - t2 * 0.7) * 2.5;
+        if (dotR > 0.3) {
+          out += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${dotR.toFixed(2)}" fill="${p.color}" opacity="${((1-t2*0.5) * (p.opacity || 0.6)).toFixed(2)}"/>\n`;
+        }
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'zigzag') {
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const segW = p.segW || 24;
+    const segH = p.segH || 18;
+    const yOff = p.yOffset || 0;
+    let out = `<g class="pattern-zigzag" transform="translate(${VW/2} ${VH/2}) rotate(${angDeg})">\n`;
+    let pts = '';
+    let x = -len/2;
+    let goUp = true;
+    pts += `${x.toFixed(2)},${(yOff + (goUp ? -segH/2 : segH/2)).toFixed(2)} `;
+    while (x < len/2) {
+      x += segW;
+      goUp = !goUp;
+      pts += `${x.toFixed(2)},${(yOff + (goUp ? -segH/2 : segH/2)).toFixed(2)} `;
+    }
+    out += `<polyline points="${pts.trim()}" fill="none" stroke="${p.color}" stroke-width="${p.lineWidth || 4}" stroke-linejoin="round" stroke-linecap="round" opacity="${p.opacity || 0.75}"/>\n`;
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'glitch-bars') {
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const bars = p.barCount || 5;
+    const baseY = p.yOffset || 0;
+    let out = `<g class="pattern-glitch-bars" transform="translate(${VW/2} ${VH/2}) rotate(${angDeg})" opacity="${p.opacity || 0.7}">\n`;
+    for (let i = 0; i < bars; i++) {
+      const y = baseY + (i - bars/2) * (p.spacing || 22);
+      const w = (0.3 + ((Math.sin(p.id + i) + 1) / 2) * 0.7) * len * 0.8;
+      const x = ((Math.sin(p.id * 2.3 + i)) * len * 0.15);
+      const h = p.barHeight || 6;
+      out += `<rect x="${(x - w/2).toFixed(2)}" y="${(y - h/2).toFixed(2)}" width="${w.toFixed(2)}" height="${h}" fill="${p.color}"/>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'star-field') {
+    const count = p.count || 30;
+    let out = `<g class="pattern-star-field" opacity="${p.opacity || 0.75}" fill="${p.color}">\n`;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.731;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1) * VH;
+      const size = 3 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 7;
+      out += starPathSVG(sx, sy, size, 5, size * 0.45, p.color) + '\n';
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'speedline-burst') {
+    const cx = p.cx || VW/2;
+    const cy = p.cy || VH/2;
+    const count = p.count || 12;
+    let out = `<g class="pattern-speedline-burst" opacity="${p.opacity || 0.6}">\n`;
+    for (let i = 0; i < count; i++) {
+      const ang = (i / count) * Math.PI * 2 + (p.rotation || 0);
+      const r1 = p.innerR || 80;
+      const r2 = p.outerR || 280;
+      const x1 = cx + Math.cos(ang) * r1, y1 = cy + Math.sin(ang) * r1;
+      const x2 = cx + Math.cos(ang) * r2, y2 = cy + Math.sin(ang) * r2;
+      out += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${p.color}" stroke-width="${p.lineWidth || 3}" stroke-linecap="round"/>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'checker-band') {
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const bandH = p.height || 30;
+    const cells = Math.floor(len / 20);
+    const cellW = len / cells;
+    let out = `<g class="pattern-checker-band" transform="translate(${VW/2} ${VH/2}) rotate(${angDeg})" opacity="${p.opacity || 0.7}" fill="${p.color}">\n`;
+    const yOff = p.yOffset || 0;
+    for (let i = 0; i < cells; i++) {
+      if (i % 2 === 0) {
+        out += `<rect x="${(-len/2 + i*cellW).toFixed(2)}" y="${(yOff - bandH/2).toFixed(2)}" width="${cellW.toFixed(2)}" height="${bandH}"/>\n`;
+      }
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'star-rain') {
+    const ang = p.angle !== undefined ? p.angle : globalFlowAngle;
+    const angD = (ang * 180 / Math.PI).toFixed(2);
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const count = p.count || 60;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(p.color);
+    let out = `<g class="pattern-star-rain" transform="translate(${VW/2} ${VH/2}) rotate(${angD})">\n`;
+    // streaks via gradient
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.741;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1 - 0.5) * len;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1 - 0.5) * len * 1.1;
+      const streakLen = 18 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 60;
+      const w = 1.5 + (Math.abs(Math.sin(seed * 3.7) * 100) % 1) * 1.5;
+      const gid = `sr-${p.id.toFixed(0)}-${i}`;
+      out += `<defs><linearGradient id="${gid}"><stop offset="0%" stop-color="rgba(${c},0)"/><stop offset="55%" stop-color="rgba(${c},${((p.opacity||0.7)*0.85).toFixed(2)})"/><stop offset="100%" stop-color="rgba(${c},0)"/></linearGradient></defs>\n`;
+      out += `<rect x="${(sx-streakLen/2).toFixed(2)}" y="${(sy-w/2).toFixed(2)}" width="${streakLen.toFixed(2)}" height="${w.toFixed(2)}" fill="url(#${gid})"/>\n`;
+    }
+    const starCount = p.starCount || 22;
+    for (let i = 0; i < starCount; i++) {
+      const seed = p.id * 2.13 + i * 0.913;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1 - 0.5) * len;
+      const sy = (Math.abs(Math.cos(seed * 1.4) * 10000) % 1 - 0.5) * len * 1.1;
+      const size = 4 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 10;
+      out += starPathSVG(sx, sy, size, 5, size * 0.42, p.color) + '\n';
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'sparkle-field') {
+    const count = p.count || 24;
+    let out = `<g class="pattern-sparkle-field" opacity="${p.opacity || 0.85}" fill="${p.color}">\n`;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 1.317;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.6) * 10000) % 1) * VH;
+      const size = 8 + (Math.abs(Math.sin(seed * 2.9) * 100) % 1) * 28;
+      const r = size / 2;
+      const inner = r * 0.18;
+      const path = `M 0 ${(-r).toFixed(2)} Q ${inner.toFixed(2)} ${(-inner).toFixed(2)} ${r.toFixed(2)} 0 Q ${inner.toFixed(2)} ${inner.toFixed(2)} 0 ${r.toFixed(2)} Q ${(-inner).toFixed(2)} ${inner.toFixed(2)} ${(-r).toFixed(2)} 0 Q ${(-inner).toFixed(2)} ${(-inner).toFixed(2)} 0 ${(-r).toFixed(2)} Z`;
+      out += `<g transform="translate(${sx.toFixed(2)} ${sy.toFixed(2)})"><path d="${path}"/></g>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'hanging-stars') {
+    const count = p.count || 16;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(p.color);
+    let out = `<g class="pattern-hanging-stars" opacity="${p.opacity || 0.85}">\n`;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.413;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sDrop = VH * (0.18 + (Math.abs(Math.cos(seed * 2.1) * 100) % 1) * 0.55);
+      const gid = `hsg-${p.id.toFixed(0)}-${i}`;
+      out += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(${c},0)"/><stop offset="100%" stop-color="rgba(${c},0.55)"/></linearGradient></defs>\n`;
+      out += `<line x1="${sx.toFixed(2)}" y1="-10" x2="${sx.toFixed(2)}" y2="${sDrop.toFixed(2)}" stroke="url(#${gid})" stroke-width="1"/>\n`;
+      const r = 4 + (Math.abs(Math.sin(seed * 4) * 100) % 1) * 10;
+      out += `${starPathSVG(sx, sDrop + r, r, 5, r * 0.42, p.color)}\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'glow-orbs') {
+    const count = p.count || 8;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(p.color);
+    let out = `<g class="pattern-glow-orbs">\n`;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 1.91;
+      const sx = (Math.abs(Math.sin(seed) * 10000) % 1) * VW;
+      const sy = (Math.abs(Math.cos(seed * 1.8) * 10000) % 1) * VH;
+      const size = 60 + (Math.abs(Math.sin(seed * 2.4) * 100) % 1) * 140;
+      const gid = `gob-${p.id.toFixed(0)}-${i}`;
+      out += `<defs><radialGradient id="${gid}" cx="0.5" cy="0.5" r="0.5"><stop offset="0%" stop-color="${p.color}" stop-opacity="${(p.opacity || 0.65).toFixed(2)}"/><stop offset="40%" stop-color="rgba(${c},${((p.opacity||0.65)*0.55).toFixed(2)})"/><stop offset="100%" stop-color="rgba(${c},0)"/></radialGradient></defs>\n`;
+      out += `<circle cx="${sx.toFixed(2)}" cy="${sy.toFixed(2)}" r="${size.toFixed(2)}" fill="url(#${gid})"/>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'aurora-streaks') {
+    const len = Math.sqrt(VW*VW + VH*VH);
+    const count = p.count || 5;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(p.color);
+    let out = `<g class="pattern-aurora-streaks" transform="translate(${VW/2} ${VH/2}) rotate(${angDeg})">\n`;
+    for (let i = 0; i < count; i++) {
+      const seed = p.id + i * 0.713;
+      const yOff = (i - count/2) * (VH * 0.18) + (Math.sin(seed) * 40);
+      const thickness = 60 + (Math.abs(Math.sin(seed * 2.3) * 100) % 1) * 80;
+      const gid = `aur-${p.id.toFixed(0)}-${i}`;
+      out += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(${c},0)"/><stop offset="50%" stop-color="rgba(${c},${(p.opacity || 0.5).toFixed(2)})"/><stop offset="100%" stop-color="rgba(${c},0)"/></linearGradient></defs>\n`;
+      out += `<rect x="${(-len/2).toFixed(2)}" y="${(yOff-thickness/2).toFixed(2)}" width="${len.toFixed(2)}" height="${thickness.toFixed(2)}" fill="url(#${gid})"/>\n`;
+    }
+    out += `</g>\n`;
+    return out;
+  } else if (p.type === 'gradient-veil') {
+    const cx = p.cx || VW * 0.5;
+    const cy = p.cy || VH * 0.5;
+    const r = p.radius || Math.max(VW, VH) * 0.7;
+    const rgb = (h) => `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
+    const c = rgb(p.color);
+    const gid = `gv-${p.id.toFixed(0)}`;
+    let out = `<defs><radialGradient id="${gid}" cx="${(cx/VW).toFixed(3)}" cy="${(cy/VH).toFixed(3)}" r="${(r/Math.max(VW,VH)).toFixed(3)}"><stop offset="0%" stop-color="rgba(${c},${(p.opacity || 0.35).toFixed(2)})"/><stop offset="60%" stop-color="rgba(${c},${((p.opacity||0.35)*0.4).toFixed(2)})"/><stop offset="100%" stop-color="rgba(${c},0)"/></radialGradient></defs>\n`;
+    out += `<rect width="${VW}" height="${VH}" fill="url(#${gid})"/>\n`;
+    return out;
+  }
+  return '';
+}
+
+function showToast(txt) {
+  const t = document.getElementById('toast');
+  t.textContent = txt;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── MAIN LOOP ──
+let lastFUIUpdate = 0;
+let lastRafTs = performance.now();
+function loop(ts) {
+  lastRafTs = performance.now();
+  frameTime = (ts - startTime) / 1000;
+  drawAll(frameTime);
+  // FUI updates less frequently to avoid jitter
+  if (frameTime - lastFUIUpdate > 0.25) {
+    updateFUI();
+    lastFUIUpdate = frameTime;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// Fallback: if RAF is throttled (e.g. hidden iframe), keep drawing via setInterval
+setInterval(() => {
+  if (performance.now() - lastRafTs > 500) {
+    // RAF appears paused — drive manually
+    loop(performance.now());
+  }
+}, 250);
+
+setTimeout(() => loadPreset('vtuber'), 100);
+</script>
+</body>
+</html>

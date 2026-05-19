@@ -3,37 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tDR · 08 TIMING &amp; SPACING</title>
+<title>tDR · 08 TIMING &amp; SPACING — v2 / EDITORIAL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@font-face{
-  font-family:"Bank Gothic";
-  src:url("fonts/bank-gothic-light-bt.ttf") format("truetype");
-  font-weight:300 700;
-  font-display:swap;
-}
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#f2f2ef;
+  --bg:#ffffff;
+  --bg-2:#fafaf7;
   --plate:#ffffff;
   --ink:#0a0a0a;
   --ink-2:#1a1a1a;
-  --mute:#9a9a96;
-  --mute-2:#cfcfca;
-  --mute-3:#e6e6e1;
+  --mute:#8a8a86;
+  --mute-2:#d6d6d2;
+  --mute-3:#ececea;
   --line:#0a0a0a;
-  --acc:#c8ff1a;
+  --acc:#FFE600;
+  --acc-2:#FFD400;
   --acc-ink:#0a0a0a;
-  --hatch:rgba(10,10,10,0.08);
-  --grid:rgba(10,10,10,0.035);
-  --grid-major:rgba(10,10,10,0.06);
+  --hatch:rgba(10,10,10,0.85);
+  --grid:rgba(10,10,10,0.04);
+  --grid-major:rgba(10,10,10,0.07);
 
   --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,monospace;
-  --display:"Bank Gothic","JetBrains Mono",system-ui,sans-serif;
+  --display:"Barlow Condensed","Helvetica Neue",system-ui,sans-serif;
   --jp:"IBM Plex Sans JP",system-ui,sans-serif;
 
   --ez:cubic-bezier(0.2,0,0,1);
@@ -112,28 +107,126 @@ html,body{
     var(--bg);
 }
 
-/* GHOST 08 numeral */
+/* GHOST 08 numeral — kept faint behind everything */
 .gh-08{
   position:absolute;
   font-family:var(--display);
   font-size:clamp(380px,52vh,720px);
-  font-weight:300;
-  letter-spacing:-0.06em;
+  font-weight:900;
+  letter-spacing:-0.05em;
   line-height:0.78;
   color:var(--mute-2);
-  bottom:-6%;right:-2%;
+  bottom:-8%;right:-2%;
   pointer-events:none;user-select:none;
   z-index:0;
-  opacity:0.55;
+  opacity:0.16;
 }
-.gh-2B{
+.gh-2B{display:none}
+
+/* ── EDITORIAL POSTER DECOR ── */
+/* big yellow slab top-left with black L-corner — sits in the empty band above the title */
+.poster-slab-tl{
   position:absolute;
-  top:38%;left:2%;
-  font-family:var(--mono);font-weight:700;
-  font-size:9vh;letter-spacing:0.02em;
-  color:var(--mute-2);opacity:0.5;
-  pointer-events:none;user-select:none;z-index:0;
+  top:60px;left:0;
+  width:13%;height:14px;
+  background:var(--acc);
+  z-index:1;pointer-events:none;
 }
+.poster-slab-tl::before{
+  content:"";position:absolute;
+  top:-10px;left:0;width:36px;height:14px;
+  background:var(--ink);
+}
+.poster-slab-tl::after{
+  content:"";position:absolute;
+  top:0;right:-26px;width:22px;height:100%;
+  background:repeating-linear-gradient(135deg,var(--ink) 0 2px,transparent 2px 6px);
+}
+
+/* tag chip top-right — "24/25" date style, in the empty band right of title */
+.poster-date{
+  position:absolute;top:60px;right:340px;z-index:2;
+  display:flex;align-items:stretch;gap:0;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;
+  pointer-events:none;
+}
+.poster-date .d1{background:var(--ink);color:var(--bg);padding:3px 7px;font-weight:700}
+.poster-date .d2{background:var(--acc);color:var(--ink);padding:3px 7px;font-weight:700}
+.poster-date .d3{background:var(--bg);color:var(--ink);padding:3px 7px;border:1px solid var(--ink);font-weight:400}
+
+/* yellow slab on right edge, mid-zone */
+.poster-slab-r{
+  position:absolute;
+  top:46%;right:6px;
+  width:80px;height:10px;
+  background:var(--acc);
+  z-index:1;pointer-events:none;
+}
+.poster-slab-r::before{
+  content:"";position:absolute;
+  left:-30px;top:0;width:24px;height:100%;
+  background:repeating-linear-gradient(135deg,var(--ink) 0 2px,transparent 2px 6px);
+}
+
+/* small yellow slab bottom-left */
+.poster-slab-bl{
+  position:absolute;bottom:14%;left:0;
+  width:70px;height:10px;
+  background:var(--acc);
+  z-index:1;pointer-events:none;
+}
+.poster-slab-bl::after{
+  content:"↗";position:absolute;
+  right:-22px;top:-7px;
+  font-family:var(--display);font-weight:900;font-size:15px;
+  color:var(--ink);
+}
+
+/* NE arrows scattered */
+.poster-arrow{
+  position:absolute;z-index:2;pointer-events:none;
+  font-family:var(--display);font-weight:900;
+  color:var(--ink);line-height:1;
+}
+.poster-arrow.a1{top:9%;left:7%;font-size:18px;transform:rotate(-12deg);display:none}
+.poster-arrow.a2{bottom:8%;right:32%;font-size:16px}
+.poster-kanji.k1{top:60px;left:18%;}
+.poster-kanji.k2{bottom:7%;left:48%;}
+.poster-check.p1{top:60px;right:50%;}
+.poster-check.p2{bottom:9%;left:6%;width:22px;height:22px}
+.poster-dots.d1{top:58px;right:62%}
+.poster-dots.d2{bottom:7%;right:34%}
+
+/* bracketed kanji label */
+.poster-kanji{
+  position:absolute;z-index:2;pointer-events:none;
+  font-family:var(--jp);font-weight:500;
+  font-size:12px;letter-spacing:0.4em;
+  color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+.poster-kanji::before,.poster-kanji::after{
+  content:"";width:10px;height:1px;background:var(--ink);
+}
+.poster-kanji.k1,.poster-kanji.k2{}
+
+/* checker tile (poster 1 has them in corner) */
+.poster-check{
+  position:absolute;z-index:1;pointer-events:none;
+  width:28px;height:28px;
+  background:
+    conic-gradient(var(--ink) 0 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0)
+    0 0/7px 7px;
+}
+.poster-check.p1,.poster-check.p2{}
+
+/* dotted column groups (poster 1 has tiny dot clusters) */
+.poster-dots{
+  position:absolute;z-index:1;pointer-events:none;
+  display:grid;grid-template-columns:repeat(3,3px);gap:3px;
+}
+.poster-dots span{width:3px;height:3px;background:var(--ink)}
+.poster-dots.d1,.poster-dots.d2{}
 
 /* tick rule along top of plate */
 .ticks-top{
@@ -196,36 +289,36 @@ html,body{
 .axis.br{bottom:24px;right:24px;text-align:right}
 
 /* yellow accent slab on right edge */
-.acc-rail{position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--acc);z-index:1}
+.acc-rail{position:absolute;top:0;bottom:0;right:0;width:6px;background:var(--acc);z-index:1;border-left:1px solid var(--ink)}
 
-/* hatch slab */
+/* hatch slab — stronger now, signature of editorial vibe */
 .hatch-slab{
   position:absolute;
-  right:14%;bottom:18%;
-  width:200px;height:18px;
-  background:repeating-linear-gradient(-60deg,var(--ink) 0 2px,transparent 2px 7px);
-  opacity:0.45;pointer-events:none;z-index:1;
+  right:9%;bottom:24%;
+  width:160px;height:14px;
+  background:repeating-linear-gradient(135deg,var(--ink) 0 2px,transparent 2px 6px);
+  pointer-events:none;z-index:1;
 }
-/* solid black bar */
+/* solid black bars */
 .blk-bar{
   position:absolute;
   background:var(--ink);
   pointer-events:none;z-index:1;
 }
-.blk-bar.b1{top:14%;left:34%;width:72px;height:8px}
-.blk-bar.b2{bottom:9%;left:30%;width:10px;height:10px}
+.blk-bar.b1{top:14%;left:34%;width:60px;height:6px}
+.blk-bar.b2{bottom:9%;left:30%;width:8px;height:8px}
 
-/* small checker square */
+/* small checker square — still used by stage decor slot */
 .checker{
   position:absolute;
-  width:42px;height:42px;
+  width:36px;height:36px;
   background:
     conic-gradient(var(--ink) 0 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0)
-    0 0/10px 10px;
-  opacity:0.85;pointer-events:none;z-index:1;
+    0 0/9px 9px;
+  pointer-events:none;z-index:1;
 }
-.checker.cks1{top:1%;left:3%}
-.checker.cks2{bottom:3%;right:22%;width:32px;height:32px;background-size:8px 8px}
+.checker.cks1{top:2%;left:24%;width:24px;height:24px;background-size:6px 6px}
+.checker.cks2{bottom:3%;right:22%;width:28px;height:28px;background-size:7px 7px}
 
 /* ─────────────────────────────────────────────────────────
    CONTENT GRID — sits on top of decor
@@ -237,56 +330,75 @@ html,body{
   z-index:5;
 }
 
-/* MAIN COLUMN */
+/* main padding tightened to avoid poster-slab-tl collision */
 .main{
   position:relative;
-  padding:48px 40px 38px 44px;
+  padding:58px 40px 38px 44px;
   display:grid;
   grid-template-rows:auto auto 1fr auto;
   min-height:0;
-  gap:12px;
+  gap:14px;
 }
 
-/* TITLE BLOCK — compact specimen */
+/* TITLE BLOCK — editorial poster, big condensed */
 .title-blk{
   display:grid;
   grid-template-columns:auto 1fr auto;
-  align-items:center;gap:24px;
-  padding-bottom:10px;
-  border-bottom:1px solid var(--ink);
+  align-items:end;gap:24px;
+  padding:6px 10px 10px 10px;
+  margin:0 -10px;
+  border-bottom:2px solid var(--ink);
   position:relative;
+  background:var(--bg);
+  z-index:10;
 }
 .title-blk .idx{
   font-family:var(--display);
-  font-size:72px;font-weight:300;line-height:0.82;
+  font-size:88px;font-weight:900;line-height:0.82;
   letter-spacing:-0.04em;
   color:var(--ink);
+  background:var(--acc);
+  padding:2px 14px 4px 16px;
+  align-self:end;
 }
 .title-blk .ttl{
-  display:flex;flex-direction:column;gap:3px;
+  display:flex;flex-direction:column;gap:4px;
+  padding-bottom:4px;
+  justify-content:flex-end;
 }
 .title-blk .ttl .kicker{
   font-family:var(--mono);font-size:9px;
-  letter-spacing:0.18em;text-transform:uppercase;
-  color:var(--mute);
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--ink);font-weight:600;
 }
+.title-blk .ttl .kicker .sl{color:var(--mute);font-weight:400;margin:0 6px}
 .title-blk .ttl .name{
   font-family:var(--display);
-  font-size:28px;font-weight:400;line-height:1;
-  letter-spacing:0.06em;text-transform:uppercase;
+  font-size:46px;font-weight:900;line-height:0.95;
+  letter-spacing:-0.005em;text-transform:uppercase;
+  color:var(--ink);
+}
+.title-blk .ttl .name em{
+  font-style:normal;
+  background:var(--acc);padding:0 8px;
+  margin-right:2px;
 }
 .title-blk .ttl .jp{
-  font-family:var(--jp);font-size:10px;
-  letter-spacing:0.14em;color:var(--mute);font-weight:500;
+  font-family:var(--jp);font-size:11px;
+  letter-spacing:0.18em;color:var(--ink);font-weight:500;
+  display:flex;align-items:center;gap:8px;
 }
+.title-blk .ttl .jp::before{content:"↗";font-family:var(--display);font-weight:900;color:var(--ink)}
 .title-blk .specs{
-  display:flex;flex-direction:column;gap:2px;
+  display:flex;flex-direction:column;gap:3px;
   font-family:var(--mono);font-size:9px;
   letter-spacing:0.1em;text-transform:uppercase;
   color:var(--mute);text-align:right;
+  padding-bottom:6px;
 }
-.title-blk .specs .coord{color:var(--ink);font-weight:600;letter-spacing:0.06em;font-size:10px}
-.title-blk .specs .pt{color:var(--ink);font-weight:600;letter-spacing:0.04em;font-size:10px}
+.title-blk .specs .coord{color:var(--ink);font-weight:700;letter-spacing:0.06em;font-size:10px}
+.title-blk .specs .pt{color:var(--ink);font-weight:700;letter-spacing:0.04em;font-size:10px;background:var(--ink);color:var(--bg);padding:1px 6px;align-self:flex-end}
+.title-blk .specs .arrowne{font-family:var(--display);font-weight:900;font-size:18px;color:var(--ink);align-self:flex-end;margin-top:2px}
 
 /* "[1.6 / 3.3333]" small bracketed value under the index */
 .title-blk .ratio{
@@ -544,17 +656,19 @@ html,body{
   margin-bottom:12px;
 }
 .sec-lbl .sq{width:8px;height:8px;background:var(--ink);display:inline-block}
-.sec-lbl .sq.acc{background:var(--acc)}
+.sec-lbl .sq.acc{background:var(--acc);border:1px solid var(--ink)}
 .sec-lbl .num{
   font-weight:700;color:var(--ink);letter-spacing:0.1em;
-  border:1px solid var(--ink);padding:1px 5px;font-size:8px;
+  background:var(--acc);padding:1px 5px;font-size:8px;
 }
+.sec-lbl::before{content:"//";color:var(--mute-2);font-weight:700}
 
 .sec-ttl{
-  font-family:var(--display);font-size:22px;font-weight:400;
-  letter-spacing:0.08em;text-transform:uppercase;
-  line-height:1.05;color:var(--ink);margin-bottom:8px;
+  font-family:var(--display);font-size:34px;font-weight:900;
+  letter-spacing:-0.005em;text-transform:uppercase;
+  line-height:0.92;color:var(--ink);margin-bottom:10px;
 }
+.sec-ttl em{font-style:normal;background:var(--acc);padding:0 6px}
 .body-jp{
   font-family:var(--jp);font-size:11px;line-height:1.85;
   color:var(--ink-2);margin-bottom:8px;font-weight:500;
@@ -727,7 +841,7 @@ input[type=range]::-moz-range-thumb{
   <header id="topbar">
     <div class="brand">
       <span class="mk"></span>
-      <span class="name">tDR ⁄ KINETIC GEOMETRY · v01.0 — 2026</span>
+      <span class="name">tDR ⁄ EDITORIAL CUT · v02 — PRINCIPLE 08</span>
     </div>
     <div class="crumbs">
       <span>INDEX</span><span class="sep">⁄</span>
@@ -747,9 +861,24 @@ input[type=range]::-moz-range-thumb{
   <!-- ─── STAGE ─── -->
   <main id="stage">
 
-    <!-- DECOR LAYER -->
+    <!-- DECOR LAYER — EDITORIAL POSTER -->
     <div class="gh-08">08</div>
-    <div class="gh-2B">2B</div>
+
+    <div class="poster-slab-tl"></div>
+    <div class="poster-slab-r"></div>
+    <div class="poster-slab-bl"></div>
+    <div class="poster-date">
+      <span class="d1">24</span><span class="d2">25</span><span class="d3">MAR · 17/09</span>
+    </div>
+    <span class="poster-arrow a1">↗</span>
+    <span class="poster-arrow a2">↗</span>
+    <span class="poster-kanji k1">間隔</span>
+    <span class="poster-kanji k2">速度</span>
+    <div class="poster-check p1"></div>
+    <div class="poster-check p2"></div>
+    <div class="poster-dots d1"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="poster-dots d2"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
     <div class="ticks-top-major"></div>
     <div class="ticks-top"></div>
     <div class="ticks-right"></div>
@@ -791,15 +920,16 @@ input[type=range]::-moz-range-thumb{
         <div class="title-blk">
           <div class="idx">08</div>
           <div class="ttl">
-            <div class="kicker">PRINCIPLE&nbsp;&nbsp;//&nbsp;&nbsp;KINETIC GEOMETRY · LEC_08</div>
-            <div class="name">TIMING &amp; SPACING</div>
-            <div class="jp">タイミング ／ スペーシング ― 速度はドットの間隔で決まる</div>
+            <div class="kicker">PRINCIPLE&nbsp;08<span class="sl">//</span>KINETIC GEOMETRY<span class="sl">//</span>LEC_08<span class="sl">//</span>EDITORIAL CUT</div>
+            <div class="jp">タイミング ／ スペーシング　—　間隔が、速度を決める</div>
+            <div class="name"><em>TIMING</em>&nbsp;&amp;&nbsp;SPACING</div>
           </div>
           <div class="specs">
             <span class="coord">[ 55°36'??.2"N — 2°45'??4"W ]</span>
-            <span>BANK GOTHIC · LIGHT</span>
-            <span class="pt">220 PT</span>
-            <span>SENTIENT-BP-2026-VLS.08</span>
+            <span>BARLOW CONDENSED · BLACK</span>
+            <span class="pt">220 PT · EDIT</span>
+            <span>ANTIREAL / DAILY_SERIES <span class="sl" style="color:var(--mute);font-weight:400;margin:0 4px">//</span>27 17/09</span>
+            <span class="arrowne">↗</span>
           </div>
           <div class="ratio">[ 1.6 ⁄ 3.33333 ]</div>
         </div>
@@ -873,7 +1003,7 @@ input[type=range]::-moz-range-thumb{
 
         <div class="psec">
           <div class="sec-lbl"><span class="sq"></span> A&nbsp;·&nbsp;THEORY <span class="num">08</span></div>
-          <div class="sec-ttl">TIMING<br>&amp; SPACING</div>
+          <div class="sec-ttl"><em>TIMING</em><br>&amp; SPACING</div>
           <div class="body-jp">
             ドットの<em>間隔</em>が速度を決める。<br>
             広い→速い。狭い→遅い。<br>
@@ -1019,9 +1149,10 @@ const velC     = $('vel-graph');
 const velCtx   = velC.getContext('2d');
 
 const COLOR_INK = '#0a0a0a';
-const COLOR_ACC = '#c8ff1a';
-const COLOR_MUTE = '#9a9a96';
-const COLOR_MUTE2 = '#cfcfca';
+const COLOR_ACC = '#FFE600';
+const COLOR_ACC2 = '#FFD400';
+const COLOR_MUTE = '#8a8a86';
+const COLOR_MUTE2 = '#d6d6d2';
 
 // ── LAYOUT ──
 function getRailRect(){
@@ -1317,7 +1448,7 @@ function renderVelGraph(){
   const maxV = Math.max(...vels, 0.001);
 
   // filled area under curve
-  ctx.fillStyle = 'rgba(200,255,26,0.4)';
+  ctx.fillStyle = 'rgba(255,230,0,0.5)';
   ctx.beginPath();
   vels.forEach((v,i)=>{
     const x = (i/(n-1))*W;
@@ -1621,8 +1752,8 @@ $('btn-esc').addEventListener('click', e=>{ e.preventDefault(); window.location.
 </style>
 <script>
 (function(){
-  const ACC=[{c:'#c8ff1a',n:'LIME'},{c:'#1affea',n:'CYAN'},{c:'#ffb81a',n:'AMBER'},{c:'#ff4fe0',n:'FUCHSIA'}];
-  const BG=[{c:'#f2f2ef',n:'CREAM'},{c:'#f5f0e6',n:'WARM'},{c:'#eef0f2',n:'COOL'}];
+  const ACC=[{c:'#FFE600',n:'YELLOW'},{c:'#36FF00',n:'ACID'},{c:'#1affea',n:'CYAN'},{c:'#ff4fe0',n:'FUCHSIA'}];
+  const BG=[{c:'#ffffff',n:'WHITE'},{c:'#fafaf7',n:'BONE'},{c:'#f2f2ef',n:'CREAM'}];
   const DECO='.gh-08,.gh-2B,.regmarks,.checker,.hatch-slab,.blk-bar,.ticks-top,.ticks-top-major,.ticks-right,.axis';
   function makeSw(arr,id,cb){
     const w=document.getElementById(id);
