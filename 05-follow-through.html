@@ -3,142 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINETIC GEOMETRY — 05 FOLLOW THROUGH</title>
+<title>うごきのまほう ♡ 05 フォロースルー！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --acid:#36FF00;--neon:#F9FF47;--black:#000;
-  --panel:#0C0C0C;--border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
-  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.22);
-  --red:#FF3636;--orange:#FF8C00;
-  --mono:'IBM Plex Mono',monospace;--cond:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
+  --bg:#1A1230;--bg-2:#221A3D;--bg-3:#2B2148;
+  --pink:#FFB7DA;--pink-glow:#FF8FC8;
+  --blue:#9BE3FF;--honey:#FFE9A8;
+  --coral:#FF8FB1;--cream:#FFF5F9;
+  --dim:rgba(255,183,218,0.55);
+  --dim2:rgba(255,183,218,0.28);
+  --border:rgba(255,183,218,0.18);
+  --border2:rgba(255,183,218,0.08);
+  --disp:'Fredoka',sans-serif;
+  --mono:'DM Mono',monospace;
+  --jp:'Zen Maru Gothic',sans-serif;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
-#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--pink);font-family:var(--jp)}
 
-/* TOPBAR */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,233,168,0.5) 0.5px, transparent 1.2px),
+    radial-gradient(circle at 78% 32%, rgba(155,227,255,0.6) 0.6px, transparent 1.4px),
+    radial-gradient(circle at 43% 67%, rgba(255,183,218,0.5) 0.5px, transparent 1.2px),
+    radial-gradient(circle at 88% 82%, rgba(255,233,168,0.4) 0.5px, transparent 1px),
+    radial-gradient(circle at 22% 88%, rgba(255,183,218,0.4) 0.4px, transparent 1px),
+    radial-gradient(circle at 62% 12%, rgba(155,227,255,0.5) 0.5px, transparent 1.2px);
+  background-size:340px 280px;
+}
+
+#app{display:grid;grid-template-rows:48px 1fr 40px;grid-template-columns:1fr 340px;height:100vh;width:100vw;position:relative;z-index:1}
+
+/* ─── TOPBAR ─── */
 #topbar{
   grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;border-bottom:1px solid var(--border);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+  padding:0 18px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  background:linear-gradient(180deg,rgba(255,183,218,0.04),rgba(255,183,218,0.01));
+  backdrop-filter:blur(6px);z-index:10;
 }
-#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
-.sys-id{color:var(--dim);font-size:9px}
-.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
-.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
-.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%, #fff 0%, var(--pink) 50%, var(--pink-glow) 100%);
+  box-shadow:0 0 14px rgba(255,143,200,0.6), inset -3px -3px 0 rgba(255,143,200,0.4);
+  position:relative;
+}
+.brand-mark::before,.brand-mark::after{
+  content:'';position:absolute;background:#1A1230;border-radius:50%;
+  width:4px;height:5px;top:9px;
+}
+.brand-mark::before{left:7px}.brand-mark::after{right:7px}
+.brand-mark .cheek{
+  position:absolute;width:5px;height:3px;border-radius:50%;
+  background:var(--coral);top:16px;
+  box-shadow:13px 0 0 var(--coral);left:5px;opacity:0.7;
+}
+.brand-name{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--cream);letter-spacing:0.04em}
+.brand-name .heart{color:var(--pink);font-size:11px}
+.lesson-tag{
+  font-family:var(--mono);font-size:10px;color:var(--blue);
+  background:rgba(155,227,255,0.08);padding:3px 10px;border-radius:99px;
+  border:1px solid rgba(155,227,255,0.2);letter-spacing:0.1em;
+}
+.sys-id{color:var(--dim);font-size:9px;font-family:var(--mono)}
+.esc-btn{
+  color:var(--pink);font-size:10px;text-decoration:none;
+  border:1px solid var(--border);padding:4px 12px;border-radius:99px;
+  transition:all .2s;font-family:var(--disp);font-weight:500;
+  background:rgba(255,183,218,0.04);
+}
+.esc-btn:hover{color:var(--bg);background:var(--pink);border-color:var(--pink);box-shadow:0 0 16px rgba(255,143,200,0.5)}
 
-/* STAGE */
-#stage{position:relative;overflow:hidden;background:var(--black);display:flex;flex-direction:column}
-.stage-grid{
-  position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
-  background-size:48px 48px;
-}
+/* ─── STAGE ─── */
+#stage{position:relative;overflow:hidden;background:transparent;display:flex;flex-direction:column}
+
 .stage-bignum{
-  position:absolute;font-family:var(--cond);font-weight:900;
-  font-size:clamp(180px,24vw,320px);color:rgba(54,255,0,0.022);
-  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+  position:absolute;font-family:var(--disp);font-weight:700;
+  font-size:clamp(220px,28vw,380px);
+  background:linear-gradient(180deg,rgba(255,183,218,0.07),rgba(255,183,218,0));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:0.85;bottom:-50px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.04em;font-style:italic;
 }
-.corner{position:absolute;width:16px;height:16px;pointer-events:none}
-.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
-.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
-.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
-.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
-.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
-.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
-.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
-.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
-.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
-.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
 
-/* MAIN ZONE — top 62% */
-#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border)}
+.corner-deco{position:absolute;width:18px;height:18px;pointer-events:none;color:var(--pink);opacity:0.55}
+.corner-deco.tl{top:14px;left:14px}
+.corner-deco.tr{top:14px;right:14px}
+.corner-deco.bl{bottom:14px;left:14px}
+.corner-deco.br{bottom:14px;right:14px}
+
+.principle-overlay{position:absolute;top:18px;right:20px;text-align:right;pointer-events:none;z-index:2}
+.po-num{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.18em}
+.po-en{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--pink);letter-spacing:0.02em;line-height:1;margin-top:2px;
+  text-shadow:0 0 18px rgba(255,143,200,0.4);}
+.po-jp{font-family:var(--jp);font-size:11px;font-weight:500;color:var(--blue);margin-top:3px}
+.po-jp::before{content:'♡ ';color:var(--pink)}
+
+/* MAIN ZONE */
+#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border);
+  background:radial-gradient(ellipse at 50% 50%, rgba(255,183,218,0.04), transparent 70%);}
 #main-canvas{position:absolute;inset:0;width:100%;height:100%}
 
-/* HUD */
 #main-hud{
-  position:absolute;bottom:12px;left:16px;
-  font-family:var(--mono);font-size:8px;color:var(--dim);
-  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:28px;
+  position:absolute;bottom:14px;left:18px;
+  font-family:var(--mono);font-size:9px;color:var(--dim);
+  letter-spacing:0.06em;line-height:1.8;pointer-events:none;display:flex;gap:22px;
+  background:rgba(26,18,48,0.55);padding:8px 14px;border-radius:14px;
+  border:1px solid var(--border2);backdrop-filter:blur(6px);
 }
-#main-hud .val{color:var(--acid)}
-#main-hud .val.ng{color:var(--red)}
+#main-hud .lbl{display:block;font-size:8px;color:var(--dim2)}
+#main-hud .val{color:var(--pink);font-size:11px;font-family:var(--disp);font-weight:600}
+#main-hud .val.coral{color:var(--coral)}
+#main-hud .val.honey{color:var(--honey)}
+#main-hud .val.blue{color:var(--blue)}
 
-/* phase badge */
 #phase-badge{
-  position:absolute;top:12px;left:16px;
-  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
-  padding:3px 8px;border:1px solid var(--border);
-  color:var(--dim);background:rgba(0,0,0,0.7);pointer-events:none;
+  position:absolute;top:14px;left:18px;
+  font-family:var(--disp);font-weight:500;font-size:11px;letter-spacing:0.05em;
+  padding:5px 14px;border:1px solid var(--border);border-radius:99px;
+  color:var(--pink);background:rgba(26,18,48,0.7);pointer-events:none;backdrop-filter:blur(8px);
 }
 
-/* GRAPH ZONE — bottom 38% */
-#graph-zone{position:relative;flex:0 0 38%;overflow:hidden}
+/* GRAPH ZONE */
+#graph-zone{position:relative;flex:0 0 38%;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, rgba(155,227,255,0.03), transparent 70%);}
 #graph-canvas{position:absolute;inset:0;width:100%;height:100%}
 #gz-header{
-  position:absolute;top:8px;left:16px;
-  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--dim);
-  pointer-events:none;display:flex;gap:20px;align-items:center;
+  position:absolute;top:10px;left:18px;
+  font-family:var(--disp);font-size:11px;letter-spacing:0.04em;color:var(--cream);
+  pointer-events:none;display:flex;gap:14px;align-items:center;font-weight:500;
 }
-#gz-header strong{color:var(--acid)}
+#gz-header .tag{
+  font-family:var(--mono);font-size:8px;color:var(--dim);background:rgba(255,183,218,0.06);
+  padding:2px 8px;border-radius:99px;border:1px solid var(--border2);letter-spacing:0.1em;font-weight:400;
+}
+#gz-header .leg-pink{color:var(--pink)}
+#gz-header .leg-blue{color:var(--blue)}
+#gz-header .leg-honey{color:var(--honey)}
 
-/* PANEL */
+/* ─── PANEL ─── */
 #panel{
-  border-left:1px solid var(--border);background:var(--panel);
-  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+  border-left:1px solid var(--border);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg) 90%);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--pink) transparent;
 }
-#panel::-webkit-scrollbar{width:2px}
-#panel::-webkit-scrollbar-thumb{background:var(--acid)}
-.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+#panel::-webkit-scrollbar{width:4px}
+#panel::-webkit-scrollbar-thumb{background:var(--pink);border-radius:99px}
+
+.psec{border-bottom:1px solid var(--border2);padding:16px 18px}
 .psec:last-child{border-bottom:none}
-.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
-.sec-title{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px}
-.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
-.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
-.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
+.sec-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:var(--dim);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.sec-label .badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--pink);color:var(--bg);font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:0;
+  box-shadow:0 0 10px rgba(255,143,200,0.5);
+}
+.sec-title{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--cream);line-height:1.05;margin-bottom:8px;letter-spacing:0.01em}
+.sec-title .heart{color:var(--pink);font-size:16px;margin-left:4px}
+.sec-jp-title{font-family:var(--jp);font-weight:700;font-size:13px;color:var(--pink);margin-bottom:8px}
+.body-text{font-family:var(--jp);font-size:12px;line-height:1.95;color:var(--cream);margin-bottom:8px;font-weight:400}
+.body-text .em{color:var(--pink);font-weight:700}
+.body-en{
+  font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim);
+  letter-spacing:0.02em;border-left:2px solid var(--pink);
+  background:rgba(255,183,218,0.03);padding:8px 10px;border-radius:8px;
+}
+
+.data-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px dashed var(--border2);
+  font-family:var(--mono);font-size:10px;
+}
 .data-row:last-child{border-bottom:none}
-.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--acid);font-weight:700}
-.dv.neon{color:var(--neon)}.dv.red{color:var(--red)}
+.dk{color:var(--dim);letter-spacing:0.05em;font-size:9px}
+.dv{color:var(--pink);font-weight:500;font-family:var(--disp);font-size:12px}
+.dv.honey{color:var(--honey)}
+.dv.blue{color:var(--blue)}
+.dv.coral{color:var(--coral)}
+
 /* scrubable values */
-.dv.scrub{cursor:ew-resize;border-bottom:1px dashed rgba(54,255,0,0.3);user-select:none}
-.dv.scrub:hover{color:var(--neon);border-bottom-color:var(--neon)}
-.dv.scrub.scrubbing{color:var(--neon);border-bottom-color:var(--neon);background:rgba(249,255,71,0.07)}
+.dv.scrub{cursor:ew-resize;border-bottom:1px dashed rgba(255,183,218,0.4);user-select:none}
+.dv.scrub:hover{color:var(--honey);border-bottom-color:var(--honey)}
+.dv.scrub.scrubbing{color:var(--honey);border-bottom-color:var(--honey);background:rgba(255,233,168,0.08);border-radius:4px;padding:0 4px}
 
 .btn{
-  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
-  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
-  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--disp);font-weight:500;font-size:10px;letter-spacing:0.04em;
+  border:1px solid var(--border);padding:6px 12px;cursor:pointer;border-radius:99px;
+  color:var(--pink);background:rgba(255,183,218,0.04);transition:all .2s;
+  margin-right:4px;margin-bottom:5px;
 }
-.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
+.btn:hover{background:rgba(255,183,218,0.12);border-color:var(--pink);transform:translateY(-1px)}
+.btn.active{
+  color:var(--bg);background:var(--pink);border-color:var(--pink);
+  box-shadow:0 0 14px rgba(255,143,200,0.45), 0 2px 8px rgba(0,0,0,0.25);
+}
+.btn.ng-btn{border-color:rgba(255,143,177,0.3);color:var(--coral);background:rgba(255,143,177,0.06)}
+.btn.ng-btn:hover{background:rgba(255,143,177,0.18);border-color:var(--coral)}
+.btn.ng-btn.active{background:var(--coral);color:var(--bg);border-color:var(--coral);box-shadow:0 0 14px rgba(255,143,177,0.45)}
+.btn.blue-btn{color:var(--blue);border-color:rgba(155,227,255,0.3)}
+.btn.blue-btn:hover{background:rgba(155,227,255,0.12);border-color:var(--blue)}
+.btn.blue-btn.active{background:var(--blue);color:var(--bg);border-color:var(--blue);box-shadow:0 0 14px rgba(155,227,255,0.45)}
 
-/* slider row */
-.sl-row{margin-bottom:10px}
-.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:3px}
-.sl-label span{color:var(--acid)}
-input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
+.sl-row{margin-bottom:12px}
+.sl-label{display:flex;justify-content:space-between;font-family:var(--disp);font-size:11px;color:var(--cream);margin-bottom:5px;font-weight:500}
+.sl-label .vlabel{color:var(--dim);font-family:var(--mono);font-size:9px;letter-spacing:0.05em}
+.sl-label .vval{color:var(--pink);font-family:var(--disp);font-weight:600;font-size:13px}
 
-/* segment legend */
-.seg-legend{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-.seg-row{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8px;color:var(--dim)}
-.seg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;
+  background:rgba(255,183,218,0.15);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--pink);cursor:pointer;border:2px solid var(--bg);
+  box-shadow:0 0 12px rgba(255,143,200,0.6);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:var(--pink);
+  border:2px solid var(--bg);box-shadow:0 0 12px rgba(255,143,200,0.6);
+}
 
-/* insight */
-.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
-.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
+/* legend */
+.seg-legend{display:flex;flex-direction:column;gap:6px;margin-top:12px;
+  background:rgba(255,183,218,0.04);border:1px solid var(--border2);
+  border-radius:12px;padding:10px 12px;}
+.seg-row{display:flex;align-items:center;gap:10px;font-family:var(--jp);font-size:11px;color:var(--cream);font-weight:500}
+.seg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
 
-/* BOTTOMBAR */
+.insight{
+  background:linear-gradient(135deg,rgba(255,183,218,0.06),rgba(155,227,255,0.04));
+  border:1px solid var(--border);padding:12px 14px;border-radius:14px;
+  font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--cream);
+  letter-spacing:0.01em;margin-top:10px;
+}
+.insight strong{
+  font-family:var(--disp);color:var(--pink);display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;margin-bottom:6px;letter-spacing:0.04em;
+}
+.insight strong::before{content:'♡';font-size:13px}
+.insight .warn{color:var(--coral);font-weight:700}
+.insight .em{color:var(--honey);font-weight:700}
+
+/* ─── BOTTOMBAR ─── */
 #bottombar{
   grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;border-top:1px solid var(--border);
-  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+  padding:0 18px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:rgba(34,26,61,0.6);letter-spacing:0.06em;
+  backdrop-filter:blur(6px);
 }
-.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
-.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+.bl{color:var(--dim);display:flex;gap:14px;align-items:center}
+.bl .pill{background:rgba(255,183,218,0.06);padding:2px 8px;border-radius:99px;border:1px solid var(--border2)}
+.bc{color:var(--pink);font-weight:600;font-family:var(--disp);font-size:11px}
+.br{color:var(--dim);display:flex;align-items:center;gap:10px}
+.kbd{
+  display:inline-block;border:1px solid var(--border);padding:2px 7px;
+  font-size:8px;color:var(--blue);margin-left:4px;border-radius:6px;
+  background:rgba(155,227,255,0.05);font-family:var(--mono);
+}
 </style>
 </head>
 <body>
@@ -146,46 +278,50 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 
 <header id="topbar">
   <div class="left">
-    <span class="sys-id">KINETIC_GEOMETRY // LEC_05</span>
-    <span class="title-tag">PRINCIPLE_05 // FOLLOW THROUGH</span>
+    <div class="brand">
+      <div class="brand-mark"><span class="cheek"></span></div>
+      <div class="brand-name">うごきのまほう <span class="heart">♡</span></div>
+    </div>
+    <span class="lesson-tag">LESSON_05</span>
   </div>
   <div class="right">
-    <span class="sys-id">SETTLING_FACTOR: -0.3s // INERTIA: ENGAGED</span>
-    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+    <span class="sys-id">inertia · engaged ✨</span>
+    <a class="esc-btn" href="index.html">♡ おうちにもどる</a>
   </div>
 </header>
 
 <main id="stage">
-  <div class="stage-grid"></div>
   <div class="stage-bignum">05</div>
-  <div class="corner tl"></div><div class="corner tr"></div>
-  <div class="corner bl"></div><div class="corner br"></div>
-  <div class="checker c1"></div><div class="checker c2"></div>
-  <div class="po">
-    <div class="po-num">PRINCIPLE // 05</div>
+  <svg class="corner-deco tl" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco tr" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco bl" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco br" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+
+  <div class="principle-overlay">
+    <div class="po-num">PRINCIPLE 05</div>
     <div class="po-en">FOLLOW THROUGH</div>
-    <div class="po-jp">フォロースルー</div>
+    <div class="po-jp">後ろから付いてくるよ</div>
   </div>
 
   <!-- MAIN ZONE -->
   <div id="main-zone">
     <canvas id="main-canvas"></canvas>
-    <div id="phase-badge">PHASE: —</div>
+    <div id="phase-badge">PHASE — <span id="phase-badge-txt">—</span></div>
     <div id="main-hud">
-      <div>LEAD_POS&nbsp;<span class="val" id="h-leadpos">0</span>px</div>
-      <div>DELAY_Δ&nbsp;<span class="val" id="h-delay">0</span>fr</div>
-      <div>OVERSHOOT&nbsp;<span class="val" id="h-over">0.0</span>px</div>
-      <div>SETTLE&nbsp;<span class="val" id="h-settle">—</span></div>
+      <div><span class="lbl">先頭の位置</span><span class="val" id="h-leadpos">0</span></div>
+      <div><span class="lbl">遅れΔ</span><span class="val blue" id="h-delay">0</span></div>
+      <div><span class="lbl">オーバーシュート</span><span class="val coral" id="h-over">0.0</span></div>
+      <div><span class="lbl">落ち着き</span><span class="val honey" id="h-settle">—</span></div>
     </div>
   </div>
 
   <!-- GRAPH ZONE -->
   <div id="graph-zone">
     <div id="gz-header">
-      <span>// <strong>POSITION GRAPH</strong></span>
-      <span style="color:var(--acid)">— LEAD</span>
-      <span style="color:rgba(54,255,0,0.5)">— SEG 1</span>
-      <span style="color:var(--neon)">— TAIL</span>
+      <span>位置グラフ</span>
+      <span class="tag leg-pink">● 先頭</span>
+      <span class="tag leg-blue">● 中間</span>
+      <span class="tag leg-honey">● しっぽ</span>
     </div>
     <canvas id="graph-canvas"></canvas>
   </div>
@@ -193,14 +329,14 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 
 <aside id="panel">
 
-  <!-- THEORY -->
   <div class="psec">
-    <div class="sec-label">ATHEORY — 原則解説</div>
-    <div class="sec-title">FOLLOW<br>THROUGH</div>
+    <div class="sec-label"><span class="badge">A</span>THEORY · おしえて先生！</div>
+    <div class="sec-title">フォロースルー <span class="heart">♡</span></div>
+    <div class="sec-jp-title">慣性の余韻</div>
     <div class="body-text">
-      リードが止まっても、トレイルは続く。<br>
-      慣性は「止まれ」を無視する。<br>
-      オーバーシュートして、落ち着く。
+      先頭が止まっても、しっぽは<span class="em">まだ動いてる</span>んだよ ✨<br>
+      慣性は「とまれ」って言われても無視するの。<br>
+      ちょっと行き過ぎて、ふわっと落ち着く ♡
     </div>
     <div class="body-en">
       The lead stops. The trail keeps going.<br>
@@ -209,84 +345,76 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     </div>
   </div>
 
-  <!-- LIVE DATA -->
   <div class="psec">
-    <div class="sec-label">BLIVE — リアルタイム</div>
-    <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">—</span></div>
-    <div class="data-row"><span class="dk">LEAD_POSITION</span><span class="dv" id="lv-leadpos">0 px</span></div>
-    <div class="data-row"><span class="dk">LEAD_VELOCITY</span><span class="dv" id="lv-leadvel">0.00</span></div>
-    <div class="data-row"><span class="dk">TAIL_DELAY</span><span class="dv scrub" id="lv-delay" data-scrub="delay" title="← → drag to edit">0 fr</span></div>
-    <div class="data-row"><span class="dk">TAIL_OVERSHOOT</span><span class="dv scrub red" id="lv-over" data-scrub="over" title="← → drag to edit">0.0 px</span></div>
-    <div class="data-row"><span class="dk">SETTLE_FACTOR</span><span class="dv" id="lv-settle">—</span></div>
-    <div class="data-row"><span class="dk">DAMPING</span><span class="dv scrub" id="lv-damp" data-scrub="damp" title="← → drag to edit">—</span></div>
-    <div class="data-row"><span class="dk">FRAME</span><span class="dv" id="lv-frame">00 / 90</span></div>
+    <div class="sec-label"><span class="badge">B</span>LIVE · いまどうなってる？</div>
+    <div class="data-row"><span class="dk">フェーズ</span><span class="dv blue" id="lv-phase">—</span></div>
+    <div class="data-row"><span class="dk">先頭の位置</span><span class="dv" id="lv-leadpos">0 px</span></div>
+    <div class="data-row"><span class="dk">先頭の速度</span><span class="dv" id="lv-leadvel">0.00</span></div>
+    <div class="data-row"><span class="dk">しっぽの遅れ</span><span class="dv scrub" id="lv-delay" data-scrub="delay" title="ドラッグで調整">0 fr</span></div>
+    <div class="data-row"><span class="dk">オーバーシュート</span><span class="dv scrub coral" id="lv-over" data-scrub="over" title="ドラッグで調整">0.0 px</span></div>
+    <div class="data-row"><span class="dk">落ち着き係数</span><span class="dv honey" id="lv-settle">—</span></div>
+    <div class="data-row"><span class="dk">ダンピング</span><span class="dv scrub" id="lv-damp" data-scrub="damp" title="ドラッグで調整">—</span></div>
+    <div class="data-row"><span class="dk">フレーム</span><span class="dv" id="lv-frame">00 / 90</span></div>
   </div>
 
-  <!-- PARAMS -->
   <div class="psec">
-    <div class="sec-label">CPARAMS — パラメータ</div>
-
+    <div class="sec-label"><span class="badge">C</span>PARAMS · パラメータ</div>
     <div class="sl-row">
-      <div class="sl-label">SEGMENT COUNT <span id="sl-segs-val">5</span></div>
+      <div class="sl-label"><span>セグメント数 <span class="vlabel">/ 関節の数</span></span><span class="vval" id="sl-segs-val">5</span></div>
       <input type="range" id="sl-segs" min="2" max="10" value="5">
     </div>
     <div class="sl-row">
-      <div class="sl-label">DELAY (慣性) <span id="sl-delay-val">0.30</span></div>
+      <div class="sl-label"><span>ディレイ <span class="vlabel">/ 慣性</span></span><span class="vval" id="sl-delay-val">0.30</span></div>
       <input type="range" id="sl-delay" min="1" max="20" value="6">
     </div>
     <div class="sl-row">
-      <div class="sl-label">DAMPING (減衰) <span id="sl-damp-val">0.72</span></div>
+      <div class="sl-label"><span>ダンピング <span class="vlabel">/ 減衰</span></span><span class="vval" id="sl-damp-val">0.72</span></div>
       <input type="range" id="sl-damp" min="10" max="98" value="72">
     </div>
     <div class="sl-row">
-      <div class="sl-label">OVERSHOOT <span id="sl-over-val">1.00</span></div>
+      <div class="sl-label"><span>オーバーシュート <span class="vlabel">/ 行きすぎ</span></span><span class="vval" id="sl-over-val">1.00</span></div>
       <input type="range" id="sl-over" min="0" max="30" value="10">
     </div>
     <div class="sl-row">
-      <div class="sl-label">SPEED <span id="sl-spd-val">1.0x</span></div>
+      <div class="sl-label"><span>スピード</span><span class="vval" id="sl-spd-val">1.0x</span></div>
       <input type="range" id="sl-spd" min="1" max="30" value="10">
     </div>
   </div>
 
-  <!-- PLAYBACK -->
   <div class="psec">
-    <div class="sec-label">DPLAYBACK</div>
-    <div style="margin-bottom:8px">
-      <button class="btn active" id="btnPlay">▶ PLAY</button>
-      <button class="btn" id="btnPause">⏸ PAUSE</button>
-      <button class="btn" id="btnReset">↺ RESET</button>
+    <div class="sec-label"><span class="badge">D</span>PLAYBACK · さいせい</div>
+    <div style="margin-bottom:10px">
+      <button class="btn active" id="btnPlay">▶ さいせい</button>
+      <button class="btn" id="btnPause">⏸ ストップ</button>
+      <button class="btn" id="btnReset">↺ もどす</button>
     </div>
     <div>
-      <button class="btn active" id="btnTrail">TRAIL</button>
-      <button class="btn active" id="btnLabels">LABELS</button>
-      <button class="btn" id="btnNoFollow">NO FOLLOW</button>
+      <button class="btn blue-btn active" id="btnTrail">✨ きせき</button>
+      <button class="btn blue-btn active" id="btnLabels">A ラベル</button>
+      <button class="btn ng-btn" id="btnNoFollow">⊥ 慣性なし</button>
     </div>
   </div>
 
-  <!-- PRESETS -->
   <div class="psec">
-    <div class="sec-label">EPRESETS</div>
-    <button class="btn" onclick="applyPreset('hair')">HAIR</button>
-    <button class="btn" onclick="applyPreset('tail')">ANIMAL TAIL</button>
-    <button class="btn" onclick="applyPreset('cloth')">CLOTH</button>
-    <button class="btn" onclick="applyPreset('stiff')">STIFF</button>
-    <button class="btn" onclick="applyPreset('jelly')">JELLY</button>
-
-    <!-- segment color legend -->
+    <div class="sec-label"><span class="badge">E</span>PRESETS · プリセット</div>
+    <button class="btn" onclick="applyPreset('hair')">髪 hair</button>
+    <button class="btn" onclick="applyPreset('tail')">しっぽ tail</button>
+    <button class="btn" onclick="applyPreset('cloth')">布 cloth</button>
+    <button class="btn" onclick="applyPreset('stiff')">かたい stiff</button>
+    <button class="btn" onclick="applyPreset('jelly')">ぷるぷる jelly ♡</button>
     <div class="seg-legend" id="seg-legend"></div>
   </div>
 
-  <!-- INSIGHT -->
   <div class="psec">
-    <div class="sec-label">FINSIGHT</div>
+    <div class="sec-label"><span class="badge">F</span>INSIGHT · ポイント！</div>
     <div class="insight">
-      <strong>// FOLLOW THROUGH</strong>
+      <strong>フォロースルーのコツ</strong>
       セグメント数を増やすほど<br>
-      「柔らかさ」が増す。<br>
-      Dampingを下げると永遠に揺れ続ける。<br>
-      Overshootを0にすると<br>
-      ロボット的な動きになる。<br><br>
-      NO FOLLOWで違いを確認せよ。
+      「やわらかさ」が増えるんだよ ✨<br>
+      <span class="em">ダンピング</span>を下げると永遠にゆらゆら…<br>
+      <span class="em">オーバーシュート</span>を0にすると<br>
+      ロボットみたいに見えちゃう ⚠️<br><br>
+      <span class="warn">慣性なし</span>モードで違いを確かめてみてね！
     </div>
   </div>
 
@@ -294,17 +422,16 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 
 <footer id="bottombar">
   <div class="bl">
-    <span>SETTLING_FACTOR: -0.3s</span>
-    <span>INERTIA: ENGAGED</span>
-    <span>PHASE: <span id="bb-phase">—</span></span>
+    <span class="pill">settling · -0.3s</span>
+    <span class="pill">inertia · on</span>
+    <span>phase: <span style="color:var(--pink)" id="bb-phase">—</span></span>
   </div>
-  <div class="bc">FRAME: <span id="bb-fr">00</span> / <span id="bb-total">90</span></div>
+  <div class="bc">♡ frame <span id="bb-fr">00</span> / <span id="bb-total">90</span></div>
   <div class="br">
-    <span class="kbd">SPC</span>PLAY
-    <span class="kbd">←→</span>STEP
-    <span class="kbd">N</span>NO FOLLOW
-    <span class="kbd">ESC</span>INDEX
-    &nbsp;ID: SENTIENT-BP-2026-VLS.05
+    <span><span class="kbd">SPC</span>play</span>
+    <span><span class="kbd">←→</span>step</span>
+    <span><span class="kbd">N</span>no follow</span>
+    <span style="opacity:0.5">id · follow.05 ✨</span>
   </div>
 </footer>
 </div>
@@ -314,51 +441,55 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 // PARAMS
 // ═══════════════════════════════════════════
 let numSegs   = 5;
-let delayFac  = 0.30;   // 0..1: how much each seg lags behind leader
-let damping   = 0.72;   // 0..1: oscillation decay
-let overFac   = 1.0;    // multiplier for overshoot
+let delayFac  = 0.30;
+let damping   = 0.72;
+let overFac   = 1.0;
 let playSpd   = 1.0;
 let playing   = true;
 let showTrail = true;
 let showLabels= true;
-let noFollow  = false;  // NO FOLLOW mode: all segs move with lead
+let noFollow  = false;
 
-// lead manual drag
 let leadDragging  = false;
-let leadManualX   = null;   // null = use keyframe curve; number = dragged position
-let leadDragStartX= 0;
+let leadManualX   = null;
+let scrubTarget = null;
 
-// number scrubber
-let scrubTarget = null;  // {param, startX, startVal}
-
-const TOTAL   = 90;     // total frames in one cycle
-let masterFrame = 0;    // 0..TOTAL (float)
+const TOTAL   = 90;
+let masterFrame = 0;
 let lastTime  = null;
 
-// ── SEGMENT STATE ──
-// Each segment has: pos (x), vel (x), history of positions
-let segs = [];          // [{x, vx, trail:[]}]
-let leadHistory = [];   // position of lead over time (ring buffer)
+let segs = [];
+let leadHistory = [];
 const HISTORY = 300;
 
-// ── MOTION CURVE (lead) ──
-// Lead moves: rest → MOVE phase → STOP, trail overshoots and settles
-// We use a keyframe curve for the lead
+// ── COLORS ──
+const COL = {
+  pink:'#FFB7DA', pinkGlow:'#FF8FC8', blue:'#9BE3FF',
+  honey:'#FFE9A8', coral:'#FF8FB1', cream:'#FFF5F9',
+  bg:'#1A1230',
+};
+function rgba(hex, a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
 const LEAD_START_FR = 8;
-const LEAD_END_FR   = 52;  // lead stops here
+const LEAD_END_FR   = 52;
 
 function leadTargetX(fr, stageW) {
   if (leadManualX !== null) return leadManualX;
-  const PAD = 80;
+  const PAD = 90;
   const travel = stageW - PAD*2;
   if (fr < LEAD_START_FR) return PAD;
   if (fr > LEAD_END_FR)   return PAD + travel;
   const t = (fr - LEAD_START_FR) / (LEAD_END_FR - LEAD_START_FR);
-  // ease-in-out for lead
   const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
   return PAD + ease * travel;
 }
 
+const PHASE_LABEL = {
+  'IDLE':'まちぼうけ','MOVING':'うごいてる','SETTLING':'おちつき中','SETTLED':'おちついた'
+};
 function getPhase(fr) {
   if (fr < LEAD_START_FR)  return 'IDLE';
   if (fr < LEAD_END_FR)    return 'MOVING';
@@ -366,7 +497,6 @@ function getPhase(fr) {
   return 'SETTLED';
 }
 
-// ── INIT SEGS ──
 function initSegs(startX) {
   segs = [];
   for (let i = 0; i < numSegs; i++) {
@@ -376,41 +506,46 @@ function initSegs(startX) {
   masterFrame = 0;
 }
 
-// ── PHYSICS UPDATE (per animation step) ──
 function updatePhysics(leadX, dt) {
   for (let i = 0; i < segs.length; i++) {
     const target = i === 0 ? leadX : segs[i-1].x;
     if (noFollow) {
-      // no follow: instant snap
       segs[i].x = target;
       segs[i].vx = 0;
     } else {
-      // spring toward target with delay
       const stiffness = (1 - delayFac) * 18 + 1;
       const dx = target - segs[i].x;
-      // add overshoot: spring overshoots proportional to velocity
       const overPull = segs[i].vx * overFac * 0.08;
       segs[i].vx += (dx * stiffness + overPull) * dt;
       segs[i].vx *= Math.pow(damping, dt * 60);
       segs[i].x  += segs[i].vx * dt * 60;
     }
-    // trail
     segs[i].trail.push(segs[i].x);
     if (segs[i].trail.length > HISTORY) segs[i].trail.shift();
   }
 }
 
-// ── SEGMENT COLORS ──
+// segment colors: lead=pink → tail=honey via blue
 function segColor(i, alpha=1) {
-  // lead = acid, last seg = neon, middle = gradient
   const t = segs.length <= 1 ? 0 : i / (segs.length - 1);
-  const r = Math.round(54  + (249-54)  * t);
-  const g = Math.round(255 + (255-255) * t);
-  const b = Math.round(0   + (71-0)    * t);
+  // interpolate pink → blue → honey
+  let r, g, b;
+  if (t < 0.5) {
+    // pink (255,183,218) → blue (155,227,255)
+    const u = t * 2;
+    r = Math.round(255 + (155-255)*u);
+    g = Math.round(183 + (227-183)*u);
+    b = Math.round(218 + (255-218)*u);
+  } else {
+    // blue → honey (255,233,168)
+    const u = (t-0.5)*2;
+    r = Math.round(155 + (255-155)*u);
+    g = Math.round(227 + (233-227)*u);
+    b = Math.round(255 + (168-255)*u);
+  }
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// ── CANVAS REFS ──
 const mainC   = document.getElementById('main-canvas');
 const mainCtx = mainC.getContext('2d');
 const graphC  = document.getElementById('graph-canvas');
@@ -438,161 +573,179 @@ function drawMain() {
   mainCtx.save(); mainCtx.scale(dpr,dpr);
 
   const leadX = leadTargetX(masterFrame, w);
-  const cy = h * 0.42;   // center Y for the chain
-  const SEG_SPACING = 28; // vertical spread between segments
+  const cy = h * 0.42;
+  const SEG_SPACING = 30;
   const segY = (i) => cy + (i - (segs.length-1)*0.5) * SEG_SPACING;
 
-  // ── RAIL (ground line) ──
+  // RAIL
   mainCtx.save();
-  mainCtx.strokeStyle='rgba(54,255,0,0.1)';mainCtx.lineWidth=1;mainCtx.setLineDash([4,8]);
-  mainCtx.beginPath();mainCtx.moveTo(70,cy);mainCtx.lineTo(w-40,cy);mainCtx.stroke();
+  mainCtx.strokeStyle=rgba(COL.pink,0.15);mainCtx.lineWidth=1;mainCtx.setLineDash([4,8]);
+  mainCtx.beginPath();mainCtx.moveTo(80,cy);mainCtx.lineTo(w-50,cy);mainCtx.stroke();
   mainCtx.setLineDash([]);mainCtx.restore();
 
-  // START / END markers
-  const PAD=80;
-  [[PAD,'START'],[w-PAD,'END']].forEach(([x,lbl])=>{
-    mainCtx.save();mainCtx.strokeStyle='rgba(54,255,0,0.3)';mainCtx.lineWidth=1;
-    mainCtx.beginPath();mainCtx.moveTo(x,cy-8);mainCtx.lineTo(x,cy+8);mainCtx.stroke();
-    mainCtx.fillStyle='rgba(54,255,0,0.3)';mainCtx.font='8px IBM Plex Mono,monospace';
-    mainCtx.fillText(lbl,x+(lbl==='START'?4:-30),cy+20);mainCtx.restore();
+  const PAD=90;
+  [[PAD,'start ♡'],[w-PAD,'goal ✨']].forEach(([x,lbl])=>{
+    mainCtx.save();
+    mainCtx.strokeStyle=rgba(COL.pink,0.35);mainCtx.lineWidth=1.2;
+    mainCtx.beginPath();mainCtx.arc(x,cy,8,0,Math.PI*2);mainCtx.stroke();
+    mainCtx.beginPath();mainCtx.arc(x,cy,2.5,0,Math.PI*2);
+    mainCtx.fillStyle=rgba(COL.pink,0.5);mainCtx.fill();
+    mainCtx.fillStyle=rgba(COL.pink,0.6);mainCtx.font='600 9px Fredoka, sans-serif';
+    mainCtx.fillText(lbl,x+(lbl.startsWith('start')?14:-44),cy+24);
+    mainCtx.restore();
   });
 
-  // ── TRAILS ──
+  // TRAILS
   if (showTrail) {
     segs.forEach((seg,i) => {
       if (seg.trail.length < 2) return;
       const sy = segY(i);
       for (let t=1; t<seg.trail.length; t++) {
-        const al = (t/seg.trail.length)*0.35;
-        mainCtx.save();mainCtx.strokeStyle=segColor(i,al);mainCtx.lineWidth=1.5;
+        const al = (t/seg.trail.length)*0.4;
+        mainCtx.save();mainCtx.strokeStyle=segColor(i,al);mainCtx.lineWidth=2;mainCtx.lineCap='round';
         mainCtx.beginPath();mainCtx.moveTo(seg.trail[t-1],sy);mainCtx.lineTo(seg.trail[t],sy);
         mainCtx.stroke();mainCtx.restore();
       }
     });
-    // lead trail
     if (leadHistory.length>1) {
       for(let t=1;t<leadHistory.length;t++){
-        const al=(t/leadHistory.length)*0.4;
-        mainCtx.save();mainCtx.strokeStyle=`rgba(54,255,0,${al})`;mainCtx.lineWidth=2;
+        const al=(t/leadHistory.length)*0.45;
+        mainCtx.save();mainCtx.strokeStyle=rgba(COL.pink,al);mainCtx.lineWidth=2.5;mainCtx.lineCap='round';
         mainCtx.beginPath();mainCtx.moveTo(leadHistory[t-1],cy);mainCtx.lineTo(leadHistory[t],cy);
         mainCtx.stroke();mainCtx.restore();
       }
     }
   }
 
-  // ── CONNECTOR LINES (chain links) ──
+  // CONNECTOR
   if (segs.length > 0) {
-    // lead to first seg
-    mainCtx.save();mainCtx.strokeStyle='rgba(54,255,0,0.2)';mainCtx.lineWidth=1;
+    mainCtx.save();mainCtx.strokeStyle=rgba(COL.pink,0.28);mainCtx.lineWidth=1.2;mainCtx.lineCap='round';
     mainCtx.beginPath();mainCtx.moveTo(leadX,cy);mainCtx.lineTo(segs[0].x,segY(0));mainCtx.stroke();mainCtx.restore();
-    // between segs
     for(let i=0;i<segs.length-1;i++){
-      const col=segColor(i,0.18);
-      mainCtx.save();mainCtx.strokeStyle=col;mainCtx.lineWidth=1;
+      mainCtx.save();mainCtx.strokeStyle=segColor(i,0.25);mainCtx.lineWidth=1.2;mainCtx.lineCap='round';
       mainCtx.beginPath();mainCtx.moveTo(segs[i].x,segY(i));mainCtx.lineTo(segs[i+1].x,segY(i+1));
       mainCtx.stroke();mainCtx.restore();
     }
   }
 
-  // ── DELAY DELTA ARROWS ──
+  // DELAY DELTAS
   segs.forEach((seg,i)=>{
     const sy=segY(i);
     const targetX=i===0?leadX:segs[i-1].x;
     const dx=targetX-seg.x;
     if(Math.abs(dx)>8){
       const arrowX=seg.x+dx*0.6;
-      mainCtx.save();mainCtx.strokeStyle=segColor(i,0.3);mainCtx.lineWidth=0.8;
+      mainCtx.save();mainCtx.strokeStyle=segColor(i,0.35);mainCtx.lineWidth=1;
       mainCtx.setLineDash([2,4]);
-      mainCtx.beginPath();mainCtx.moveTo(seg.x,sy+14);mainCtx.lineTo(targetX,sy+14);mainCtx.stroke();
+      mainCtx.beginPath();mainCtx.moveTo(seg.x,sy+16);mainCtx.lineTo(targetX,sy+16);mainCtx.stroke();
       mainCtx.setLineDash([]);
-      mainCtx.fillStyle=segColor(i,0.4);mainCtx.font='7px IBM Plex Mono,monospace';
-      mainCtx.fillText('Δ'+(Math.abs(dx)|0),arrowX-8,sy+24);
+      mainCtx.fillStyle=segColor(i,0.5);mainCtx.font='500 8px DM Mono, monospace';
+      mainCtx.fillText('Δ'+(Math.abs(dx)|0),arrowX-8,sy+27);
       mainCtx.restore();
     }
   });
 
-  // ── OVERSHOOT ZONE (highlight when segs pass lead) ──
+  // OVERSHOOT zone
   segs.forEach((seg,i)=>{
     const sy=segY(i);
     const targetX=i===0?leadX:segs[i-1].x;
     const overX=seg.x-targetX;
     if(Math.abs(overX)>4 && masterFrame>LEAD_END_FR){
-      // overshoot highlight
       mainCtx.save();
-      mainCtx.fillStyle=`rgba(255,54,54,0.06)`;
+      mainCtx.fillStyle=rgba(COL.coral,0.08);
       const x1=Math.min(seg.x,targetX),x2=Math.max(seg.x,targetX);
-      mainCtx.fillRect(x1,sy-10,x2-x1,20);
-      mainCtx.fillStyle='rgba(255,54,54,0.5)';mainCtx.font='7px IBM Plex Mono,monospace';
-      mainCtx.fillText('OVER',x1+(x2-x1)/2-12,sy-13);
+      const rr=8;
+      // rounded rect highlight
+      mainCtx.beginPath();
+      mainCtx.moveTo(x1+rr,sy-11);
+      mainCtx.lineTo(x2-rr,sy-11);
+      mainCtx.quadraticCurveTo(x2,sy-11,x2,sy-11+rr);
+      mainCtx.lineTo(x2,sy+11-rr);
+      mainCtx.quadraticCurveTo(x2,sy+11,x2-rr,sy+11);
+      mainCtx.lineTo(x1+rr,sy+11);
+      mainCtx.quadraticCurveTo(x1,sy+11,x1,sy+11-rr);
+      mainCtx.lineTo(x1,sy-11+rr);
+      mainCtx.quadraticCurveTo(x1,sy-11,x1+rr,sy-11);
+      mainCtx.fill();
+      mainCtx.fillStyle=rgba(COL.coral,0.7);mainCtx.font='600 8px Fredoka, sans-serif';
+      mainCtx.fillText('over!',x1+(x2-x1)/2-12,sy-14);
       mainCtx.restore();
     }
   });
 
-  // ── SEGMENTS (balls) ──
+  // SEGMENT BALLS (cute 3D)
   segs.forEach((seg,i)=>{
     const sy=segY(i);
     const col=segColor(i);
-    const r=8+((segs.length-1-i)*1.2); // lead=larger
+    const colHex = segColor(i).replace(/rgba?\(([^)]+)\)/, (_,parts)=>{
+      const [r,g,b] = parts.split(',').map(s=>parseInt(s));
+      return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+    });
+    const r=8+((segs.length-1-i)*1.4);
 
     // glow
-    const grd=mainCtx.createRadialGradient(seg.x,sy,0,seg.x,sy,r*2.2);
-    grd.addColorStop(0,segColor(i,0.2));grd.addColorStop(1,'rgba(0,0,0,0)');
-    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r*2.2,0,Math.PI*2);
+    const grd=mainCtx.createRadialGradient(seg.x,sy,0,seg.x,sy,r*2.5);
+    grd.addColorStop(0,segColor(i,0.3));grd.addColorStop(1,segColor(i,0));
+    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r*2.5,0,Math.PI*2);
     mainCtx.fillStyle=grd;mainCtx.fill();
 
-    // outer ring
+    // ball body
+    const bgrd=mainCtx.createRadialGradient(seg.x-r*0.3,sy-r*0.3,r*0.1,seg.x,sy,r);
+    bgrd.addColorStop(0,'#FFFFFF');
+    bgrd.addColorStop(0.45, colHex);
+    bgrd.addColorStop(1, colHex);
     mainCtx.beginPath();mainCtx.arc(seg.x,sy,r,0,Math.PI*2);
-    mainCtx.strokeStyle=col;mainCtx.lineWidth=1.5;mainCtx.stroke();
-    // core
-    mainCtx.beginPath();mainCtx.arc(seg.x,sy,r*0.45,0,Math.PI*2);
-    mainCtx.fillStyle=col;mainCtx.fill();
+    mainCtx.fillStyle=bgrd;mainCtx.fill();
+    // highlight
+    mainCtx.beginPath();mainCtx.arc(seg.x-r*0.35,sy-r*0.35,r*0.22,0,Math.PI*2);
+    mainCtx.fillStyle='rgba(255,255,255,0.85)';mainCtx.fill();
 
-    // label
     if(showLabels){
-      const lbl=i===0?'SEG_0':i===segs.length-1?'TAIL':'SEG_'+i;
-      mainCtx.fillStyle=segColor(i,0.6);mainCtx.font='7px IBM Plex Mono,monospace';
-      mainCtx.fillText(lbl,seg.x-(lbl.length*3.5),sy-r-5);
+      const lbl=i===0?'seg₀':i===segs.length-1?'tail ♡':'seg'+i;
+      mainCtx.fillStyle=segColor(i,0.75);mainCtx.font='600 9px Fredoka, sans-serif';
+      const tw = mainCtx.measureText(lbl).width;
+      mainCtx.fillText(lbl,seg.x-tw/2,sy-r-7);
     }
   });
 
-  // ── LEAD BALL ──
-  const lgrd=mainCtx.createRadialGradient(leadX,cy,0,leadX,cy,22);
-  lgrd.addColorStop(0,'rgba(54,255,0,0.3)');lgrd.addColorStop(1,'rgba(0,0,0,0)');
-  mainCtx.beginPath();mainCtx.arc(leadX,cy,22,0,Math.PI*2);
+  // LEAD BALL (biggest, brightest pink)
+  const lgrd=mainCtx.createRadialGradient(leadX,cy,0,leadX,cy,28);
+  lgrd.addColorStop(0,rgba(COL.pink,0.45));lgrd.addColorStop(1,rgba(COL.pink,0));
+  mainCtx.beginPath();mainCtx.arc(leadX,cy,28,0,Math.PI*2);
   mainCtx.fillStyle=lgrd;mainCtx.fill();
-  mainCtx.beginPath();mainCtx.arc(leadX,cy,11,0,Math.PI*2);
-  mainCtx.strokeStyle='#36FF00';mainCtx.lineWidth=2;mainCtx.stroke();
-  mainCtx.beginPath();mainCtx.arc(leadX,cy,5,0,Math.PI*2);
-  mainCtx.fillStyle='#36FF00';mainCtx.fill();
+  const leadGrd=mainCtx.createRadialGradient(leadX-4,cy-4,1,leadX,cy,13);
+  leadGrd.addColorStop(0,'#FFFFFF');
+  leadGrd.addColorStop(0.4,COL.pink);
+  leadGrd.addColorStop(1,COL.pinkGlow);
+  mainCtx.beginPath();mainCtx.arc(leadX,cy,13,0,Math.PI*2);
+  mainCtx.fillStyle=leadGrd;mainCtx.fill();
+  mainCtx.beginPath();mainCtx.arc(leadX-4.5,cy-4.5,3,0,Math.PI*2);
+  mainCtx.fillStyle='rgba(255,255,255,0.9)';mainCtx.fill();
   if(showLabels){
-    mainCtx.fillStyle='rgba(54,255,0,0.8)';mainCtx.font='8px IBM Plex Mono,monospace';
-    mainCtx.fillText('LEAD',leadX-14,cy-16);
-    // drag hint
-    mainCtx.fillStyle='rgba(54,255,0,0.3)';mainCtx.font='7px IBM Plex Mono,monospace';
-    mainCtx.fillText(leadDragging?'DRAGGING':'⊕ DRAG',leadX-16,cy+24);
+    mainCtx.fillStyle=COL.pink;mainCtx.font='600 10px Fredoka, sans-serif';
+    mainCtx.fillText('lead ♡',leadX-16,cy-20);
+    mainCtx.fillStyle=rgba(COL.pink,0.45);mainCtx.font='500 8px DM Mono, monospace';
+    mainCtx.fillText(leadDragging?'dragging…':'⊕ ドラッグできるよ',leadX-32,cy+28);
   }
 
   mainCtx.restore();
 
-  // ── UPDATE LIVE DATA ──
+  // LIVE DATA
   const phase=getPhase(masterFrame);
   const tail=segs[segs.length-1];
   const tailTarget=segs.length>1?segs[segs.length-2].x:leadX;
   const overPx=tail?Math.abs(tail.x-tailTarget):0;
 
-  // lead velocity
   const prevLeadX=leadTargetX(Math.max(0,masterFrame-1),w);
   const leadVel=Math.abs(leadX-prevLeadX);
-
-  // delay in frames (approx: distance / avg vel)
   const delayFr=leadVel>0.5?Math.round((leadX-(tail?tail.x:leadX))/Math.max(1,leadVel)):0;
 
   document.getElementById('h-leadpos').textContent=Math.round(leadX);
   document.getElementById('h-delay').textContent=Math.abs(delayFr);
   document.getElementById('h-over').textContent=overPx.toFixed(1);
-  document.getElementById('h-settle').textContent=phase==='SETTLING'||phase==='SETTLED'?phase:'—';
+  document.getElementById('h-settle').textContent=phase==='SETTLING'||phase==='SETTLED'?PHASE_LABEL[phase]:'—';
 
-  document.getElementById('lv-phase').textContent=phase;
+  document.getElementById('lv-phase').textContent=PHASE_LABEL[phase];
   document.getElementById('lv-leadpos').textContent=Math.round(leadX)+' px';
   document.getElementById('lv-leadvel').textContent=leadVel.toFixed(2);
   document.getElementById('lv-delay').textContent=Math.abs(delayFr)+' fr';
@@ -603,17 +756,14 @@ function drawMain() {
 
   document.getElementById('bb-fr').textContent=String(Math.round(masterFrame)).padStart(2,'0');
   document.getElementById('bb-total').textContent=TOTAL;
-  document.getElementById('bb-phase').textContent=phase;
+  document.getElementById('bb-phase').textContent=PHASE_LABEL[phase];
 
   const phaseBadge=document.getElementById('phase-badge');
-  phaseBadge.textContent='PHASE: '+phase;
+  document.getElementById('phase-badge-txt').textContent=PHASE_LABEL[phase];
   phaseBadge.style.color=
-    phase==='MOVING'?'var(--acid)':
-    phase==='SETTLING'?'var(--neon)':
-    phase==='SETTLED'?'var(--dim)':'var(--dim)';
-  phaseBadge.style.borderColor=
-    phase==='MOVING'?'var(--border)':
-    phase==='SETTLING'?'rgba(249,255,71,0.3)':'var(--border)';
+    phase==='MOVING'?'var(--pink)':
+    phase==='SETTLING'?'var(--honey)':
+    phase==='SETTLED'?'var(--blue)':'var(--dim)';
 }
 
 // ── DRAW GRAPH ──
@@ -623,40 +773,38 @@ function drawGraph() {
   graphCtx.clearRect(0,0,graphC.width,graphC.height);
   graphCtx.save();graphCtx.scale(dpr,dpr);
 
-  const PAD_L=44,PAD_R=16,PAD_T=28,PAD_B=20;
+  const PAD_L=48,PAD_R=20,PAD_T=34,PAD_B=22;
   const W=w-PAD_L-PAD_R, H=h-PAD_T-PAD_B;
   const OX=PAD_L, OY=PAD_T;
 
   const stageW=mainZoneSize().w;
-  const XMIN=80, XMAX=stageW-80;
+  const XMIN=90, XMAX=stageW-90;
   const xToCanvas=(x)=>OX+(x-XMIN)/(XMAX-XMIN)*W;
   const frToCanvas=(fr)=>OX+(fr/TOTAL)*W;
 
-  // grid
-  graphCtx.strokeStyle='rgba(54,255,0,0.06)';graphCtx.lineWidth=0.5;
+  graphCtx.strokeStyle=rgba(COL.pink,0.07);graphCtx.lineWidth=0.6;
   for(let i=0;i<=4;i++){
     const y=OY+H*(i/4);
     graphCtx.beginPath();graphCtx.moveTo(OX,y);graphCtx.lineTo(OX+W,y);graphCtx.stroke();
   }
-  // vertical phase lines
-  [[LEAD_START_FR,'rgba(54,255,0,0.2)'],[LEAD_END_FR,'rgba(249,255,71,0.2)']].forEach(([fr,col])=>{
+  [[LEAD_START_FR,rgba(COL.pink,0.3),'start'],[LEAD_END_FR,rgba(COL.honey,0.35),'stop']].forEach(([fr,col,lbl])=>{
     graphCtx.strokeStyle=col;graphCtx.lineWidth=1;graphCtx.setLineDash([2,4]);
     graphCtx.beginPath();graphCtx.moveTo(frToCanvas(fr),OY);graphCtx.lineTo(frToCanvas(fr),OY+H);graphCtx.stroke();
     graphCtx.setLineDash([]);
+    graphCtx.fillStyle=col;graphCtx.font='600 8px Fredoka, sans-serif';
+    graphCtx.fillText(lbl,frToCanvas(fr)+3,OY+10);
   });
-  graphCtx.fillStyle='rgba(54,255,0,0.25)';graphCtx.font='6px IBM Plex Mono,monospace';
-  graphCtx.fillText('START',frToCanvas(LEAD_START_FR)+2,OY+8);
-  graphCtx.fillText('STOP',frToCanvas(LEAD_END_FR)+2,OY+8);
 
-  // axis labels
-  graphCtx.fillStyle='rgba(54,255,0,0.3)';graphCtx.font='6px IBM Plex Mono,monospace';
+  graphCtx.fillStyle=rgba(COL.pink,0.45);graphCtx.font='500 8px DM Mono, monospace';
   graphCtx.fillText('0',OX-10,OY+H+12);graphCtx.fillText(TOTAL,OX+W-14,OY+H+12);
-  graphCtx.fillText('POS',OX-40,OY+8);
+  graphCtx.fillStyle=rgba(COL.blue,0.55);graphCtx.font='600 8px Fredoka, sans-serif';
+  graphCtx.fillText('pos',OX-40,OY+8);
 
-  // draw lead history as position over time
+  // lead
   const histLen=Math.min(leadHistory.length,TOTAL);
   if(histLen>1){
-    graphCtx.save();graphCtx.strokeStyle='rgba(54,255,0,0.8)';graphCtx.lineWidth=1.5;
+    graphCtx.save();graphCtx.strokeStyle=COL.pink;graphCtx.lineWidth=2;graphCtx.lineCap='round';graphCtx.lineJoin='round';
+    graphCtx.shadowColor=rgba(COL.pink,0.5);graphCtx.shadowBlur=6;
     graphCtx.beginPath();
     for(let i=0;i<histLen;i++){
       const fr=Math.round(masterFrame)-histLen+i;
@@ -667,12 +815,13 @@ function drawGraph() {
     graphCtx.stroke();graphCtx.restore();
   }
 
-  // draw each seg history
   segs.forEach((seg,si)=>{
     const tl=seg.trail;
     const tLen=Math.min(tl.length,TOTAL);
     if(tLen<2)return;
-    graphCtx.save();graphCtx.strokeStyle=segColor(si,si===segs.length-1?0.9:0.5);graphCtx.lineWidth=1;
+    graphCtx.save();
+    graphCtx.strokeStyle=segColor(si,si===segs.length-1?0.95:0.55);
+    graphCtx.lineWidth=si===segs.length-1?1.8:1.2;graphCtx.lineCap='round';graphCtx.lineJoin='round';
     graphCtx.beginPath();
     for(let i=0;i<tLen;i++){
       const fr=Math.round(masterFrame)-tLen+i;
@@ -683,23 +832,22 @@ function drawGraph() {
     graphCtx.stroke();graphCtx.restore();
   });
 
-  // playhead
   const ph=frToCanvas(masterFrame);
-  graphCtx.strokeStyle='rgba(249,255,71,0.4)';graphCtx.lineWidth=1;graphCtx.setLineDash([3,3]);
+  graphCtx.strokeStyle=rgba(COL.honey,0.55);graphCtx.lineWidth=1.2;graphCtx.setLineDash([3,3]);
   graphCtx.beginPath();graphCtx.moveTo(ph,OY);graphCtx.lineTo(ph,OY+H);graphCtx.stroke();
   graphCtx.setLineDash([]);
 
   graphCtx.restore();
 }
 
-// ── ANIMATION LOOP ──
+// LOOP
 function loop(ts){
   if(!lastTime)lastTime=ts;
   const dt=(ts-lastTime)/1000;lastTime=ts;
 
   const {w}=mainZoneSize();
 
-  if(segs.length!==numSegs) initSegs(80);
+  if(segs.length!==numSegs) initSegs(90);
 
   const leadX=leadTargetX(masterFrame,w);
   leadHistory.push(leadX);
@@ -707,10 +855,10 @@ function loop(ts){
 
   if(playing){
     updatePhysics(leadX, dt*playSpd);
-    masterFrame+=dt*playSpd*24; // ~24fps advance
-    if(masterFrame>=TOTAL){masterFrame=0;initSegs(80);}
+    masterFrame+=dt*playSpd*24;
+    if(masterFrame>=TOTAL){masterFrame=0;initSegs(90);}
   } else {
-    updatePhysics(leadX, 0.016); // keep physics alive even paused (for scrub settle)
+    updatePhysics(leadX, 0.016);
   }
 
   resizeMain();resizeGraph();
@@ -718,18 +866,17 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-// ── SEGMENT LEGEND ──
 function buildLegend(){
   const el=document.getElementById('seg-legend');
-  el.innerHTML='<div class="seg-row"><div class="seg-dot" style="background:#36FF00"></div>LEAD (先行)</div>';
+  let html=`<div class="seg-row"><div class="seg-dot" style="background:${COL.pink};color:${COL.pink}"></div>lead — 先頭</div>`;
   for(let i=0;i<numSegs;i++){
     const col=segColor(i);
-    const lbl=i===numSegs-1?`SEG_${i} — TAIL（末尾）`:`SEG_${i}`;
-    el.innerHTML+=`<div class="seg-row"><div class="seg-dot" style="background:${col}"></div>${lbl}</div>`;
+    const lbl=i===numSegs-1?`seg${i} — tail ♡ しっぽ`:`seg${i}`;
+    html+=`<div class="seg-row"><div class="seg-dot" style="background:${col};color:${col}"></div>${lbl}</div>`;
   }
+  el.innerHTML = html;
 }
 
-// ── PRESETS ──
 function applyPreset(name){
   const presets={
     hair:  {segs:8, delay:0.55, damp:0.65, over:1.4},
@@ -750,10 +897,10 @@ function applyPreset(name){
   document.getElementById('sl-over').value=Math.round(p.over*10);
   document.getElementById('sl-over-val').textContent=p.over.toFixed(2);
 
-  initSegs(80); buildLegend();
+  initSegs(90); buildLegend();
 }
 
-// ── CONTROLS ──
+// CONTROLS
 document.getElementById('btnPlay').onclick=()=>{
   playing=true;
   document.getElementById('btnPlay').classList.add('active');
@@ -764,7 +911,7 @@ document.getElementById('btnPause').onclick=()=>{
   document.getElementById('btnPause').classList.add('active');
   document.getElementById('btnPlay').classList.remove('active');
 };
-document.getElementById('btnReset').onclick=()=>{initSegs(80);};
+document.getElementById('btnReset').onclick=()=>{initSegs(90);};
 document.getElementById('btnTrail').onclick=function(){
   showTrail=!showTrail;this.classList.toggle('active',showTrail);
 };
@@ -773,14 +920,13 @@ document.getElementById('btnLabels').onclick=function(){
 };
 document.getElementById('btnNoFollow').onclick=function(){
   noFollow=!noFollow;this.classList.toggle('active',noFollow);
-  this.textContent=noFollow?'NO FOLLOW ✓':'NO FOLLOW';
-  initSegs(80);
+  this.textContent=noFollow?'⊥ 慣性なし ✓':'⊥ 慣性なし';
+  initSegs(90);
 };
 
-// sliders
 document.getElementById('sl-segs').oninput=function(){
   numSegs=+this.value;document.getElementById('sl-segs-val').textContent=numSegs;
-  initSegs(80);buildLegend();
+  initSegs(90);buildLegend();
 };
 document.getElementById('sl-delay').oninput=function(){
   delayFac=this.value/20;document.getElementById('sl-delay-val').textContent=delayFac.toFixed(2);
@@ -795,7 +941,7 @@ document.getElementById('sl-spd').oninput=function(){
   playSpd=this.value/10;document.getElementById('sl-spd-val').textContent=playSpd.toFixed(1)+'x';
 };
 
-// ── LEAD BALL DRAG ──
+// LEAD BALL DRAG
 mainC.addEventListener('pointerdown', e => {
   const rect = mainC.getBoundingClientRect();
   const ex = e.clientX - rect.left;
@@ -804,12 +950,11 @@ mainC.addEventListener('pointerdown', e => {
   const cy = h * 0.42;
   const leadX = leadManualX !== null ? leadManualX : leadTargetX(masterFrame, w);
   const dist = Math.sqrt((ex - leadX)**2 + (ey - cy)**2);
-  if (dist < 22) {
+  if (dist < 24) {
     leadDragging = true;
     leadManualX  = leadX;
     mainC.setPointerCapture(e.pointerId);
     mainC.style.cursor = 'grabbing';
-    // pause auto-advance while dragging
     playing = false;
     document.getElementById('btnPlay').classList.remove('active');
     document.getElementById('btnPause').classList.add('active');
@@ -821,27 +966,24 @@ mainC.addEventListener('pointermove', e => {
   const rect = mainC.getBoundingClientRect();
   const ex   = e.clientX - rect.left;
   const {w}  = mainZoneSize();
-  leadManualX = Math.max(60, Math.min(w - 40, ex));
+  leadManualX = Math.max(70, Math.min(w - 50, ex));
   e.preventDefault();
 });
 mainC.addEventListener('pointerup', e => {
   if (!leadDragging) return;
   leadDragging = false;
   mainC.style.cursor = 'default';
-  // resume play + let physics settle naturally, keep leadManualX so segs chase it
   playing = true;
   document.getElementById('btnPlay').classList.add('active');
   document.getElementById('btnPause').classList.remove('active');
-  // after 2s, release manual override and return to keyframe
   setTimeout(() => { leadManualX = null; }, 2000);
 });
 
-// ── NUMBER SCRUBBER ──
-// params: delay=delayFac(0..1), damp=damping(0..1), over=overFac(0..3)
+// NUMBER SCRUBBER
 const scrubConfig = {
-  delay: { get:()=>delayFac,   set:(v)=>{ delayFac=Math.max(0.01,Math.min(0.99,v)); syncSlider('sl-delay', Math.round(delayFac*20), 'sl-delay-val', delayFac.toFixed(2)); }, speed:0.005 },
-  damp:  { get:()=>damping,    set:(v)=>{ damping=Math.max(0.10,Math.min(0.99,v));  syncSlider('sl-damp',  Math.round(damping*100), 'sl-damp-val',  damping.toFixed(2));  }, speed:0.004 },
-  over:  { get:()=>overFac,    set:(v)=>{ overFac=Math.max(0,   Math.min(3.0, v));  syncSlider('sl-over',  Math.round(overFac*10),  'sl-over-val',  overFac.toFixed(2));  }, speed:0.01  },
+  delay: { get:()=>delayFac, set:(v)=>{ delayFac=Math.max(0.01,Math.min(0.99,v)); syncSlider('sl-delay', Math.round(delayFac*20), 'sl-delay-val', delayFac.toFixed(2)); }, speed:0.005 },
+  damp:  { get:()=>damping,  set:(v)=>{ damping=Math.max(0.10,Math.min(0.99,v));  syncSlider('sl-damp', Math.round(damping*100), 'sl-damp-val', damping.toFixed(2)); }, speed:0.004 },
+  over:  { get:()=>overFac,  set:(v)=>{ overFac=Math.max(0,Math.min(3.0, v));    syncSlider('sl-over', Math.round(overFac*10), 'sl-over-val', overFac.toFixed(2)); }, speed:0.01 },
 };
 function syncSlider(slId, val, lblId, txt) {
   document.getElementById(slId).value = val;
@@ -850,7 +992,6 @@ function syncSlider(slId, val, lblId, txt) {
 
 document.querySelectorAll('.dv.scrub').forEach(el => {
   let sx = 0, startVal = 0, param = null, active = false;
-
   el.addEventListener('pointerdown', e => {
     param = el.dataset.scrub;
     if (!scrubConfig[param]) return;
@@ -859,7 +1000,7 @@ document.querySelectorAll('.dv.scrub').forEach(el => {
     active = true;
     el.classList.add('scrubbing');
     el.setPointerCapture(e.pointerId);
-    e.stopPropagation(); // don't trigger lead drag
+    e.stopPropagation();
     e.preventDefault();
   });
   el.addEventListener('pointermove', e => {
@@ -869,7 +1010,7 @@ document.querySelectorAll('.dv.scrub').forEach(el => {
     cfg.set(startVal + dx * cfg.speed);
     e.preventDefault();
   });
-  el.addEventListener('pointerup', e => {
+  el.addEventListener('pointerup', () => {
     active = false;
     el.classList.remove('scrubbing');
   });
@@ -886,17 +1027,16 @@ document.addEventListener('keydown', e => {
   if(e.code==='KeyN'){
     noFollow=!noFollow;
     document.getElementById('btnNoFollow').classList.toggle('active',noFollow);
-    document.getElementById('btnNoFollow').textContent=noFollow?'NO FOLLOW ✓':'NO FOLLOW';
-    initSegs(80);
+    document.getElementById('btnNoFollow').textContent=noFollow?'⊥ 慣性なし ✓':'⊥ 慣性なし';
+    initSegs(90);
   }
   if(e.code==='Escape')window.location.href='index.html';
 });
 
 window.addEventListener('resize',()=>{initSegs(leadTargetX(0,mainZoneSize().w));});
 
-// INIT
 buildLegend();
-initSegs(80);
+initSegs(90);
 requestAnimationFrame(loop);
 </script>
 </body>

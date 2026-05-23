@@ -3,133 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINETIC GEOMETRY — 04 THE ARC</title>
+<title>うごきのまほう ♡ 04 アークだよ！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --acid:#36FF00;--neon:#F9FF47;--black:#000;
-  --panel:#0C0C0C;--border:rgba(54,255,0,0.15);--border2:rgba(54,255,0,0.07);
-  --dim:rgba(54,255,0,0.45);--dim2:rgba(54,255,0,0.22);
-  --mono:'IBM Plex Mono',monospace;--cond:'Barlow Condensed',sans-serif;--jp:'Noto Sans JP',sans-serif;
-}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:var(--acid)}
-#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+  /* ── かわいいパレット ── */
+  --bg:#1A1230;            /* 深夜パープル */
+  --bg-2:#221A3D;          /* パネル */
+  --bg-3:#2B2148;          /* ホバー */
+  --pink:#FFB7DA;          /* さくら */
+  --pink-glow:#FF8FC8;     /* ホットピンク */
+  --blue:#9BE3FF;          /* ベイビーブルー */
+  --honey:#FFE9A8;         /* ハニー */
+  --coral:#FF8FB1;         /* コーラル(警告) */
+  --cream:#FFF5F9;         /* テキスト */
+  --dim:rgba(255,183,218,0.55);
+  --dim2:rgba(255,183,218,0.28);
+  --border:rgba(255,183,218,0.18);
+  --border2:rgba(255,183,218,0.08);
 
-/* TOPBAR */
+  --disp:'Fredoka',sans-serif;
+  --mono:'DM Mono',monospace;
+  --jp:'Zen Maru Gothic',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--pink);font-family:var(--jp)}
+
+/* 星のキラキラ背景 */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,233,168,0.5) 0.5px, transparent 1.2px),
+    radial-gradient(circle at 78% 32%, rgba(155,227,255,0.6) 0.6px, transparent 1.4px),
+    radial-gradient(circle at 43% 67%, rgba(255,183,218,0.5) 0.5px, transparent 1.2px),
+    radial-gradient(circle at 88% 82%, rgba(255,233,168,0.4) 0.5px, transparent 1px),
+    radial-gradient(circle at 22% 88%, rgba(255,183,218,0.4) 0.4px, transparent 1px),
+    radial-gradient(circle at 62% 12%, rgba(155,227,255,0.5) 0.5px, transparent 1.2px);
+  background-size:340px 280px;
+}
+
+#app{display:grid;grid-template-rows:48px 1fr 40px;grid-template-columns:1fr 340px;height:100vh;width:100vw;position:relative;z-index:1}
+
+/* ─── TOPBAR ─── */
 #topbar{
   grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;border-bottom:1px solid var(--border);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:var(--panel);z-index:10;
+  padding:0 18px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  background:linear-gradient(180deg,rgba(255,183,218,0.04),rgba(255,183,218,0.01));
+  backdrop-filter:blur(6px);z-index:10;
 }
-#topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
-.sys-id{color:var(--dim);font-size:9px}
-.title-tag{color:var(--acid);font-size:11px;font-weight:700;letter-spacing:0.12em}
-.esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
-.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
+#topbar .left,#topbar .right{display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%, #fff 0%, var(--pink) 50%, var(--pink-glow) 100%);
+  box-shadow:0 0 14px rgba(255,143,200,0.6), inset -3px -3px 0 rgba(255,143,200,0.4);
+  position:relative;
+}
+.brand-mark::before,.brand-mark::after{
+  content:'';position:absolute;background:#1A1230;border-radius:50%;
+  width:4px;height:5px;top:9px;
+}
+.brand-mark::before{left:7px}.brand-mark::after{right:7px}
+.brand-mark .cheek{
+  position:absolute;width:5px;height:3px;border-radius:50%;
+  background:var(--coral);top:16px;
+  box-shadow:13px 0 0 var(--coral);left:5px;opacity:0.7;
+}
+.brand-name{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--cream);letter-spacing:0.04em}
+.brand-name .heart{color:var(--pink);font-size:11px}
+.lesson-tag{
+  font-family:var(--mono);font-size:10px;color:var(--blue);
+  background:rgba(155,227,255,0.08);padding:3px 10px;border-radius:99px;
+  border:1px solid rgba(155,227,255,0.2);letter-spacing:0.1em;
+}
+.sys-id{color:var(--dim);font-size:9px;font-family:var(--mono)}
+.esc-btn{
+  color:var(--pink);font-size:10px;text-decoration:none;
+  border:1px solid var(--border);padding:4px 12px;border-radius:99px;
+  transition:all .2s;font-family:var(--disp);font-weight:500;
+  background:rgba(255,183,218,0.04);
+}
+.esc-btn:hover{color:var(--bg);background:var(--pink);border-color:var(--pink);box-shadow:0 0 16px rgba(255,143,200,0.5)}
 
-/* STAGE */
-#stage{position:relative;overflow:hidden;background:var(--black);display:flex;flex-direction:column}
-.stage-grid{
-  position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
-  background-size:48px 48px;
-}
+/* ─── STAGE ─── */
+#stage{position:relative;overflow:hidden;background:transparent;display:flex;flex-direction:column}
+
+/* 巨大数字 */
 .stage-bignum{
-  position:absolute;font-family:var(--cond);font-weight:900;
-  font-size:clamp(180px,24vw,320px);color:rgba(54,255,0,0.022);
-  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+  position:absolute;font-family:var(--disp);font-weight:700;
+  font-size:clamp(220px,28vw,380px);
+  background:linear-gradient(180deg,rgba(255,183,218,0.07),rgba(255,183,218,0));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:0.85;bottom:-50px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.04em;font-style:italic;
 }
-.corner{position:absolute;width:16px;height:16px;pointer-events:none}
-.corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
-.corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
-.corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
-.corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
-.principle-overlay{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
-.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
-.po-en{font-size:11px;color:var(--acid);font-weight:700;letter-spacing:0.15em}
-.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
-.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
-.checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
 
-/* ARC ZONE — top 58% */
-#arc-zone{position:relative;flex:0 0 58%;overflow:hidden;border-bottom:1px solid var(--border)}
+/* 角の装飾(ハート) */
+.corner-deco{position:absolute;width:18px;height:18px;pointer-events:none;color:var(--pink);opacity:0.55}
+.corner-deco.tl{top:14px;left:14px}
+.corner-deco.tr{top:14px;right:14px}
+.corner-deco.bl{bottom:14px;left:14px}
+.corner-deco.br{bottom:14px;right:14px}
+
+.principle-overlay{position:absolute;top:18px;right:20px;text-align:right;pointer-events:none;z-index:2}
+.po-num{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.18em}
+.po-en{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--pink);letter-spacing:0.02em;line-height:1;margin-top:2px;
+  text-shadow:0 0 18px rgba(255,143,200,0.4);}
+.po-jp{font-family:var(--jp);font-size:11px;font-weight:500;color:var(--blue);margin-top:3px}
+.po-jp::before{content:'♡ ';color:var(--pink)}
+
+/* ARC ZONE */
+#arc-zone{position:relative;flex:0 0 58%;overflow:hidden;border-bottom:1px solid var(--border);
+  background:radial-gradient(ellipse at 50% 60%, rgba(255,183,218,0.04), transparent 70%);}
 #arc-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 
 /* Mode badge */
 #mode-badge{
-  position:absolute;top:12px;left:16px;
-  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
-  padding:3px 8px;border:1px solid var(--border);
-  color:var(--dim);background:rgba(0,0,0,0.6);pointer-events:none;
+  position:absolute;top:14px;left:18px;
+  font-family:var(--disp);font-weight:500;font-size:11px;letter-spacing:0.05em;
+  padding:5px 14px;border:1px solid var(--border);border-radius:99px;
+  color:var(--pink);background:rgba(26,18,48,0.7);pointer-events:none;backdrop-filter:blur(8px);
 }
-#mode-badge.ng{color:#FF3636;border-color:rgba(255,54,54,0.4)}
+#mode-badge.ng{color:var(--coral);border-color:rgba(255,143,177,0.5);background:rgba(255,143,177,0.08)}
+#mode-badge .ico{margin-right:4px}
 
 /* HUD */
 #arc-hud{
-  position:absolute;bottom:12px;left:16px;
-  font-family:var(--mono);font-size:8px;color:var(--dim);
-  letter-spacing:0.06em;line-height:2;pointer-events:none;
-  display:flex;gap:24px;
+  position:absolute;bottom:14px;left:18px;
+  font-family:var(--mono);font-size:9px;color:var(--dim);
+  letter-spacing:0.06em;line-height:1.8;pointer-events:none;
+  display:flex;gap:22px;
+  background:rgba(26,18,48,0.55);padding:8px 14px;border-radius:14px;
+  border:1px solid var(--border2);backdrop-filter:blur(6px);
 }
-#arc-hud .val{color:var(--acid)}
-#arc-hud .val.neon{color:var(--neon)}
+#arc-hud .lbl{display:block;font-size:8px;color:var(--dim2)}
+#arc-hud .val{color:var(--pink);font-size:11px;font-family:var(--disp);font-weight:600}
+#arc-hud .val.honey{color:var(--honey)}
+#arc-hud .val.blue{color:var(--blue)}
 
-/* SPACING ZONE — bottom 42% */
-#spacing-zone{position:relative;flex:0 0 42%;overflow:hidden}
-#spacing-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+/* SPACING ZONE */
+#spacing-zone{position:relative;flex:0 0 42%;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%, rgba(155,227,255,0.03), transparent 70%);}
+#spacing-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#spacing-canvas:active{cursor:grabbing}
 #sz-header{
-  position:absolute;top:8px;left:16px;
-  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--dim);
-  pointer-events:none;display:flex;gap:16px;align-items:center;
+  position:absolute;top:10px;left:18px;
+  font-family:var(--disp);font-size:11px;letter-spacing:0.04em;color:var(--cream);
+  pointer-events:none;display:flex;gap:14px;align-items:center;font-weight:500;
 }
-#sz-header strong{color:var(--acid)}
-#sz-easing-label{color:rgba(54,255,0,0.5)}
+#sz-header .tag{
+  font-family:var(--mono);font-size:8px;color:var(--dim);background:rgba(255,183,218,0.06);
+  padding:2px 8px;border-radius:99px;border:1px solid var(--border2);letter-spacing:0.1em;font-weight:400;
+}
+#sz-header .tag.hi{color:var(--honey);background:rgba(255,233,168,0.08);border-color:rgba(255,233,168,0.25)}
+#sz-header .hint{font-size:10px;color:var(--blue);font-family:var(--jp);font-weight:500}
+#sz-header .hint::before{content:'☝ ';}
 
-/* PANEL */
+/* ─── PANEL ─── */
 #panel{
-  border-left:1px solid var(--border);background:var(--panel);
-  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
+  border-left:1px solid var(--border);
+  background:linear-gradient(180deg,var(--bg-2),var(--bg) 90%);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--pink) transparent;
 }
-#panel::-webkit-scrollbar{width:2px}
-#panel::-webkit-scrollbar-thumb{background:var(--acid)}
-.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+#panel::-webkit-scrollbar{width:4px}
+#panel::-webkit-scrollbar-thumb{background:var(--pink);border-radius:99px}
+
+.psec{border-bottom:1px solid var(--border2);padding:16px 18px}
 .psec:last-child{border-bottom:none}
-.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sec-label::before{content:'//';color:rgba(54,255,0,0.3)}
-.sec-title{font-family:var(--cond);font-weight:900;font-size:24px;letter-spacing:0.08em;color:var(--acid);line-height:1;margin-bottom:6px}
-.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
-.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
-.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
-.data-row:last-child{border-bottom:none}
-.dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--acid);font-weight:700}.dv.neon{color:var(--neon)}
-.btn{
-  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
-  border:1px solid var(--border);padding:5px 10px;cursor:pointer;
-  color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
+.sec-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:var(--dim);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
 }
-.btn:hover,.btn.active{color:var(--black);background:var(--acid);border-color:var(--acid)}
-.btn.ng-btn{border-color:rgba(255,54,54,0.3);color:rgba(255,54,54,0.6)}
-.btn.ng-btn:hover,.btn.ng-btn.active{background:#FF3636;border-color:#FF3636;color:#000}
+.sec-label .badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--pink);color:var(--bg);font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:0;
+  box-shadow:0 0 10px rgba(255,143,200,0.5);
+}
+.sec-title{font-family:var(--disp);font-weight:600;font-size:24px;color:var(--cream);line-height:1.05;margin-bottom:8px;letter-spacing:0.01em}
+.sec-title .heart{color:var(--pink);font-size:18px;margin-left:4px}
+.sec-jp-title{font-family:var(--jp);font-weight:700;font-size:13px;color:var(--pink);margin-bottom:8px}
+.body-text{font-family:var(--jp);font-size:12px;line-height:1.95;color:var(--cream);margin-bottom:8px;font-weight:400}
+.body-text .em{color:var(--pink);font-weight:700}
+.body-en{
+  font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim);
+  letter-spacing:0.02em;border-left:2px solid var(--pink);padding-left:10px;
+  background:rgba(255,183,218,0.03);padding:8px 10px;border-radius:8px;
+}
+
+/* data rows */
+.data-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px dashed var(--border2);
+  font-family:var(--mono);font-size:10px;
+}
+.data-row:last-child{border-bottom:none}
+.dk{color:var(--dim);letter-spacing:0.05em;font-size:9px}
+.dv{color:var(--pink);font-weight:500;font-family:var(--disp);font-size:12px}
+.dv.honey{color:var(--honey)}
+.dv.blue{color:var(--blue)}
+.dv.coral{color:var(--coral)}
+
+/* buttons (pill) */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--disp);font-weight:500;font-size:10px;letter-spacing:0.04em;
+  border:1px solid var(--border);padding:6px 12px;cursor:pointer;border-radius:99px;
+  color:var(--pink);background:rgba(255,183,218,0.04);transition:all .2s;
+  margin-right:4px;margin-bottom:5px;
+}
+.btn:hover{background:rgba(255,183,218,0.12);border-color:var(--pink);transform:translateY(-1px)}
+.btn.active{
+  color:var(--bg);background:var(--pink);border-color:var(--pink);
+  box-shadow:0 0 14px rgba(255,143,200,0.45), 0 2px 8px rgba(0,0,0,0.25);
+}
+.btn.ng-btn{border-color:rgba(255,143,177,0.3);color:var(--coral);background:rgba(255,143,177,0.06)}
+.btn.ng-btn:hover{background:rgba(255,143,177,0.18);border-color:var(--coral)}
+.btn.ng-btn.active{background:var(--coral);color:var(--bg);border-color:var(--coral);box-shadow:0 0 14px rgba(255,143,177,0.45)}
+.btn.blue-btn{color:var(--blue);border-color:rgba(155,227,255,0.3)}
+.btn.blue-btn:hover{background:rgba(155,227,255,0.12);border-color:var(--blue)}
+.btn.blue-btn.active{background:var(--blue);color:var(--bg);border-color:var(--blue);box-shadow:0 0 14px rgba(155,227,255,0.45)}
 
 /* smoothness bar */
-.smooth-bar-wrap{height:3px;background:var(--border2);margin-top:6px;position:relative}
-.smooth-bar{height:100%;transition:width .15s,background .15s}
+.smooth-bar-wrap{
+  height:10px;background:rgba(255,183,218,0.08);border-radius:99px;
+  margin-top:8px;position:relative;overflow:hidden;
+  border:1px solid var(--border2);
+}
+.smooth-bar{height:100%;transition:width .25s,background .25s;border-radius:99px;
+  background:linear-gradient(90deg,var(--pink),var(--pink-glow));
+  box-shadow:0 0 12px rgba(255,143,200,0.5);
+}
 
-/* insight */
-.insight{background:rgba(54,255,0,0.03);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);letter-spacing:0.04em;margin-top:8px}
-.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
+/* slider */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;
+  background:rgba(255,183,218,0.15);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--pink);cursor:pointer;border:2px solid var(--bg);
+  box-shadow:0 0 12px rgba(255,143,200,0.6);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:var(--pink);
+  border:2px solid var(--bg);box-shadow:0 0 12px rgba(255,143,200,0.6);
+}
 
-/* BOTTOMBAR */
+/* insight card */
+.insight{
+  background:linear-gradient(135deg,rgba(255,183,218,0.06),rgba(155,227,255,0.04));
+  border:1px solid var(--border);padding:12px 14px;border-radius:14px;
+  font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--cream);
+  letter-spacing:0.01em;margin-top:10px;
+}
+.insight strong{
+  font-family:var(--disp);color:var(--pink);display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;margin-bottom:6px;letter-spacing:0.04em;
+}
+.insight strong::before{content:'♡';font-size:13px}
+.insight .warn{color:var(--coral);font-weight:700}
+
+/* ─── BOTTOMBAR ─── */
 #bottombar{
   grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;border-top:1px solid var(--border);
-  font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
+  padding:0 18px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;background:rgba(34,26,61,0.6);letter-spacing:0.06em;
+  backdrop-filter:blur(6px);
 }
-.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
-.kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
+.bl{color:var(--dim);display:flex;gap:14px;align-items:center}
+.bl .pill{background:rgba(255,183,218,0.06);padding:2px 8px;border-radius:99px;border:1px solid var(--border2)}
+.bc{color:var(--pink);font-weight:600;font-family:var(--disp);font-size:11px}
+.br{color:var(--dim);display:flex;align-items:center;gap:10px}
+.kbd{
+  display:inline-block;border:1px solid var(--border);padding:2px 7px;
+  font-size:8px;color:var(--blue);margin-left:4px;border-radius:6px;
+  background:rgba(155,227,255,0.05);font-family:var(--mono);
+}
 </style>
 </head>
 <body>
@@ -137,45 +290,49 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:v
 
 <header id="topbar">
   <div class="left">
-    <span class="sys-id">KINETIC_GEOMETRY // LEC_04</span>
-    <span class="title-tag">PRINCIPLE_04 // THE ARC</span>
+    <div class="brand">
+      <div class="brand-mark"><span class="cheek"></span></div>
+      <div class="brand-name">うごきのまほう <span class="heart">♡</span></div>
+    </div>
+    <span class="lesson-tag">LESSON_04</span>
   </div>
   <div class="right">
-    <span class="sys-id">TRAJECTORY_CALC: ORGANIC // X_Y_DELTA: 0.045</span>
-    <a class="esc-btn" href="index.html">[ESC] INDEX</a>
+    <span class="sys-id">curve_calc · organic ✨</span>
+    <a class="esc-btn" href="index.html">♡ おうちにもどる</a>
   </div>
 </header>
 
 <main id="stage">
-  <div class="stage-grid"></div>
   <div class="stage-bignum">04</div>
-  <div class="corner tl"></div><div class="corner tr"></div>
-  <div class="corner bl"></div><div class="corner br"></div>
-  <div class="checker c1"></div><div class="checker c2"></div>
+  <svg class="corner-deco tl" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco tr" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco bl" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+  <svg class="corner-deco br" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
+
   <div class="principle-overlay">
-    <div class="po-num">PRINCIPLE // 04</div>
+    <div class="po-num">PRINCIPLE 04</div>
     <div class="po-en">THE ARC</div>
-    <div class="po-jp">運動の弧</div>
+    <div class="po-jp">弧をえがいて動くよ</div>
   </div>
 
   <!-- ARC ZONE -->
   <div id="arc-zone">
     <canvas id="arc-canvas"></canvas>
-    <div id="mode-badge">MODE: NORMAL</div>
+    <div id="mode-badge"><span class="ico">♡</span><span id="mode-badge-txt">なめらかモード</span></div>
     <div id="arc-hud">
-      <div>ARC_VEL&nbsp;<span class="val" id="h-arcvel">0.00</span></div>
-      <div>LINE_VEL&nbsp;<span class="val neon" id="h-linevel">0.00</span></div>
-      <div>SMOOTH&nbsp;<span class="val" id="h-smooth">100%</span></div>
-      <div>FRAME&nbsp;<span class="val" id="h-frame">00/60</span></div>
+      <div><span class="lbl">弧の速度</span><span class="val" id="h-arcvel">0.00</span></div>
+      <div><span class="lbl">直線速度</span><span class="val honey" id="h-linevel">0.00</span></div>
+      <div><span class="lbl">なめらか度</span><span class="val blue" id="h-smooth">100%</span></div>
+      <div><span class="lbl">フレーム</span><span class="val" id="h-frame">00/12</span></div>
     </div>
   </div>
 
   <!-- SPACING ZONE -->
   <div id="spacing-zone">
     <div id="sz-header">
-      <span>// <strong>SPACING EDITOR</strong></span>
-      <span id="sz-easing-label">EASING: —</span>
-      <span style="color:var(--acid)">DRAG DOTS</span>
+      <span>スペーシングをデザイン</span>
+      <span class="tag" id="sz-easing-label">easing: —</span>
+      <span class="hint">ドットをひっぱってね</span>
     </div>
     <canvas id="spacing-canvas"></canvas>
   </div>
@@ -184,11 +341,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:v
 <aside id="panel">
 
   <div class="psec">
-    <div class="sec-label">ATHEORY — 原則解説</div>
-    <div class="sec-title">THE ARC</div>
+    <div class="sec-label"><span class="badge">A</span>THEORY · おしえて先生！</div>
+    <div class="sec-title">アークだよ <span class="heart">♡</span></div>
+    <div class="sec-jp-title">運動の弧 — Arc</div>
     <div class="body-text">
-      Spacingを設計すると、Arcが生まれる。<br>
-      弧は「描くもの」ではなく<br>「運動の結果として現れるもの」。
+      スペーシングを工夫すると、自然と<span class="em">きれいなカーブ</span>が生まれるんだよ ✨<br>
+      弧は「描く」ものじゃなくて、<br>「動きの結果あらわれる」ものなの ♡
     </div>
     <div class="body-en">
       Design the spacing → the arc emerges.<br>
@@ -198,75 +356,76 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:v
   </div>
 
   <div class="psec">
-    <div class="sec-label">BLIVE — リアルタイム</div>
-    <div class="data-row"><span class="dk">ARC_SMOOTHNESS</span><span class="dv" id="lv-smooth">100%</span></div>
-    <div class="data-row"><span class="dk">ARC_LENGTH</span><span class="dv" id="lv-arclen">— px</span></div>
-    <div class="data-row"><span class="dk">LINE_LENGTH</span><span class="dv neon" id="lv-linelen">— px</span></div>
-    <div class="data-row"><span class="dk">CURVATURE</span><span class="dv" id="lv-curv">0.00</span></div>
-    <div class="data-row"><span class="dk">EASING</span><span class="dv" id="lv-ease">—</span></div>
-    <div class="data-row"><span class="dk">BROKEN_FRAMES</span><span class="dv" id="lv-broken">0</span></div>
-    <div class="sec-label" style="margin-top:8px;margin-bottom:4px">ARC SMOOTHNESS</div>
-    <div class="smooth-bar-wrap"><div class="smooth-bar" id="smooth-bar" style="width:100%;background:var(--acid)"></div></div>
+    <div class="sec-label"><span class="badge">B</span>LIVE · いまどうなってる？</div>
+    <div class="data-row"><span class="dk">なめらか度</span><span class="dv" id="lv-smooth">100%</span></div>
+    <div class="data-row"><span class="dk">弧の長さ</span><span class="dv" id="lv-arclen">— px</span></div>
+    <div class="data-row"><span class="dk">直線の長さ</span><span class="dv honey" id="lv-linelen">— px</span></div>
+    <div class="data-row"><span class="dk">カーブ度</span><span class="dv blue" id="lv-curv">0.00</span></div>
+    <div class="data-row"><span class="dk">イージング</span><span class="dv" id="lv-ease">—</span></div>
+    <div class="data-row"><span class="dk">カクつき</span><span class="dv coral" id="lv-broken">0</span></div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:10px;letter-spacing:0.15em">SMOOTHNESS METER</div>
+    <div class="smooth-bar-wrap"><div class="smooth-bar" id="smooth-bar" style="width:100%"></div></div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">CMODE — 動作モード</div>
+    <div class="sec-label"><span class="badge">C</span>MODE · どのモードで見る？</div>
     <div style="margin-bottom:6px">
-      <button class="btn active" id="btnNormal">NORMAL</button>
-      <button class="btn ng-btn" id="btnBroken">BROKEN ARC</button>
-      <button class="btn ng-btn" id="btnStraight">STRAIGHT FORCE</button>
+      <button class="btn active" id="btnNormal">♡ なめらか</button>
+      <button class="btn ng-btn" id="btnBroken">⚠ カクカク</button>
+      <button class="btn ng-btn" id="btnStraight">⊥ 直線だけ</button>
     </div>
     <div class="insight" id="mode-insight">
-      <strong>// NORMAL MODE</strong>
-      Spacingが生む有機的な弧。<br>フレーム配置が軌道を決定する。
+      <strong>なめらかモード</strong>
+      スペーシングが生み出すやさしい弧だよ。<br>フレームの配置が、軌道をきめてるの ♡
     </div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">DPLAYBACK — 再生</div>
+    <div class="sec-label"><span class="badge">D</span>PLAYBACK · さいせい</div>
+    <div style="margin-bottom:10px">
+      <button class="btn active" id="btnPlay">▶ さいせい</button>
+      <button class="btn" id="btnPause">⏸ ストップ</button>
+      <button class="btn" id="btnReset">↺ もどす</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <button class="btn blue-btn active" id="btnTangents">→ 接線ベクトル</button>
+      <button class="btn blue-btn active" id="btnTrail">✨ きせき</button>
+      <button class="btn blue-btn" id="btnCP">◉ コントロール点</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:6px;letter-spacing:0.12em">SPEED</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="range" id="slSpd" min="1" max="30" value="8" style="flex:1">
+      <span style="font-family:var(--disp);font-weight:600;font-size:13px;color:var(--pink);min-width:34px" id="slSpd-val">0.8x</span>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label"><span class="badge">E</span>PRESETS · スペーシング</div>
     <div style="margin-bottom:8px">
-      <button class="btn active" id="btnPlay">▶ PLAY</button>
-      <button class="btn" id="btnPause">⏸ PAUSE</button>
-      <button class="btn" id="btnReset">↺ RESET</button>
+      <button class="btn" onclick="applySpacingPreset('linear')">linear</button>
+      <button class="btn" onclick="applySpacingPreset('easein')">ease-in</button>
+      <button class="btn" onclick="applySpacingPreset('easeout')">ease-out</button>
+      <button class="btn" onclick="applySpacingPreset('easeinout')">ease i-o</button>
+      <button class="btn" onclick="applySpacingPreset('bounce')">bounce ♡</button>
     </div>
-    <div style="margin-bottom:8px">
-      <button class="btn active" id="btnTangents">TANGENTS</button>
-      <button class="btn active" id="btnTrail">TRAIL</button>
-      <button class="btn" id="btnCP">CTRL PT</button>
-    </div>
-    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:4px">SPEED</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <input type="range" id="slSpd" min="1" max="30" value="8" style="flex:1;accent-color:var(--acid)">
-      <span style="font-family:var(--mono);font-size:9px;color:var(--acid);min-width:28px" id="slSpd-val">0.8x</span>
-    </div>
-  </div>
-
-  <div class="psec">
-    <div class="sec-label">EPRESETS — スペーシング</div>
-    <button class="btn" onclick="applySpacingPreset('linear')">LINEAR</button>
-    <button class="btn" onclick="applySpacingPreset('easein')">EASE-IN</button>
-    <button class="btn" onclick="applySpacingPreset('easeout')">EASE-OUT</button>
-    <button class="btn" onclick="applySpacingPreset('easeinout')">EASE I-O</button>
-    <button class="btn" onclick="applySpacingPreset('bounce')">BOUNCE</button>
-    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:8px;line-height:1.7">
-      CP ARC SHAPE<br>
-      <button class="btn" style="margin-top:4px" onclick="setCPPreset('low')">LOW</button>
-      <button class="btn" onclick="setCPPreset('high')">HIGH</button>
-      <button class="btn" onclick="setCPPreset('left')">LEFT</button>
-      <button class="btn" onclick="setCPPreset('right')">RIGHT</button>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:10px;letter-spacing:0.15em">ARC SHAPE</div>
+    <div>
+      <button class="btn blue-btn" onclick="setCPPreset('low')">⌒ ひくく</button>
+      <button class="btn blue-btn" onclick="setCPPreset('high')">⌢ たかく</button>
+      <button class="btn blue-btn" onclick="setCPPreset('left')">↖ ひだり</button>
+      <button class="btn blue-btn" onclick="setCPPreset('right')">↗ みぎ</button>
     </div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">FINSIGHT</div>
+    <div class="sec-label"><span class="badge">F</span>INSIGHT · ポイント！</div>
     <div class="insight">
-      <strong>// ARC × SPACING</strong>
-      同じSpacingでも弧の形が変わると<br>
-      速度の「感じ方」が変わる。<br>
-      同じ弧でもSpacingが変わると<br>
-      重さの「印象」が変わる。<br><br>
-      BROKENモードで「カクつき」を体験し<br>
-      滑らかさの意味を掴め。
+      <strong>アーク × スペーシング</strong>
+      おなじスペーシングでも、弧のかたちが変わると<br>
+      速さの「感じかた」が変わるんだよ ✨<br>
+      おなじ弧でも、スペーシングが変わると<br>
+      重さの「印象」が変わるよ ♡<br><br>
+      <span class="warn">カクカク</span>モードで「不自然さ」を体験してみてね！
     </div>
   </div>
 
@@ -274,16 +433,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--black);color:v
 
 <footer id="bottombar">
   <div class="bl">
-    <span>TRAJECTORY_CALC: ORGANIC</span>
-    <span>ARC_MODE: <span id="bb-mode">NORMAL</span></span>
+    <span class="pill">curve · organic</span>
+    <span>mode: <span style="color:var(--pink)" id="bb-mode">なめらか</span></span>
   </div>
-  <div class="bc">FRAME: <span id="bb-fr">00</span> / 60</div>
+  <div class="bc">♡ frame <span id="bb-fr">00</span> / 12</div>
   <div class="br">
-    <span class="kbd">SPC</span>PLAY
-    <span class="kbd">←→</span>STEP
-    <span class="kbd">DRAG</span>SPACING/CP
-    <span class="kbd">ESC</span>INDEX
-    &nbsp;ID: SENTIENT-BP-2026-VLS.04
+    <span><span class="kbd">SPC</span>play</span>
+    <span><span class="kbd">←→</span>step</span>
+    <span><span class="kbd">drag</span>spacing</span>
+    <span style="opacity:0.5">id · arc.04 ✨</span>
   </div>
 </footer>
 </div>
@@ -301,21 +459,21 @@ const SPACING_PRESETS = {
 };
 
 let spacing = [...SPACING_PRESETS.easeinout];
-const N = spacing.length - 1; // 12 frames
+const N = spacing.length - 1;
 
-// arc control point (normalized)
 let cpNorm = { x: 0.5, y: 0.22 };
-
-// mode: 'normal' | 'broken' | 'straight'
 let arcMode = 'normal';
-
-// flags
 let playing = true, showTangents = true, showTrail = true, showCP = false;
 let playSpd = 0.8, masterT = 0, lastTime = null;
-
-// drag
 let draggingDot = -1, draggingCPFlag = false;
 let arcTrail = [], lineTrail = [];
+
+// ── COLORS (theme tokens) ──
+const COL = {
+  pink:'#FFB7DA', pinkGlow:'#FF8FC8', blue:'#9BE3FF',
+  honey:'#FFE9A8', coral:'#FF8FB1', cream:'#FFF5F9',
+  bg:'#1A1230',
+};
 
 // ── CANVAS REFS ──
 const arcC   = document.getElementById('arc-canvas');
@@ -323,16 +481,15 @@ const arcCtx = arcC.getContext('2d');
 const spC    = document.getElementById('spacing-canvas');
 const spCtx  = spC.getContext('2d');
 
-// ── GEOMETRY ──
 function arcZoneSize(){ const z=document.getElementById('arc-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
 function spZoneSize(){  const z=document.getElementById('spacing-zone'); return {w:z.offsetWidth,h:z.offsetHeight}; }
 
 function getKeyPts(){
   const {w,h} = arcZoneSize();
-  const PAD=72;
+  const PAD=80;
   return {
-    S:{x:PAD, y:h*0.6},
-    E:{x:w-PAD, y:h*0.6},
+    S:{x:PAD, y:h*0.62},
+    E:{x:w-PAD, y:h*0.62},
     CP:{x:cpNorm.x*w, y:cpNorm.y*h},
   };
 }
@@ -361,15 +518,11 @@ function curvature(S,CP,E){
   return num/ld;
 }
 
-// Get position for frame i under current mode
-// spacing[i] gives t along the path (0..1)
-// mode affects Y only (broken/straight)
 function getArcPos(i){
   const {S,CP,E}=getKeyPts();
   const t = spacing[i];
   if(arcMode==='straight') return linePt(t,S,E);
   if(arcMode==='broken'){
-    // frames 3..8 forced to line
     if(i>=3 && i<=8) return linePt(t,S,E);
     return bezier(t,S,CP,E);
   }
@@ -380,7 +533,6 @@ function getLinePos(i){
   return linePt(spacing[i],S,E);
 }
 
-// interpolate between frames for smooth ball position
 function interpArcPos(t_master){
   const fi = t_master * N;
   const lo = Math.min(N-1, Math.floor(fi));
@@ -396,11 +548,8 @@ function interpLinePos(t_master){
   return {x:p0.x+(p1.x-p0.x)*frac, y:p0.y+(p1.y-p0.y)*frac};
 }
 
-// smoothness: avg angular continuity across frames
 function calcSmoothness(){
-  const {S,CP,E}=getKeyPts();
   if(arcMode!=='broken') return 1.0;
-  // count broken transition angles
   let breaks=0;
   for(let i=1;i<N;i++){
     const prev=getArcPos(i-1),cur=getArcPos(i),next=getArcPos(Math.min(N,i+1));
@@ -415,16 +564,14 @@ function calcSmoothness(){
   return Math.max(0, 1 - breaks/(N*0.5));
 }
 
-// easing classifier
 function classifyEasing(){
   const mid=spacing[Math.floor(N/2)];
-  if(Math.abs(mid-0.5)<0.04) return 'LINEAR';
-  if(mid<0.38) return 'EASE-IN';
-  if(mid>0.62) return 'EASE-OUT';
-  return 'EASE I-O';
+  if(Math.abs(mid-0.5)<0.04) return 'linear';
+  if(mid<0.38) return 'ease-in';
+  if(mid>0.62) return 'ease-out';
+  return 'ease i-o';
 }
 
-// ── RESIZE ──
 function resizeArc(){
   const z=document.getElementById('arc-zone');
   arcC.width=z.offsetWidth*devicePixelRatio; arcC.height=z.offsetHeight*devicePixelRatio;
@@ -434,6 +581,12 @@ function resizeSp(){
   const z=document.getElementById('spacing-zone');
   spC.width=z.offsetWidth*devicePixelRatio; spC.height=z.offsetHeight*devicePixelRatio;
   spC.style.width=z.offsetWidth+'px'; spC.style.height=z.offsetHeight+'px';
+}
+
+// hex to rgba helper
+function rgba(hex, a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
 }
 
 // ── DRAW ARC ZONE ──
@@ -450,46 +603,40 @@ function drawArc(){
   const smooth=calcSmoothness();
   const brokenFrames=(arcMode==='broken')?6:arcMode==='straight'?N:0;
 
-  // ── PATH LINES (ghost) ──
-  // full arc path
+  // Ghost paths
   arcCtx.save();
-  arcCtx.strokeStyle='rgba(54,255,0,0.12)';arcCtx.lineWidth=1;arcCtx.setLineDash([4,4]);
+  arcCtx.strokeStyle=rgba(COL.pink,0.18);arcCtx.lineWidth=1.2;arcCtx.setLineDash([5,5]);
   arcCtx.beginPath();
   arcCtx.moveTo(S.x,S.y);arcCtx.quadraticCurveTo(CP.x,CP.y,E.x,E.y);
   arcCtx.stroke();arcCtx.setLineDash([]);
-  // full line path
-  arcCtx.strokeStyle='rgba(249,255,71,0.1)';arcCtx.lineWidth=1;arcCtx.setLineDash([4,4]);
+  arcCtx.strokeStyle=rgba(COL.honey,0.15);arcCtx.lineWidth=1;arcCtx.setLineDash([5,5]);
   arcCtx.beginPath();arcCtx.moveTo(S.x,S.y);arcCtx.lineTo(E.x,E.y);
   arcCtx.stroke();arcCtx.setLineDash([]);
   arcCtx.restore();
 
-  // ── FRAME DOTS (all frames, both tracks) ──
+  // FRAME DOTS
   for(let i=0;i<=N;i++){
     const fi=i/N;
     const isActive=(Math.round(masterT*N)===i);
     const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
 
-    // ARC dot
     const ap=getArcPos(i);
-    const aAlpha=fi<=masterT?0.55:0.12;
-    arcCtx.beginPath();arcCtx.arc(ap.x,ap.y,isActive?5:2.5,0,Math.PI*2);
-    arcCtx.fillStyle=isBroken?`rgba(255,54,54,${aAlpha})`:`rgba(54,255,0,${aAlpha})`;arcCtx.fill();
+    const aAlpha=fi<=masterT?0.7:0.18;
+    arcCtx.beginPath();arcCtx.arc(ap.x,ap.y,isActive?5.5:3,0,Math.PI*2);
+    arcCtx.fillStyle=isBroken?rgba(COL.coral,aAlpha):rgba(COL.pink,aAlpha);arcCtx.fill();
 
-    // LINE dot
     const lp=getLinePos(i);
-    arcCtx.beginPath();arcCtx.arc(lp.x,lp.y,isActive?4:2,0,Math.PI*2);
-    arcCtx.fillStyle=`rgba(249,255,71,${fi<=masterT?0.4:0.09})`;arcCtx.fill();
+    arcCtx.beginPath();arcCtx.arc(lp.x,lp.y,isActive?4.5:2.5,0,Math.PI*2);
+    arcCtx.fillStyle=rgba(COL.honey, fi<=masterT?0.55:0.15);arcCtx.fill();
 
-    // TANGENT at each frame (ARC only, small)
     if(showTangents && i<N){
       const t0=spacing[i],t1=spacing[Math.min(N,i+1)];
-      const pm=bezier((t0+t1)/2,S,CP,E);
       const tang=bezierTan((t0+t1)/2,S,CP,E);
       const tl=Math.sqrt(tang.x**2+tang.y**2);
       if(tl>0.1){
-        const sc=12/tl;
-        const col=isBroken?'rgba(255,54,54,0.3)':'rgba(54,255,0,0.25)';
-        arcCtx.save();arcCtx.strokeStyle=col;arcCtx.lineWidth=0.8;
+        const sc=14/tl;
+        const col=isBroken?rgba(COL.coral,0.35):rgba(COL.blue,0.35);
+        arcCtx.save();arcCtx.strokeStyle=col;arcCtx.lineWidth=1;arcCtx.lineCap='round';
         arcCtx.beginPath();
         arcCtx.moveTo(ap.x-tang.x*sc*0.4,ap.y-tang.y*sc*0.4);
         arcCtx.lineTo(ap.x+tang.x*sc*0.6,ap.y+tang.y*sc*0.6);
@@ -498,129 +645,151 @@ function drawArc(){
     }
   }
 
-  // ── FRAME CONNECTION LINES (polyline) ──
-  // ARC polyline
-  arcCtx.save();arcCtx.lineWidth=1;
+  // polylines
+  arcCtx.save();arcCtx.lineWidth=1.2;arcCtx.lineCap='round';arcCtx.lineJoin='round';
   arcCtx.beginPath();
   for(let i=0;i<=N;i++){
     const p=getArcPos(i);const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
-    arcCtx.strokeStyle=isBroken?'rgba(255,54,54,0.4)':'rgba(54,255,0,0.3)';
+    arcCtx.strokeStyle=isBroken?rgba(COL.coral,0.5):rgba(COL.pink,0.4);
     if(i===0)arcCtx.moveTo(p.x,p.y);
     else{arcCtx.lineTo(p.x,p.y);arcCtx.stroke();arcCtx.beginPath();arcCtx.moveTo(p.x,p.y);}
   }
   arcCtx.restore();
-
-  // LINE polyline (subtle)
-  arcCtx.save();arcCtx.strokeStyle='rgba(249,255,71,0.2)';arcCtx.lineWidth=0.8;
+  arcCtx.save();arcCtx.strokeStyle=rgba(COL.honey,0.28);arcCtx.lineWidth=1;arcCtx.lineCap='round';
   arcCtx.beginPath();
   for(let i=0;i<=N;i++){const p=getLinePos(i);if(i===0)arcCtx.moveTo(p.x,p.y);else arcCtx.lineTo(p.x,p.y);}
   arcCtx.stroke();arcCtx.restore();
 
-  // ── TRAIL ──
+  // TRAIL
   if(showTrail){
     if(arcTrail.length>1){
       for(let i=1;i<arcTrail.length;i++){
-        const al=(i/arcTrail.length)*0.4;
-        arcCtx.save();arcCtx.strokeStyle=`rgba(54,255,0,${al})`;arcCtx.lineWidth=1.5;
+        const al=(i/arcTrail.length)*0.55;
+        arcCtx.save();arcCtx.strokeStyle=rgba(COL.pinkGlow,al);arcCtx.lineWidth=2;arcCtx.lineCap='round';
         arcCtx.beginPath();arcCtx.moveTo(arcTrail[i-1].x,arcTrail[i-1].y);arcCtx.lineTo(arcTrail[i].x,arcTrail[i].y);
         arcCtx.stroke();arcCtx.restore();
       }
     }
     if(lineTrail.length>1){
       for(let i=1;i<lineTrail.length;i++){
-        const al=(i/lineTrail.length)*0.3;
-        arcCtx.save();arcCtx.strokeStyle=`rgba(249,255,71,${al})`;arcCtx.lineWidth=1;
+        const al=(i/lineTrail.length)*0.4;
+        arcCtx.save();arcCtx.strokeStyle=rgba(COL.honey,al);arcCtx.lineWidth=1.2;arcCtx.lineCap='round';
         arcCtx.beginPath();arcCtx.moveTo(lineTrail[i-1].x,lineTrail[i-1].y);arcCtx.lineTo(lineTrail[i].x,lineTrail[i].y);
         arcCtx.stroke();arcCtx.restore();
       }
     }
   }
 
-  // ── CP UI ──
+  // CP UI
   if(showCP){
     arcCtx.save();
-    arcCtx.strokeStyle='rgba(54,255,0,0.15)';arcCtx.lineWidth=1;arcCtx.setLineDash([2,6]);
+    arcCtx.strokeStyle=rgba(COL.blue,0.25);arcCtx.lineWidth=1;arcCtx.setLineDash([3,5]);
     arcCtx.beginPath();arcCtx.moveTo(CP.x,CP.y);arcCtx.lineTo(S.x,S.y);
     arcCtx.moveTo(CP.x,CP.y);arcCtx.lineTo(E.x,E.y);arcCtx.stroke();arcCtx.setLineDash([]);
-    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,8,0,Math.PI*2);
-    arcCtx.strokeStyle='rgba(54,255,0,0.6)';arcCtx.lineWidth=1.5;arcCtx.stroke();
-    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,3,0,Math.PI*2);
-    arcCtx.fillStyle='#36FF00';arcCtx.fill();
-    arcCtx.fillStyle='rgba(54,255,0,0.5)';arcCtx.font='8px IBM Plex Mono,monospace';
-    arcCtx.fillText('CP',CP.x+10,CP.y-8);
+    // outer ring
+    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,10,0,Math.PI*2);
+    arcCtx.strokeStyle=rgba(COL.blue,0.7);arcCtx.lineWidth=2;arcCtx.stroke();
+    // core
+    arcCtx.beginPath();arcCtx.arc(CP.x,CP.y,4,0,Math.PI*2);
+    arcCtx.fillStyle=COL.blue;arcCtx.fill();
+    arcCtx.fillStyle=rgba(COL.blue,0.7);arcCtx.font='600 9px Fredoka, sans-serif';
+    arcCtx.fillText('CP',CP.x+13,CP.y-10);
     arcCtx.restore();
   }
 
-  // ── START / END ──
+  // START / END
   [S,E].forEach((p,i)=>{
     arcCtx.save();
-    arcCtx.strokeStyle='rgba(54,255,0,0.4)';arcCtx.lineWidth=1;
-    arcCtx.beginPath();arcCtx.moveTo(p.x-7,p.y);arcCtx.lineTo(p.x+7,p.y);
-    arcCtx.moveTo(p.x,p.y-7);arcCtx.lineTo(p.x,p.y+7);arcCtx.stroke();
-    arcCtx.fillStyle='rgba(54,255,0,0.35)';arcCtx.font='8px IBM Plex Mono,monospace';
-    arcCtx.fillText(i===0?'START':'END',p.x+10,p.y+3);arcCtx.restore();
+    // soft glow circle
+    arcCtx.beginPath();arcCtx.arc(p.x,p.y,12,0,Math.PI*2);
+    arcCtx.strokeStyle=rgba(COL.pink,0.3);arcCtx.lineWidth=1;arcCtx.stroke();
+    arcCtx.beginPath();arcCtx.arc(p.x,p.y,3,0,Math.PI*2);
+    arcCtx.fillStyle=rgba(COL.pink,0.5);arcCtx.fill();
+    arcCtx.fillStyle=rgba(COL.pink,0.6);arcCtx.font='600 9px Fredoka, sans-serif';
+    arcCtx.fillText(i===0?'start ♡':'goal ✨',p.x+(i===0?16:-44),p.y+4);
+    arcCtx.restore();
   });
 
-  // ── LIVE BALLS ──
+  // LIVE BALLS
   const arcNow=interpArcPos(masterT);
   const lineNow=interpLinePos(masterT);
   const isBrokenNow=(arcMode==='broken'&&Math.round(masterT*N)>=3&&Math.round(masterT*N)<=8)||(arcMode==='straight');
 
-  // ARC ball glow
-  const grd=arcCtx.createRadialGradient(arcNow.x,arcNow.y,0,arcNow.x,arcNow.y,22);
-  grd.addColorStop(0,isBrokenNow?'rgba(255,54,54,0.3)':'rgba(54,255,0,0.25)');
-  grd.addColorStop(1,'rgba(0,0,0,0)');
-  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,22,0,Math.PI*2);
+  // ARC ball — big glowing kawaii sphere
+  const ballCol = isBrokenNow ? COL.coral : COL.pink;
+  const grd=arcCtx.createRadialGradient(arcNow.x,arcNow.y,0,arcNow.x,arcNow.y,32);
+  grd.addColorStop(0,rgba(ballCol,0.4));
+  grd.addColorStop(0.6,rgba(ballCol,0.1));
+  grd.addColorStop(1,rgba(ballCol,0));
+  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,32,0,Math.PI*2);
   arcCtx.fillStyle=grd;arcCtx.fill();
-  // ball
-  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,10,0,Math.PI*2);
-  arcCtx.strokeStyle=isBrokenNow?'#FF3636':'#36FF00';arcCtx.lineWidth=1.5;arcCtx.stroke();
-  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,5,0,Math.PI*2);
-  arcCtx.fillStyle=isBrokenNow?'#FF3636':'#36FF00';arcCtx.fill();
+  // ball body — radial gradient for cute 3D feel
+  const bgrd=arcCtx.createRadialGradient(arcNow.x-3,arcNow.y-3,1,arcNow.x,arcNow.y,12);
+  bgrd.addColorStop(0,'#FFFFFF');
+  bgrd.addColorStop(0.4, ballCol);
+  bgrd.addColorStop(1, isBrokenNow ? '#D45575' : COL.pinkGlow);
+  arcCtx.beginPath();arcCtx.arc(arcNow.x,arcNow.y,12,0,Math.PI*2);
+  arcCtx.fillStyle=bgrd;arcCtx.fill();
+  // highlight
+  arcCtx.beginPath();arcCtx.arc(arcNow.x-4,arcNow.y-4,2.5,0,Math.PI*2);
+  arcCtx.fillStyle='rgba(255,255,255,0.85)';arcCtx.fill();
   // label
-  arcCtx.fillStyle=isBrokenNow?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.7)';
-  arcCtx.font='8px IBM Plex Mono,monospace';
-  arcCtx.fillText(isBrokenNow?'BROKEN':'ARC',arcNow.x+13,arcNow.y-8);
+  arcCtx.fillStyle=ballCol;
+  arcCtx.font='600 10px Fredoka, sans-serif';
+  arcCtx.fillText(isBrokenNow?'broken!':'arc ♡',arcNow.x+16,arcNow.y-12);
 
-  // tangent arrow on live ball
+  // tangent arrow
   if(showTangents && masterT<1){
     const tIdx=Math.min(N-1,Math.round(masterT*N));
     const tang=bezierTan(spacing[tIdx],S,CP,E);
     const tl=Math.sqrt(tang.x**2+tang.y**2);
     if(tl>0){
-      const sc=26/tl;
+      const sc=30/tl;
       arcCtx.save();
-      arcCtx.strokeStyle=isBrokenNow?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.7)';
-      arcCtx.lineWidth=1.5;
+      arcCtx.strokeStyle=rgba(ballCol,0.8);
+      arcCtx.lineWidth=2;arcCtx.lineCap='round';
       arcCtx.beginPath();arcCtx.moveTo(arcNow.x,arcNow.y);
-      arcCtx.lineTo(arcNow.x+tang.x*sc,arcNow.y+tang.y*sc);arcCtx.stroke();arcCtx.restore();
+      arcCtx.lineTo(arcNow.x+tang.x*sc,arcNow.y+tang.y*sc);arcCtx.stroke();
+      // arrowhead
+      const ang=Math.atan2(tang.y,tang.x);
+      arcCtx.beginPath();
+      arcCtx.moveTo(arcNow.x+tang.x*sc,arcNow.y+tang.y*sc);
+      arcCtx.lineTo(arcNow.x+tang.x*sc-6*Math.cos(ang-Math.PI/6),arcNow.y+tang.y*sc-6*Math.sin(ang-Math.PI/6));
+      arcCtx.moveTo(arcNow.x+tang.x*sc,arcNow.y+tang.y*sc);
+      arcCtx.lineTo(arcNow.x+tang.x*sc-6*Math.cos(ang+Math.PI/6),arcNow.y+tang.y*sc-6*Math.sin(ang+Math.PI/6));
+      arcCtx.stroke();
+      arcCtx.restore();
     }
   }
 
   // LINE ball
-  const lgrd=arcCtx.createRadialGradient(lineNow.x,lineNow.y,0,lineNow.x,lineNow.y,18);
-  lgrd.addColorStop(0,'rgba(249,255,71,0.2)');lgrd.addColorStop(1,'rgba(0,0,0,0)');
-  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,18,0,Math.PI*2);
+  const lgrd=arcCtx.createRadialGradient(lineNow.x,lineNow.y,0,lineNow.x,lineNow.y,22);
+  lgrd.addColorStop(0,rgba(COL.honey,0.3));lgrd.addColorStop(1,rgba(COL.honey,0));
+  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,22,0,Math.PI*2);
   arcCtx.fillStyle=lgrd;arcCtx.fill();
-  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,8,0,Math.PI*2);
-  arcCtx.strokeStyle='#F9FF47';arcCtx.lineWidth=1.5;arcCtx.stroke();
-  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,3.5,0,Math.PI*2);
-  arcCtx.fillStyle='#F9FF47';arcCtx.fill();
-  arcCtx.fillStyle='rgba(249,255,71,0.6)';arcCtx.font='8px IBM Plex Mono,monospace';
-  arcCtx.fillText('LINE',lineNow.x+11,lineNow.y-8);
+  const lbgrd=arcCtx.createRadialGradient(lineNow.x-2,lineNow.y-2,1,lineNow.x,lineNow.y,9);
+  lbgrd.addColorStop(0,'#FFFFFF');
+  lbgrd.addColorStop(0.4, COL.honey);
+  lbgrd.addColorStop(1, '#D4B777');
+  arcCtx.beginPath();arcCtx.arc(lineNow.x,lineNow.y,9,0,Math.PI*2);
+  arcCtx.fillStyle=lbgrd;arcCtx.fill();
+  arcCtx.beginPath();arcCtx.arc(lineNow.x-3,lineNow.y-3,2,0,Math.PI*2);
+  arcCtx.fillStyle='rgba(255,255,255,0.85)';arcCtx.fill();
+  arcCtx.fillStyle=COL.honey;arcCtx.font='600 10px Fredoka, sans-serif';
+  arcCtx.fillText('line',lineNow.x+14,lineNow.y-10);
 
   // Δy line
   if(Math.abs(arcNow.y-lineNow.y)>4){
-    arcCtx.save();arcCtx.strokeStyle='rgba(54,255,0,0.2)';arcCtx.lineWidth=1;arcCtx.setLineDash([2,4]);
+    arcCtx.save();arcCtx.strokeStyle=rgba(COL.blue,0.3);arcCtx.lineWidth=1;arcCtx.setLineDash([3,4]);
     arcCtx.beginPath();arcCtx.moveTo(arcNow.x,arcNow.y);arcCtx.lineTo(arcNow.x,lineNow.y);arcCtx.stroke();
-    arcCtx.setLineDash([]);arcCtx.fillStyle='rgba(54,255,0,0.35)';arcCtx.font='7px IBM Plex Mono,monospace';
-    arcCtx.fillText('Δ'+(Math.abs(arcNow.y-lineNow.y)|0),arcNow.x+3,(arcNow.y+lineNow.y)/2);
+    arcCtx.setLineDash([]);arcCtx.fillStyle=rgba(COL.blue,0.6);arcCtx.font='500 8px DM Mono, monospace';
+    arcCtx.fillText('Δ'+(Math.abs(arcNow.y-lineNow.y)|0),arcNow.x+4,(arcNow.y+lineNow.y)/2);
     arcCtx.restore();
   }
 
   arcCtx.restore();
 
-  // ── HUD updates ──
+  // HUD updates
   const eps=0.01;
   const a0=interpArcPos(Math.max(0,masterT-eps));
   const a1=interpArcPos(Math.min(1,masterT+eps));
@@ -644,9 +813,11 @@ function drawArc(){
   const sw=Math.round(smooth*100);
   const sb=document.getElementById('smooth-bar');
   sb.style.width=sw+'%';
-  sb.style.background=sw>80?'var(--acid)':sw>50?'var(--neon)':'#FF3636';
+  if(sw>80) sb.style.background='linear-gradient(90deg,#FFB7DA,#FF8FC8)';
+  else if(sw>50) sb.style.background='linear-gradient(90deg,#FFE9A8,#FFB7DA)';
+  else sb.style.background='linear-gradient(90deg,#FF8FB1,#FF8FC8)';
 
-  document.getElementById('sz-easing-label').textContent='EASING: '+classifyEasing();
+  document.getElementById('sz-easing-label').textContent='easing: '+classifyEasing();
 }
 
 // ── DRAW SPACING ZONE ──
@@ -656,34 +827,44 @@ function drawSpacing(){
   spCtx.clearRect(0,0,spC.width,spC.height);
   spCtx.save();spCtx.scale(dpr,dpr);
 
-  const PAD_L=44,PAD_R=16,PAD_T=30,PAD_B=24;
+  const PAD_L=48,PAD_R=20,PAD_T=36,PAD_B=26;
   const W=w-PAD_L-PAD_R,H=h-PAD_T-PAD_B;
   const OX=PAD_L,OY=PAD_T;
 
   // grid
-  spCtx.strokeStyle='rgba(54,255,0,0.06)';spCtx.lineWidth=0.5;
+  spCtx.strokeStyle=rgba(COL.pink,0.07);spCtx.lineWidth=0.6;
   for(let i=0;i<=4;i++){
     const y=OY+H*(i/4);
     spCtx.beginPath();spCtx.moveTo(OX,y);spCtx.lineTo(OX+W,y);spCtx.stroke();
   }
 
   // axis labels
-  spCtx.fillStyle='rgba(54,255,0,0.3)';spCtx.font=`${6*dpr/dpr}px IBM Plex Mono,monospace`;
+  spCtx.fillStyle=rgba(COL.pink,0.45);spCtx.font='500 8px DM Mono, monospace';
   spCtx.fillText('0',OX-14,OY+H+4);spCtx.fillText('1',OX+W-4,OY+H+4);
-  spCtx.fillText('POS',OX-40,OY+4);
+  spCtx.fillStyle=rgba(COL.blue,0.5);spCtx.font='600 8px Fredoka, sans-serif';
+  spCtx.fillText('time',OX-40,OY+H+4);
 
-  // velocity bars between dots
+  // velocity bars
   const maxGap=Math.max(...spacing.slice(1).map((v,i)=>v-spacing[i]));
   for(let i=0;i<N;i++){
     const gap=spacing[i+1]-spacing[i];
     const norm=maxGap>0?gap/maxGap:0;
     const x1=OX+spacing[i]*W,x2=OX+spacing[i+1]*W;
-    const cx=(x1+x2)/2,barH=norm*H*0.65;
+    const cx=(x1+x2)/2,barH=norm*H*0.7;
     const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
-    spCtx.fillStyle=isBroken
-      ?`rgba(255,54,54,${0.06+norm*0.2})`
-      :norm>0.6?`rgba(249,255,71,${0.06+norm*0.2})`:`rgba(54,255,0,${0.06+norm*0.2})`;
-    spCtx.fillRect(cx-2,OY+H-barH,4,barH);
+    const col=isBroken?COL.coral:(norm>0.6?COL.honey:COL.pink);
+    spCtx.fillStyle=rgba(col, 0.1+norm*0.3);
+    // rounded bars
+    const bx=cx-3, by=OY+H-barH, bw=6, bh=barH, br=3;
+    spCtx.beginPath();
+    spCtx.moveTo(bx+br, by);
+    spCtx.lineTo(bx+bw-br, by);
+    spCtx.quadraticCurveTo(bx+bw, by, bx+bw, by+br);
+    spCtx.lineTo(bx+bw, by+bh);
+    spCtx.lineTo(bx, by+bh);
+    spCtx.lineTo(bx, by+br);
+    spCtx.quadraticCurveTo(bx, by, bx+br, by);
+    spCtx.fill();
   }
 
   // gap lines
@@ -692,17 +873,22 @@ function drawSpacing(){
     const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
     const gap=spacing[i+1]-spacing[i];
     const norm=maxGap>0?gap/maxGap:0;
-    spCtx.strokeStyle=isBroken?`rgba(255,54,54,0.4)`:norm>0.5?`rgba(249,255,71,0.4)`:`rgba(54,255,0,0.3)`;
-    spCtx.lineWidth=1;
-    spCtx.beginPath();spCtx.moveTo(x1,OY+H-7);spCtx.lineTo(x2,OY+H-7);spCtx.stroke();
+    spCtx.strokeStyle=isBroken?rgba(COL.coral,0.5):norm>0.5?rgba(COL.honey,0.5):rgba(COL.pink,0.4);
+    spCtx.lineWidth=1.5;spCtx.lineCap='round';
+    spCtx.beginPath();spCtx.moveTo(x1+3,OY+H-8);spCtx.lineTo(x2-3,OY+H-8);spCtx.stroke();
   }
 
   // playhead
   const playPos=spacing[Math.round(masterT*N)];
   const px=OX+playPos*W;
-  spCtx.strokeStyle='rgba(249,255,71,0.4)';spCtx.lineWidth=1;spCtx.setLineDash([3,3]);
-  spCtx.beginPath();spCtx.moveTo(px,OY);spCtx.lineTo(px,OY+H+6);spCtx.stroke();
+  spCtx.strokeStyle=rgba(COL.honey,0.55);spCtx.lineWidth=1.2;spCtx.setLineDash([3,4]);
+  spCtx.beginPath();spCtx.moveTo(px,OY-4);spCtx.lineTo(px,OY+H+8);spCtx.stroke();
   spCtx.setLineDash([]);
+  // playhead diamond
+  spCtx.fillStyle=COL.honey;
+  spCtx.beginPath();
+  spCtx.moveTo(px,OY-7);spCtx.lineTo(px+4,OY-3);spCtx.lineTo(px,OY+1);spCtx.lineTo(px-4,OY-3);
+  spCtx.closePath();spCtx.fill();
 
   // DOTS
   for(let i=0;i<=N;i++){
@@ -713,22 +899,26 @@ function drawSpacing(){
     const isEdge=(i===0||i===N);
     const isBroken=(arcMode==='broken'&&i>=3&&i<=8)||(arcMode==='straight');
 
-    // frame num
-    spCtx.fillStyle=isActive?'#F9FF47':isBroken?'rgba(255,54,54,0.5)':'rgba(54,255,0,0.3)';
-    spCtx.font=`6px IBM Plex Mono,monospace`;
+    spCtx.fillStyle=isActive?COL.honey:isBroken?rgba(COL.coral,0.6):rgba(COL.pink,0.45);
+    spCtx.font='500 8px DM Mono, monospace';
     spCtx.textAlign='center';
-    spCtx.fillText(i,x,OY+H-11);
+    spCtx.fillText(i,x,OY+H-14);
 
-    // dot
-    const r=isDrag?10:isActive?8:isEdge?5:6;
-    spCtx.beginPath();spCtx.arc(x,y,r,0,Math.PI*2);
-    spCtx.fillStyle=isDrag?'#F9FF47':isActive?'#F9FF47':isBroken?'rgba(255,54,54,0.7)':'rgba(54,255,0,0.65)';
-    spCtx.fill();
-    if(isDrag||isActive){
-      spCtx.beginPath();spCtx.arc(x,y,r+3,0,Math.PI*2);
-      spCtx.strokeStyle=isDrag?'rgba(249,255,71,0.5)':'rgba(54,255,0,0.3)';
-      spCtx.lineWidth=1;spCtx.stroke();
+    const r=isDrag?10:isActive?8:isEdge?5.5:6.5;
+    // glow
+    if(isActive||isDrag){
+      const dgrd=spCtx.createRadialGradient(x,y,0,x,y,r*2.2);
+      dgrd.addColorStop(0,rgba(COL.honey,0.4));dgrd.addColorStop(1,rgba(COL.honey,0));
+      spCtx.beginPath();spCtx.arc(x,y,r*2.2,0,Math.PI*2);spCtx.fillStyle=dgrd;spCtx.fill();
     }
+    spCtx.beginPath();spCtx.arc(x,y,r,0,Math.PI*2);
+    const dotGrd=spCtx.createRadialGradient(x-1.5,y-1.5,0.5,x,y,r);
+    dotGrd.addColorStop(0,'#FFFFFF');
+    const dotCol=isDrag||isActive?COL.honey:isBroken?COL.coral:COL.pink;
+    dotGrd.addColorStop(0.5,dotCol);
+    dotGrd.addColorStop(1,isDrag||isActive?'#D4B777':isBroken?'#D45575':COL.pinkGlow);
+    spCtx.fillStyle=dotGrd;
+    spCtx.fill();
   }
 
   spCtx.restore();
@@ -739,7 +929,7 @@ function spNormX(e){
   const rect=spC.getBoundingClientRect();
   const ex=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
   const {w}=spZoneSize();
-  const PAD_L=44,PAD_R=16;
+  const PAD_L=48,PAD_R=20;
   return (ex-PAD_L)/(w-PAD_L-PAD_R);
 }
 
@@ -770,7 +960,7 @@ spC.addEventListener('pointermove',e=>{
   arcTrail=[];lineTrail=[];
   e.preventDefault();
 });
-spC.addEventListener('pointerup',e=>{
+spC.addEventListener('pointerup',()=>{
   draggingDot=-1;
   playing=true;
   document.getElementById('btnPlay').classList.add('active');
@@ -802,7 +992,7 @@ arcC.addEventListener('pointermove',e=>{
   arcTrail=[];lineTrail=[];
   e.preventDefault();
 });
-arcC.addEventListener('pointerup',e=>{
+arcC.addEventListener('pointerup',()=>{
   if(!draggingCPFlag)return;
   draggingCPFlag=false;
   playing=true;
@@ -831,10 +1021,11 @@ function loop(ts){
 
 // ── MODE ──
 const modeInsights={
-  normal:'<strong>// NORMAL MODE</strong>Spacingが生む有機的な弧。<br>フレーム配置が軌道を決定する。',
-  broken:'<strong>// BROKEN ARC</strong>フレーム3〜8を直線化。<br>弧が「途切れ」るとどう見えるか。<br><span style="color:#FF3636">カクつき＝Arc違反の証拠</span>',
-  straight:'<strong>// STRAIGHT FORCE</strong>全フレームを直線軌道に強制。<br>機械的・死んだ動き。<br><span style="color:#FF3636">自然界にはない運動</span>',
+  normal:'<strong>なめらかモード</strong>スペーシングが生み出すやさしい弧だよ。<br>フレームの配置が、軌道をきめてるの ♡',
+  broken:'<strong>カクカクモード</strong>フレーム3〜8を直線にしてみたよ ⚠️<br>弧が「途切れる」とどう見える？<br><span class="warn">カクつき = アーク違反のサイン！</span>',
+  straight:'<strong>直線モード</strong>全フレームを直線にしちゃった ⊥<br>機械的でロボットみたいだね…<br><span class="warn">自然界にはない動きなんだよ</span>',
 };
+const modeLabels={normal:'♡ なめらかモード',broken:'⚠ カクカクモード',straight:'⊥ 直線モード'};
 function setMode(m){
   arcMode=m;
   masterT=0;arcTrail=[];lineTrail=[];
@@ -844,11 +1035,11 @@ function setMode(m){
   const map={normal:'btnNormal',broken:'btnBroken',straight:'btnStraight'};
   document.getElementById(map[m]).classList.add('active');
   const badge=document.getElementById('mode-badge');
-  badge.textContent='MODE: '+m.toUpperCase().replace('straight','STRAIGHT FORCE');
-  badge.className='';badge.id='mode-badge';
-  if(m!=='normal')badge.classList.add('ng');
+  document.getElementById('mode-badge-txt').textContent=modeLabels[m].replace(/^[\W]+\s/,'');
+  badge.className=m!=='normal'?'ng':'';
+  badge.id='mode-badge';
   document.getElementById('mode-insight').innerHTML=modeInsights[m];
-  document.getElementById('bb-mode').textContent=m.toUpperCase();
+  document.getElementById('bb-mode').textContent={normal:'なめらか',broken:'カクカク',straight:'直線'}[m];
 }
 
 // ── PRESETS ──
