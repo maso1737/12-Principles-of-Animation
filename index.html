@@ -457,9 +457,9 @@ html,body{
 
 /* card SVG mark */
 .card .mark{
-  position:absolute;top:14px;right:14px;width:28px;height:28px;
+  position:absolute;top:34px;right:12px;width:20px;height:20px;
   display:flex;align-items:center;justify-content:center;
-  z-index:3;
+  z-index:3;opacity:0.85;
 }
 .card .mark svg{width:100%;height:100%;display:block}
 .card .mark svg .stroke{stroke:var(--ink);stroke-width:1.4;fill:none}
@@ -567,9 +567,11 @@ html,body{
   font-family:var(--mono);font-size:9px;line-height:1.85;
   color:var(--ink-2);letter-spacing:0.04em;
 }
-.roll .ro{display:flex;justify-content:space-between;border-bottom:1px dashed var(--mute-2);padding:3px 0;cursor:pointer;transition:background 100ms,padding-left 130ms}
+.roll .ro{display:flex;justify-content:space-between;border-bottom:1px dashed var(--mute-2);padding:3px 6px;cursor:pointer;transition:background 100ms,padding-left 130ms,color 100ms}
 .roll .ro:last-child{border-bottom:none}
-.roll .ro:hover{background:rgba(200,255,26,0.13);padding-left:6px}
+.roll .ro:hover{background:var(--acc);padding-left:10px;border-bottom-color:transparent}
+.roll .ro:hover .a,
+.roll .ro:hover .b{color:var(--ink)}
 .roll .ro:hover .a{font-weight:700}
 .roll .ro .a{color:var(--ink)}
 .roll .ro .b{color:var(--mute);letter-spacing:0.06em}
@@ -608,8 +610,8 @@ html,body{
 
 /* roll-call → card focus */
 @keyframes cardScan{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
-.card.roll-focus{box-shadow:inset 0 0 0 1.5px var(--ink);z-index:3;overflow:hidden}
-.card.roll-focus:not(.highlight):not(.disabled){background:rgba(200,255,26,0.09)}
+.card.roll-focus{z-index:3;overflow:hidden}
+.card.roll-focus:not(.highlight):not(.disabled){background:rgba(200,255,26,0.22)}
 .card.roll-focus::before{
   content:"";position:absolute;left:0;right:0;height:1.5px;
   background:linear-gradient(90deg,transparent,var(--acc) 30%,var(--acc) 70%,transparent);

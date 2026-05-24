@@ -1039,8 +1039,31 @@ textarea{
   </div>
 
   <div class="sp">
-    <div class="spl"><span class="lt">G</span>APPLY</div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.05em;line-height:2;">→ ボタン：押す前に膨らむ<br>→ ドア：開く前に一瞬引く<br>→ ジャンプ：膝を曲げる<br>→ 削除：消える前に小さくなる</div>
+    <div class="spl"><span class="lt">G</span>APPLY — 応用パターン</div>
+
+    <div class="ba" title="押す前に膨らむ → 押下 → オーバーシュート">
+      <div class="ba-lbl"><span>BUTTON · 押下</span><em>anticipation</em></div>
+      <div class="ba-jp">膨らむ → 押す → 戻る</div>
+      <div class="ba-stage"><div class="ba-btn">PUSH</div></div>
+    </div>
+
+    <div class="ba" title="開く前に一瞬閉じる">
+      <div class="ba-lbl"><span>DOOR · 開閉</span><em>pull-back</em></div>
+      <div class="ba-jp">1F 逆方向 → スライド</div>
+      <div class="ba-stage" style="align-items:center;padding-bottom:0;"><div class="ba-door"><div class="ba-door-L"></div><div class="ba-door-R"></div></div></div>
+    </div>
+
+    <div class="ba" title="膝を曲げてからジャンプ">
+      <div class="ba-lbl"><span>JUMP · 跳躍</span><em>crouch + leap</em></div>
+      <div class="ba-jp">屈む → 跳ぶ → Squash → 着地</div>
+      <div class="ba-stage"><div class="ba-jumper"></div></div>
+    </div>
+
+    <div class="ba" title="消える前にぎゅっと">
+      <div class="ba-lbl"><span>DELETE · 消去</span><em>bloat → poof</em></div>
+      <div class="ba-jp">膨らむ → ぎゅっと縮む</div>
+      <div class="ba-stage" style="align-items:center;padding-bottom:0;"><div class="ba-del"></div></div>
+    </div>
   </div>
   </div><!-- /view-mode -->
 

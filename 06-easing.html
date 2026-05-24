@@ -829,7 +829,7 @@ function initBezierEditor() {
     s += `<line x1="0" y1="200" x2="200" y2="0" stroke="rgba(255,183,218,0.12)" stroke-width="1" stroke-dasharray="4 4"/>`;
     s += `<line x1="0" y1="200" x2="${x1}" y2="${y1}" stroke="rgba(155,227,255,0.5)" stroke-width="1.2" stroke-linecap="round"/>`;
     s += `<line x1="200" y1="0" x2="${x2}" y2="${y2}" stroke="rgba(255,233,168,0.45)" stroke-width="1.2" stroke-linecap="round"/>`;
-    s += `<path d="M0,200 C${x1},${y1} ${x2},${y2} 200,0" fill="none" stroke="#FFB7DA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<path d="M0,200 C${x1},${y1} ${x2},${y2} 200,0" fill="none" stroke="#9BE3FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px rgba(155,227,255,0.5))"/>`;
     edSvg.innerHTML = s;
   }
   function updateBezierReadout() {
