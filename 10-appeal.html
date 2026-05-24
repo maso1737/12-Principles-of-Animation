@@ -1140,6 +1140,7 @@ function makeConfettiPieces(n) {
 // dominant / shy / chaotic / elegant / mascot
 function generateHero(x, y, personality) {
   const base = { x, y, baseX: x, baseY: y, role: 'hero',
+                 depth: 0.7,  // ← parallaxX*el.depth がNaNになるのを防ぐ（heroのdepthMap基準値）
                  phase: Math.random()*Math.PI*2, rotPhase: Math.random()*Math.PI*2,
                  rotDir: Math.random() < 0.5 ? -1 : 1,
                  stripeRotOffset: 0, floatAmt: 0.5, count: 1, pieces: null };
