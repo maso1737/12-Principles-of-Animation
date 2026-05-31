@@ -127,6 +127,41 @@ body{
 .gauge-tick span{position:absolute;right:8px;top:-4px;white-space:nowrap}
 #gauge-pct{font-family:var(--mono);font-size:9px;color:var(--acid);font-weight:700;letter-spacing:0.05em;text-align:center;min-width:40px}
 
+/* BELIEVABILITY METER — top center, always-on */
+#believe-meter{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:min(340px,40vw);pointer-events:none;z-index:4;
+  font-family:var(--mono);
+}
+.bm-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.bm-title{font-size:8px;letter-spacing:0.22em;color:var(--dim);font-family:var(--bank)}
+.bm-zone{font-size:11px;letter-spacing:0.14em;font-weight:700;color:var(--ink);font-family:var(--bank);
+  text-shadow:0 0 10px currentColor;transition:color .15s}
+.bm-track{
+  position:relative;height:9px;border:1px solid var(--border);
+  background:rgba(0,0,0,0.5);box-shadow:inset 0 0 8px rgba(0,0,0,0.6);overflow:visible;
+}
+.bm-fill{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(90deg, var(--acid) 0%, var(--neon) 38%, var(--ice) 68%, #FFB03D 88%, var(--hot) 100%);
+  box-shadow:0 0 12px rgba(182,255,31,0.4);transition:width .07s linear;
+}
+/* sweet-spot tick — JUST BEFORE IT BREAKS */
+.bm-sweet{
+  position:absolute;top:-3px;bottom:-3px;left:78%;width:1px;
+  background:var(--neon);box-shadow:0 0 8px var(--neon);
+}
+.bm-sweet::after{
+  content:'♥';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  font-size:8px;color:var(--neon);text-shadow:0 0 6px var(--neon);
+}
+.bm-needle{
+  position:absolute;top:-2px;bottom:-2px;width:2px;left:0%;
+  background:#fff;box-shadow:0 0 8px #fff;transition:left .07s linear;
+}
+.bm-scale{display:flex;justify-content:space-between;margin-top:3px;
+  font-size:6.5px;letter-spacing:0.04em;color:var(--dim2)}
+
 /* BIG STATUS */
 #big-status{
   position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);
@@ -227,6 +262,23 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 .insight{background:rgba(182,255,31,0.05);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
 .insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
 
+/* APPEAL PRESERVATION gauge */
+.appeal-wrap{margin:10px 0 6px}
+.appeal-head{display:flex;justify-content:space-between;align-items:baseline;
+  font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:0.1em;margin-bottom:4px}
+.appeal-val{font-family:var(--bank);font-size:15px;font-weight:700;color:var(--neon);
+  text-shadow:0 0 10px rgba(54,255,140,0.5);transition:color .15s}
+.appeal-track{position:relative;height:8px;background:rgba(0,0,0,0.45);
+  border:1px solid var(--border2);overflow:visible}
+.appeal-fill{position:absolute;top:0;left:0;bottom:0;width:100%;
+  background:linear-gradient(90deg, var(--hot) 0%, #FFB03D 35%, var(--acid) 70%, var(--neon) 100%);
+  transition:width .1s,opacity .15s;transform-origin:left}
+.appeal-sweet{position:absolute;top:-3px;bottom:-3px;left:78%;width:1px;
+  background:var(--neon);box-shadow:0 0 6px var(--neon)}
+.appeal-scale{display:flex;justify-content:space-between;margin-top:3px;
+  font-family:var(--mono);font-size:6.5px;letter-spacing:0.04em;color:var(--dim2)}
+.appeal-scale .sweet-lbl{color:var(--neon)}
+
 .event-log{font-family:var(--mono);font-size:8px;color:var(--dim);height:88px;overflow-y:auto;border:1px solid var(--border2);padding:5px 7px;background:rgba(0,0,0,0.25);line-height:1.7}
 .event-log::-webkit-scrollbar{width:2px}
 .event-log::-webkit-scrollbar-thumb{background:var(--border)}
@@ -306,6 +358,23 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     <div class="strain-label br" id="strain-br">PRESSURE +0% ◂</div>
 
     <div id="phase-badge" class="LOW">DRIVE: STANDBY</div>
+
+    <!-- BELIEVABILITY METER — always-on -->
+    <div id="believe-meter">
+      <div class="bm-head">
+        <span class="bm-title">BELIEVABILITY</span>
+        <span class="bm-zone" id="bm-zone">SAFE</span>
+      </div>
+      <div class="bm-track">
+        <div class="bm-fill" id="bm-fill"></div>
+        <div class="bm-sweet"></div>
+        <div class="bm-needle" id="bm-needle"></div>
+      </div>
+      <div class="bm-scale">
+        <span>SAFE</span><span>GOOD</span><span>STRONG</span><span>EXTREME</span><span>BREAK</span>
+      </div>
+    </div>
+
     <div id="big-status"></div>
     <div id="input-mode">PRESSURE BUILD</div>
 
@@ -455,6 +524,26 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     </div>
   </div>
 
+  <div class="psec">
+    <div class="sec-label">HAPPEAL — 説得力 &amp; 魅力</div>
+    <div class="data-row"><span class="dk">BELIEF_ZONE</span><span class="dv" id="lv-zone">SAFE</span></div>
+    <div class="appeal-wrap">
+      <div class="appeal-head"><span>APPEAL PRESERVATION</span><span class="appeal-val" id="lv-appeal">100%</span></div>
+      <div class="appeal-track">
+        <div class="appeal-fill" id="appeal-fill"></div>
+        <div class="appeal-sweet"></div>
+      </div>
+      <div class="appeal-scale"><span>NORMAL</span><span class="sweet-lbl">♥ SWEET SPOT</span><span>BREAK</span></div>
+    </div>
+    <div class="data-row"><span class="dk">PEAK_APPEAL</span><span class="dv neon" id="lv-appeal-peak">0%</span></div>
+    <div class="insight" style="margin-top:8px">
+      <strong>// JUST BEFORE IT BREAKS</strong>
+      誇張量 最大 ≠ 魅力 最大。<br>
+      壊れる<span style="color:var(--neon)">直前</span>に魅力は最も高い。<br>
+      その一点を探すゲーム。
+    </div>
+  </div>
+
 </aside>
 
 <footer id="bottombar">
@@ -500,6 +589,7 @@ let formBroken = false;
 let formBreakTime = -9999;
 let recoveryUntil = -9999; // recovery phase ends after this time
 let lastReleaseDrive = 0;
+let appealPeak = 0;     // 今回の試行で到達した魅力ピーク
 
 let frameTime = 0;
 let startTime = performance.now();
@@ -552,6 +642,7 @@ stage.addEventListener('mousedown', (e) => {
   dragVelY = 0;
   dragVelSmooth = 0;
   formBroken = false;
+  appealPeak = 0;   // 新しい試行 → 魅力ピークをリセット
   instr.style.opacity = 0;
   inputModeEl.classList.add('show');
   logEvent('CHARGE', 'compression begin');
@@ -595,7 +686,7 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape') { window.location.href = 'index.html'; return; }
   if (e.code === 'KeyR') {
     drive = 0; fracture = 0; particles = []; shockwaves = []; smearLines = [];
-    formBroken = false; recoveryUntil = -9999;
+    formBroken = false; recoveryUntil = -9999; appealPeak = 0;
     logEvent('RESET', 'system cleared');
   }
 });
@@ -1196,6 +1287,55 @@ function updateStrainLabels() {
 }
 
 // ── HUD UPDATE ──
+// ── BELIEVABILITY / APPEAL ──
+const SWEET = 0.78;   // 「壊れる直前」= 魅力ピーク
+function believabilityZone(ex){
+  if (ex < 0.18) return ['SAFE',         '#E8F5DC'];
+  if (ex < 0.45) return ['GOOD',         '#B6FF1F'];
+  if (ex < 0.72) return ['STRONG',       '#36FF8C'];
+  if (ex < 0.92) return ['EXTREME',      '#7FF8FF'];
+  if (ex < 1.0)  return ['CRITICAL',     '#FFB03D'];
+  return            ['UNBELIEVABLE', '#FF3D6B'];
+}
+// 魅力カーブ: スイートスポットで100%、両側で低下 → 「最大誇張 ≠ 最大魅力」
+function appealOf(ex){
+  let a;
+  if (ex <= SWEET){
+    const u = ex / SWEET;                 // 0..1
+    a = 0.55 + 0.45 * Math.pow(u, 0.7);   // 55% → 100%
+  } else {
+    const u = Math.min(1, (ex - SWEET) / (1.08 - SWEET));
+    a = 1.0 - Math.pow(u, 1.35);          // 100% → 0%
+  }
+  if (formBroken) a *= Math.max(0, 1 - fracture);  // 破断で魅力崩壊
+  return Math.max(0, Math.min(1, a));
+}
+function updateBelievability(){
+  // 誇張量: drive を基準に、破断時はさらに上限超えへ押し込む
+  const ex = Math.max(0, drive + (formBroken ? Math.min(0.2, fracture * 0.25) : 0));
+  const [zone, zCol] = believabilityZone(ex);
+  const appeal = appealOf(ex);
+  if (isHolding && appeal > appealPeak) appealPeak = appeal;
+
+  // on-stage meter
+  const exClamp = Math.min(1, ex);
+  document.getElementById('bm-fill').style.width   = (exClamp * 100) + '%';
+  document.getElementById('bm-needle').style.left  = (exClamp * 100) + '%';
+  const zEl = document.getElementById('bm-zone');
+  zEl.textContent = zone; zEl.style.color = zCol;
+
+  // panel APPEAL gauge
+  document.getElementById('lv-zone').textContent = zone;
+  document.getElementById('lv-zone').style.color = zCol;
+  const aEl = document.getElementById('lv-appeal');
+  aEl.textContent = Math.round(appeal * 100) + '%';
+  const aCol = appeal > 0.8 ? '#36FF8C' : appeal > 0.5 ? '#B6FF1F' : appeal > 0.25 ? '#FFB03D' : '#FF3D6B';
+  aEl.style.color = aCol;
+  const fill = document.getElementById('appeal-fill');
+  fill.style.width = (appeal * 100) + '%';
+  document.getElementById('lv-appeal-peak').textContent = Math.round(appealPeak * 100) + '%';
+}
+
 function updateHUD() {
   const pct = Math.round(drive * 100);
   let s = stageOf(drive);
@@ -1258,6 +1398,9 @@ function updateHUD() {
     const row = document.getElementById('stg-' + name);
     row.classList.toggle('active', name === s);
   });
+
+  // BELIEVABILITY & APPEAL
+  updateBelievability();
 
   // STRAIN labels
   updateStrainLabels();

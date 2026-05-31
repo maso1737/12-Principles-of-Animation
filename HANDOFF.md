@@ -50,6 +50,14 @@
 
 ---
 
+## 09 EXAGGERATION ブラッシュアップ（段階実装中）
+
+`09 EXAGGERATION_Re.txt` の5要素追加を3ターンに分けて実装。
+
+- ✅ **ターンA（完了）**: ①BELIEVABILITY METER（ステージ上部常設・SAFE→UNBELIEVABLE、♥スイートスポット表示）＋ ⑤APPEAL PRESERVATION（パネル H セクション・山型カーブで「壊れる直前=魅力ピーク」、PEAK_APPEAL記録）。算出は `appealOf()` / `believabilityZone()`、`SWEET=0.78`。`updateBelievability()` を `updateHUD()` から毎フレーム呼ぶ。
+- ⬜ **ターンB（未）**: ③BELIEVABILITY FAILURE演出（FORM BREAK拡張・"YOU BROKE THE ILLUSION"等・シルエット崩壊）＋ ④STRETCH VISUALIZER（NORMAL/EXAGGERATED/OVERDRIVE 輪郭ゴースト）
+- ⬜ **ターンC（未）**: ②COMPARISON MODE（NORMAL/EXAGGERATED/OVERDRIVE 3トグル比較描画）
+
 ## 既知の保留事項 / TODO
 
 ### デザイン統一
