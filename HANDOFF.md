@@ -55,7 +55,8 @@
 `09 EXAGGERATION_Re.txt` の5要素追加を3ターンに分けて実装。
 
 - ✅ **ターンA（完了）**: ①BELIEVABILITY METER（ステージ上部常設・SAFE→UNBELIEVABLE、♥スイートスポット表示）＋ ⑤APPEAL PRESERVATION（パネル H セクション・山型カーブで「壊れる直前=魅力ピーク」、PEAK_APPEAL記録）。算出は `appealOf()` / `believabilityZone()`、`SWEET=0.78`。`updateBelievability()` を `updateHUD()` から毎フレーム呼ぶ。
-- ⬜ **ターンB（未）**: ③BELIEVABILITY FAILURE演出（FORM BREAK拡張・"YOU BROKE THE ILLUSION"等・シルエット崩壊）＋ ④STRETCH VISUALIZER（NORMAL/EXAGGERATED/OVERDRIVE 輪郭ゴースト）
+- ✅ **ターンB（完了）**: ③BELIEVABILITY FAILURE演出（`triggerFailure()`・3メッセージ循環 "YOU BROKE THE ILLUSION"/"AUDIENCE LOST TRUST"/"FORM NO LONGER READS"・`#main-zone.broken` で全体 saturate↓/contrast↑＋scanlineグリッチ・FORM BREAK big-status を置換）＋ ④STRETCH VISUALIZER（`drawStretchGhost()` カーソル位置に NORMAL/EXAGGERATED/OVERDRIVE の輪郭ゴースト・凡例 `#ghost-legend`・`[G]`キー/ボタンでトグル `showGhost`）
+  - 🐛 **ついでに修正**: メインcanvasに DPR 変換が抜けていてカーソルとエフェクトがずれていた（左上一致・離れるほどズレ）。`draw()` 冒頭に `ctx.setTransform(DPR,0,0,DPR,0,0)` を追加して解決
 - ⬜ **ターンC（未）**: ②COMPARISON MODE（NORMAL/EXAGGERATED/OVERDRIVE 3トグル比較描画）
 
 ## 既知の保留事項 / TODO

@@ -173,6 +173,57 @@ body{
 }
 #big-status.show{opacity:1}
 
+/* BELIEVABILITY FAILURE — illusion broken */
+#fail-overlay{
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;z-index:6;opacity:0;transition:opacity .1s;
+}
+#fail-overlay.show{opacity:1}
+#fail-overlay .fail-main{
+  font-family:var(--bank);font-weight:700;font-size:clamp(26px,4.6vw,56px);
+  letter-spacing:0.1em;color:#FF3D6B;
+  text-shadow:0 0 30px rgba(255,61,107,0.85),0 0 6px rgba(255,255,255,0.6);
+  animation:failGlitch .26s steps(2) infinite;
+}
+#fail-overlay .fail-sub{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.32em;color:var(--ice);
+  margin-top:10px;opacity:0.85;
+}
+@keyframes failGlitch{
+  0%{transform:translate(0,0)}25%{transform:translate(-3px,1px)}
+  50%{transform:translate(2px,-2px)}75%{transform:translate(-1px,2px)}100%{transform:translate(0,0)}
+}
+/* full-zone degradation while broken: 視認性低下・シルエット崩壊 */
+#fx-fail{
+  position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0;mix-blend-mode:screen;
+  background:repeating-linear-gradient(0deg,rgba(255,61,107,0.06) 0 2px,transparent 2px 5px);
+  transition:opacity .15s;
+}
+#main-zone.broken #fx-fail{opacity:1;animation:failShift .1s steps(2) infinite}
+#main-zone.broken{filter:saturate(0.35) contrast(1.3)}
+@keyframes failShift{0%{transform:translateX(0)}50%{transform:translateX(-2px)}100%{transform:translateX(2px)}}
+
+/* STRETCH VISUALIZER legend */
+#ghost-legend{
+  position:absolute;bottom:48px;right:18px;
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.08em;color:var(--dim);
+  line-height:1.9;pointer-events:none;z-index:4;text-align:right;
+}
+#ghost-legend .gl{display:inline-flex;align-items:center;gap:5px;justify-content:flex-end}
+#ghost-legend .sw{display:inline-block;width:16px;height:0;border-top:2px solid}
+#ghost-legend .n .sw{border-top-style:dashed;border-color:rgba(232,245,220,0.5)}
+#ghost-legend .e .sw{border-color:var(--acid)}
+#ghost-legend .o .sw{border-top-style:dashed;border-color:var(--hot)}
+
+/* mini toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.mini-toggle{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--dim);
+  padding:3px 11px;cursor:pointer;transition:all .15s;pointer-events:auto;
+}
+.mini-toggle.on{color:var(--bg);background:var(--acid);border-color:var(--acid);font-weight:700}
+
 /* TIMELINE COMPRESSION strip — bottom */
 #timeline-strip{
   position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
@@ -340,6 +391,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 
   <div id="main-zone">
     <canvas id="main-canvas"></canvas>
+    <div id="fx-fail"></div>
 
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
@@ -376,7 +428,18 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     </div>
 
     <div id="big-status"></div>
+    <div id="fail-overlay">
+      <div class="fail-main">YOU BROKE THE ILLUSION</div>
+      <div class="fail-sub">BELIEVABILITY · ZERO</div>
+    </div>
     <div id="input-mode">PRESSURE BUILD</div>
+
+    <!-- STRETCH VISUALIZER legend -->
+    <div id="ghost-legend">
+      <div class="gl n"><span>NORMAL</span><span class="sw"></span></div>
+      <div class="gl e"><span>EXAGGERATED</span><span class="sw"></span></div>
+      <div class="gl o"><span>OVERDRIVE</span><span class="sw"></span></div>
+    </div>
 
     <div id="instr">
       <div class="big">HOLD ＋ DRAG UP</div>
@@ -502,6 +565,10 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
       <div class="sl-label">SPACE STRAIN <span id="sl-strain-val">1.00</span></div>
       <input type="range" id="sl-strain" min="0" max="200" value="100">
     </div>
+    <div class="toggle-row">
+      <span class="sl-label" style="margin:0">STRETCH GHOST <span style="color:var(--dim2)">[G]</span></span>
+      <button id="btn-ghost" class="mini-toggle on">ON</button>
+    </div>
   </div>
 
   <div class="psec">
@@ -590,6 +657,14 @@ let formBreakTime = -9999;
 let recoveryUntil = -9999; // recovery phase ends after this time
 let lastReleaseDrive = 0;
 let appealPeak = 0;     // 今回の試行で到達した魅力ピーク
+let failUntil = -9999;  // 失敗演出の終了時刻
+let failIdx = 0;
+let showGhost = true;   // STRETCH VISUALIZER 表示
+const FAIL_MSGS = [
+  ['YOU BROKE THE ILLUSION', 'BELIEVABILITY · ZERO'],
+  ['AUDIENCE LOST TRUST',    'READ · FAILED'],
+  ['FORM NO LONGER READS',   'SILHOUETTE · COLLAPSED'],
+];
 
 let frameTime = 0;
 let startTime = performance.now();
@@ -689,6 +764,7 @@ window.addEventListener('keydown', (e) => {
     formBroken = false; recoveryUntil = -9999; appealPeak = 0;
     logEvent('RESET', 'system cleared');
   }
+  if (e.code === 'KeyG') setGhost(!showGhost);
 });
 
 // ── STAGE ──
@@ -823,6 +899,42 @@ function showBigStatus(txt, power) {
   bigStatusTimeout = setTimeout(() => bigStatus.classList.remove('show'), 700);
 }
 
+// ── BELIEVABILITY FAILURE 演出 ──
+const failOverlay = document.getElementById('fail-overlay');
+function triggerFailure() {
+  const [m, s] = FAIL_MSGS[failIdx % FAIL_MSGS.length];
+  failIdx++;
+  failOverlay.querySelector('.fail-main').textContent = m;
+  failOverlay.querySelector('.fail-sub').textContent = s;
+  failOverlay.classList.add('show');
+  stage.classList.add('broken');     // #main-zone 全体を視認性低下させる
+  failUntil = frameTime + 0.85;
+  logEvent('FAIL', m.toLowerCase());
+}
+
+// ── STRETCH VISUALIZER（輪郭ゴースト）──
+function drawStretchGhost(cx, cy) {
+  const R = 32;
+  const d = Math.max(0, drive);
+  const sEx = 1 + d * 1.2;           // 現在の誇張量
+  const sOv = 1 + d * 1.2 + 0.7;     // 理論上のオーバードライブ（さらに押し込んだ形）
+  ctx.save();
+  ctx.translate(cx, cy);
+  // NORMAL — 基準（dim dashed circle）
+  ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+  ctx.strokeStyle = 'rgba(232,245,220,0.35)';
+  ctx.beginPath(); ctx.ellipse(0, 0, R, R, 0, 0, Math.PI * 2); ctx.stroke();
+  // OVERDRIVE — 限界（hot dashed）
+  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = 'rgba(255,61,107,0.5)';
+  ctx.beginPath(); ctx.ellipse(0, 0, R / Math.sqrt(sOv), R * sOv, 0, 0, Math.PI * 2); ctx.stroke();
+  // EXAGGERATED — 現在値（solid acid）
+  ctx.setLineDash([]); ctx.lineWidth = 1.6;
+  ctx.strokeStyle = 'rgba(182,255,31,0.9)';
+  ctx.beginPath(); ctx.ellipse(0, 0, R / Math.sqrt(sEx), R * sEx, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+
 // ── INPUT MODE classify ──
 function classifyInputMode() {
   if (!isHolding) return 'NONE';
@@ -874,7 +986,7 @@ function step(dt) {
       if (!formBroken && fracture > 0.5) {
         formBroken = true;
         formBreakTime = frameTime;
-        showBigStatus('FORM BREAK', 1);
+        triggerFailure();   // 説得力喪失の演出（FORM BREAK を置き換え）
         logEvent('BREAK', 'topology fracture detected');
       }
     }
@@ -933,6 +1045,8 @@ function recoveryFactor() {
 
 // ── DRAW CANVAS ──
 function draw() {
+  // CSSピクセル座標で描く（カーソルと一致させる）: バックストアはW*DPR
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
 
   const rec = recoveryFactor();
@@ -941,6 +1055,9 @@ function draw() {
 
   // 1) DISTORTED GRID — kinetic geometry identity (warped toward cursor)
   drawDistortedGrid(cx, cy, effectiveStrain * spaceStrain);
+
+  // 1.5) STRETCH VISUALIZER — 輪郭ゴーストでどこを誇張したか可視化
+  if (showGhost && (isHolding || drive > 0.04)) drawStretchGhost(cx, cy);
 
   // 2) Radial pull lines toward cursor (during hold)
   if (isHolding && drive > 0.03) {
@@ -1402,6 +1519,12 @@ function updateHUD() {
   // BELIEVABILITY & APPEAL
   updateBelievability();
 
+  // 失敗演出の終了
+  if (frameTime > failUntil) {
+    if (stage.classList.contains('broken')) stage.classList.remove('broken');
+    if (failOverlay.classList.contains('show')) failOverlay.classList.remove('show');
+  }
+
   // STRAIN labels
   updateStrainLabels();
 
@@ -1437,6 +1560,17 @@ document.getElementById('sl-strain').addEventListener('input', (e) => {
   spaceStrain = e.target.value / 100;
   document.getElementById('sl-strain-val').textContent = spaceStrain.toFixed(2);
 });
+
+// ── STRETCH GHOST toggle ──
+const ghostBtn = document.getElementById('btn-ghost');
+const ghostLegend = document.getElementById('ghost-legend');
+function setGhost(on){
+  showGhost = on;
+  ghostBtn.classList.toggle('on', on);
+  ghostBtn.textContent = on ? 'ON' : 'OFF';
+  ghostLegend.style.display = on ? 'block' : 'none';
+}
+ghostBtn.addEventListener('click', () => setGhost(!showGhost));
 
 // ── MAIN LOOP ──
 let lastT = performance.now();
