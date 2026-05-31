@@ -10,16 +10,26 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#EFEFEB; --ink:#101010; --panel:#E5E5E0;
-  --acid:#CADC00; --neon:#0BFF6A; --hot:#FF2D2D;
-  --dim:rgba(16,16,16,0.55); --dim2:rgba(16,16,16,0.32); --dim3:rgba(16,16,16,0.15);
-  --border:rgba(16,16,16,0.18); --border2:rgba(16,16,16,0.07);
+  --bg:#050507; --bg-2:#0a0b0f; --panel:#08090d; --panel-2:#0d0f15;
+  --ink:#dcdce2;
+  --dim:rgba(220,220,226,0.52); --dim2:rgba(220,220,226,0.30); --dim3:rgba(220,220,226,0.13);
+  --border:rgba(220,220,226,0.12); --border2:rgba(220,220,226,0.055);
+  --acid:#b06bff; --neon:#0bff6a; --hot:#ff2d6a; --sec:#00e5ff;
+  --cyan:#00e5ff; --mag:#ff3df0; --blue:#3b7bff; --violet:#b06bff; --pink:#ff3df0;
   --mono:'IBM Plex Mono',monospace;
   --cond:'Barlow Condensed',sans-serif;
   --jp:'Noto Sans JP',sans-serif;
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
-#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
+body{-webkit-font-smoothing:antialiased}
+#app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 332px;height:100vh;width:100vw;background:var(--bg)}
+
+/* faint global scanline veil — keeps the "broken signal" feel without hurting legibility */
+#app::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.16) 2px 3px);
+  mix-blend-mode:multiply;opacity:0.5;
+}
 
 #topbar{
   grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
@@ -28,50 +38,51 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 }
 #topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
 .sys-id{color:var(--dim);font-size:9px}
-.title-tag{color:var(--ink);font-size:11px;font-weight:700;letter-spacing:0.12em}
+.title-tag{color:var(--ink);font-size:11px;font-weight:700;letter-spacing:0.14em}
+.title-tag::before{content:'';display:inline-block;width:7px;height:7px;background:var(--acid);margin-right:8px;vertical-align:middle}
 .esc-btn{color:var(--dim);font-size:9px;text-decoration:none;border:1px solid var(--border);padding:2px 8px;transition:all .15s}
-.esc-btn:hover{color:var(--ink);border-color:var(--ink)}
+.esc-btn:hover{color:var(--acid);border-color:var(--acid)}
 
-#stage{position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+#stage{position:relative;overflow:hidden;background:#000;display:flex;flex-direction:column}
 .stage-bignum{
   position:absolute;font-family:var(--cond);font-weight:900;
-  font-size:clamp(180px,24vw,320px);color:rgba(16,16,16,0.025);
-  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;
+  font-size:clamp(180px,24vw,320px);color:rgba(220,220,226,0.035);
+  line-height:1;bottom:-30px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.05em;z-index:1;
 }
-.corner{position:absolute;width:16px;height:16px;pointer-events:none}
-.corner::before,.corner::after{content:'';position:absolute;background:var(--ink)}
+.corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:6}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--dim2)}
 .corner::before{width:1px;height:16px;top:0}.corner::after{width:16px;height:1px;top:0}
 .corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
 .corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
-.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:2}
+.po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:6}
 .po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
-.po-en{font-size:11px;color:var(--ink);font-weight:700;letter-spacing:0.15em}
-.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
-.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(16,16,16,0.09) 0% 25%,transparent 0% 50%) 0 0/8px 8px}
+.po-en{font-size:11px;color:var(--ink);font-weight:700;letter-spacing:0.18em}
+.po-jp{font-size:10px;color:var(--dim2);font-family:var(--jp)}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(220,220,226,0.10) 0% 25%,transparent 0% 50%) 0 0/8px 8px;z-index:1}
 .checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
 
-/* MAIN ZONE — vertical layout: stage on top, graph below */
-#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border);background:var(--bg)}
+/* MAIN ZONE */
+#main-zone{position:relative;flex:0 0 62%;overflow:hidden;border-bottom:1px solid var(--border);background:#000}
 #main-canvas{position:absolute;inset:0;width:100%;height:100%}
 
 #main-hud{
   position:absolute;bottom:12px;left:16px;
   font-family:var(--mono);font-size:8px;color:var(--dim);
-  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:28px;
+  letter-spacing:0.06em;line-height:2.1;pointer-events:none;display:flex;gap:28px;z-index:6;
 }
 #main-hud .val{color:var(--ink);font-weight:700}
 #main-hud .val.hot{color:var(--hot)}
-#main-hud .val.acid{color:#7a8800}
+#main-hud .val.acid{color:var(--sec)}
 
 #phase-badge{
   position:absolute;top:12px;left:16px;
-  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
-  padding:3px 8px;border:1px solid var(--border);
-  color:var(--dim);background:rgba(239,239,235,0.85);pointer-events:none;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.14em;
+  padding:3px 9px;border:1px solid var(--border);
+  color:var(--acid);background:rgba(5,5,7,0.7);pointer-events:none;z-index:6;
 }
 
 /* GRAPH ZONE */
-#graph-zone{position:relative;flex:0 0 38%;overflow:hidden;background:var(--bg)}
+#graph-zone{position:relative;flex:0 0 38%;overflow:hidden;background:#000}
 #graph-canvas{position:absolute;inset:0;width:100%;height:100%}
 #gz-header{
   position:absolute;top:8px;left:16px;
@@ -81,7 +92,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #gz-header strong{color:var(--ink)}
 .lg-sw{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
 
-/* LAYER DELAY readout — right side of graph */
 #delay-readout{
   position:absolute;top:8px;right:16px;
   font-family:var(--mono);font-size:8px;letter-spacing:0.06em;color:var(--dim);
@@ -93,44 +103,46 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 #panel{
   border-left:1px solid var(--border);background:var(--panel);
-  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--ink) transparent;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--dim2) transparent;
 }
-#panel::-webkit-scrollbar{width:2px}
-#panel::-webkit-scrollbar-thumb{background:var(--ink)}
-.psec{border-bottom:1px solid var(--border);padding:14px 16px}
+#panel::-webkit-scrollbar{width:3px}
+#panel::-webkit-scrollbar-thumb{background:var(--dim2)}
+.psec{border-bottom:1px solid var(--border);padding:14px 16px;position:relative}
 .psec:last-child{border-bottom:none}
-.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sec-label::before{content:'//';color:var(--dim2)}
-.sec-title{font-family:var(--cond);font-weight:900;font-size:22px;letter-spacing:0.08em;color:var(--ink);line-height:1;margin-bottom:6px}
-.body-text{font-family:var(--jp);font-size:11px;line-height:1.9;color:var(--dim);margin-bottom:6px}
-.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--border);padding-left:8px}
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:0.16em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'//';color:var(--acid)}
+.sec-title{font-family:var(--cond);font-weight:900;font-size:24px;letter-spacing:0.06em;color:var(--ink);line-height:0.96;margin-bottom:8px}
+.body-text{font-family:var(--jp);font-size:11px;line-height:1.95;color:var(--dim);margin-bottom:6px}
+.body-en{font-family:var(--mono);font-size:9px;line-height:1.8;color:var(--dim2);letter-spacing:0.04em;border-left:2px solid var(--acid);padding-left:8px}
 .data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:9px}
 .data-row:last-child{border-bottom:none}
 .dk{color:var(--dim);letter-spacing:0.04em}.dv{color:var(--ink);font-weight:700}
-.dv.hot{color:var(--hot)}.dv.acid{color:#7a8800}
+.dv.hot{color:var(--hot)}.dv.acid{color:var(--sec)}
 
 .btn{
   display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
   border:1px solid var(--border);padding:5px 10px;cursor:pointer;
   color:var(--dim);background:transparent;transition:all .15s;margin-right:3px;margin-bottom:3px;
 }
-.btn:hover{color:var(--ink);border-color:var(--ink)}
-.btn.active{color:var(--ink);background:var(--acid);border-color:var(--acid)}
-.btn.warn.active{background:var(--hot);color:#fff;border-color:var(--hot)}
+.btn:hover{color:var(--ink);border-color:var(--dim)}
+.btn.active{color:#050507;background:var(--acid);border-color:var(--acid);font-weight:700}
+.btn.warn.active{background:var(--hot);color:#050507;border-color:var(--hot)}
 
-.sl-row{margin-bottom:10px}
-.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:3px}
-.sl-label span{color:var(--ink);font-weight:700}
-input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
+.sl-row{margin-bottom:11px}
+.sl-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:4px;letter-spacing:0.04em}
+.sl-label span{color:var(--acid);font-weight:700}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--border);cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:10px;height:14px;background:var(--ink);border:none;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:10px;height:14px;background:var(--ink);border:none;border-radius:0;cursor:pointer}
 
-.insight{background:rgba(202,220,0,0.12);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
-.insight strong{color:var(--ink);display:block;margin-bottom:4px;letter-spacing:0.1em}
+.insight{background:rgba(176,107,255,0.05);border:1px solid var(--border);border-left:2px solid var(--acid);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.85;color:var(--dim);margin-top:8px}
+.insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
 
 .layer-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--border2)}
 .layer-row:last-child{border-bottom:none}
-.layer-row .swatch{width:8px;height:8px;flex-shrink:0;border:1px solid rgba(16,16,16,0.2)}
+.layer-row .swatch{width:8px;height:8px;flex-shrink:0;border:1px solid rgba(220,220,226,0.2)}
 .layer-row label{cursor:pointer;flex:1;letter-spacing:0.05em}
-.layer-row input[type=checkbox]{accent-color:var(--ink);cursor:pointer}
+.layer-row input[type=checkbox]{accent-color:var(--acid);cursor:pointer}
 .layer-row .lat{color:var(--ink);font-size:8px;letter-spacing:0.04em;font-weight:700;min-width:36px;text-align:right}
 
 #bottombar{
@@ -138,25 +150,253 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
   padding:0 16px;border-top:1px solid var(--border);
   font-family:var(--mono);font-size:9px;background:var(--panel);letter-spacing:0.06em;
 }
-.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--ink);font-weight:700}.br{color:var(--dim)}
+.bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
 .kbd{display:inline-block;border:1px solid var(--border);padding:1px 5px;font-size:8px;color:var(--dim);margin-left:4px}
 
 .fire-btn{
   font-family:var(--mono);font-size:10px;letter-spacing:0.18em;font-weight:700;
-  padding:8px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);
+  padding:9px 14px;border:1px solid var(--acid);background:var(--acid);color:#050507;
   cursor:pointer;width:100%;transition:all .12s;
 }
-.fire-btn:hover{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+.fire-btn:hover{background:transparent;color:var(--acid)}
 .fire-btn:active{transform:translateY(1px)}
 
-/* "WORLD" indicator — subtle ghost label that appears when world is still reacting */
 .world-tag{
   position:absolute;bottom:14px;right:16px;
   font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--dim2);
-  pointer-events:none;text-align:right;line-height:1.7;
+  pointer-events:none;text-align:right;line-height:1.7;z-index:6;
 }
-.world-tag .lab{color:#7a8800;font-weight:700}
-.world-tag .ghost{color:var(--dim);opacity:0.5;font-size:7px}
+.world-tag .lab{color:var(--sec);font-weight:700}
+.world-tag .ghost{color:var(--dim);opacity:0.55;font-size:7px}
+
+/* PRIMARY VISIBILITY METER */
+#vis-meter{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;
+  display:flex;align-items:center;gap:8px;pointer-events:none;z-index:6;
+  background:rgba(5,5,7,0.82);border:1px solid var(--border);padding:4px 11px;
+}
+#vis-meter .lab{color:var(--dim)}
+#vis-meter .val{color:var(--ink);font-weight:700;min-width:96px;text-align:center;letter-spacing:0.18em}
+#vis-meter .bar{width:80px;height:4px;background:rgba(220,220,226,0.12);position:relative}
+#vis-meter .bar .fill{position:absolute;top:0;left:0;height:100%;background:var(--ink);transition:width .08s,background .15s}
+#vis-meter.s-clear{border-color:rgba(176,107,255,0.5)}
+#vis-meter.s-clear .val{color:var(--acid)}
+#vis-meter.s-clear .bar .fill{background:var(--acid)}
+#vis-meter.s-balanced .val{color:var(--ink)}
+#vis-meter.s-balanced .bar .fill{background:var(--ink)}
+#vis-meter.s-overshadowed{background:rgba(255,45,77,0.14);border-color:var(--hot)}
+#vis-meter.s-overshadowed .val{color:var(--hot)}
+#vis-meter.s-overshadowed .bar .fill{background:var(--hot)}
+
+/* SYNC COLLAPSE banner */
+#sync-warn{
+  position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--mono);letter-spacing:0.22em;color:var(--hot);
+  pointer-events:none;z-index:7;text-align:center;line-height:1.5;display:none;
+  text-shadow:2px 0 var(--cyan),-2px 0 var(--mag);
+}
+#sync-warn.on{display:block;animation:syncFlick 0.16s steps(2) infinite}
+#sync-warn .big{font-size:14px;font-weight:700}
+#sync-warn .sub{font-size:8px;color:rgba(255,45,77,0.8);letter-spacing:0.15em;margin-top:4px;text-shadow:none}
+@keyframes syncFlick{0%{opacity:1;transform:translate(-50%,-50%)}50%{opacity:0.65;transform:translate(calc(-50% + 2px),-50%)}}
+
+/* MUTE mode — dead UI-demo background */
+#mute-bg{
+  position:absolute;inset:0;background:#0c0e13;pointer-events:none;z-index:1;display:none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(220,220,226,0.04) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(220,220,226,0.04) 0 1px, transparent 1px 24px);
+}
+#mute-bg.on{display:block}
+#mute-bg::before{
+  content:'UI_DEMO // PLACEHOLDER_v0.0.1 // NOT FOR REVIEW';
+  position:absolute;top:6px;left:10px;font-family:var(--mono);font-size:8px;
+  color:rgba(220,220,226,0.32);letter-spacing:0.1em;
+}
+#mute-bg::after{
+  content:'NO MOTION DATA — RIG ERROR — TEMPLATE BUILD';
+  position:absolute;bottom:6px;right:10px;font-family:var(--mono);font-size:7px;
+  color:rgba(255,45,77,0.6);letter-spacing:0.12em;
+}
+
+/* SECONDARY HIERARCHY */
+.lh-group{margin-bottom:8px}
+.lh-group:last-child{margin-bottom:0}
+.lh-head{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.16em;color:var(--dim2);
+  display:flex;justify-content:space-between;align-items:center;
+  padding:3px 0;border-bottom:1px dashed var(--border2);margin-bottom:2px;
+}
+.lh-head .tag{color:var(--ink);font-weight:700;letter-spacing:0.14em}
+.lh-head .dist{color:var(--dim);font-size:7px}
+
+.eye-readout{
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:7px;color:var(--dim2);
+  letter-spacing:0.14em;pointer-events:none;z-index:6;
+  background:rgba(5,5,7,0.74);padding:2px 8px;border:1px solid var(--border2);
+}
+.eye-readout.scatter{color:var(--hot);border-color:rgba(255,45,77,0.4)}
+.eye-readout.off{opacity:0.42}
+
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:0.08em;
+  padding:5px 0;border-top:1px solid var(--border2);margin-top:8px;
+}
+.toggle-row .tg-label{display:flex;flex-direction:column;gap:2px}
+.toggle-row .tg-name{color:var(--ink);font-weight:700;letter-spacing:0.12em}
+.toggle-row .tg-hint{color:var(--dim2);font-size:7px;letter-spacing:0.06em}
+.toggle-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;
+  border:1px solid var(--border);padding:3px 9px;cursor:pointer;
+  color:var(--dim);background:transparent;transition:all .12s;min-width:42px;text-align:center;
+}
+.toggle-btn:hover{color:var(--ink);border-color:var(--dim)}
+.toggle-btn.on{color:#050507;background:var(--acid);border-color:var(--acid);font-weight:700}
+
+/* GLITCH OVERLAY */
+#glitch-layer{
+  position:absolute;inset:0;pointer-events:none;z-index:5;
+  overflow:hidden;display:none;mix-blend-mode:normal;
+}
+#glitch-layer.on{display:block}
+#glitch-layer .slice{position:absolute;left:0;right:0;}
+#glitch-layer .invert-block{position:absolute;mix-blend-mode:difference;}
+#glitch-layer .cblock{position:absolute;mix-blend-mode:screen;}
+#glitch-layer .dither{position:absolute;image-rendering:pixelated;}
+#glitch-layer .scan{
+  position:absolute;left:0;right:0;height:1px;background:var(--cyan);opacity:0.85;
+}
+#glitch-layer.flash{background:var(--ink);}
+/* Full-frame negaposi invert */
+#main-zone.fx-invert{filter:invert(1) hue-rotate(180deg);}
+#main-zone.fx-invert #vis-meter,
+#main-zone.fx-invert #attn-hero,
+#main-zone.fx-invert #sync-warn,
+#main-zone.fx-invert #glitch-layer,
+#main-zone.fx-invert #gaze-canvas{filter:invert(1) hue-rotate(180deg);}
+
+/* ════════ ATTENTION SCORE — hero readout (top center of stage) ════════ */
+#attn-hero{
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  z-index:6;pointer-events:none;display:flex;align-items:center;gap:12px;
+  background:rgba(5,5,7,0.78);border:1px solid var(--border);padding:7px 16px;
+  backdrop-filter:blur(2px);
+}
+#attn-hero .ah-num{
+  font-family:var(--cond);font-weight:900;font-size:34px;line-height:0.8;
+  letter-spacing:-0.02em;color:var(--ink);min-width:58px;text-align:right;
+  transition:color .2s;
+}
+#attn-hero .ah-meta{display:flex;flex-direction:column;gap:3px}
+#attn-hero .ah-lab{font-family:var(--mono);font-size:7px;letter-spacing:0.22em;color:var(--dim)}
+#attn-hero .ah-state{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.16em;color:var(--ink);transition:color .2s}
+#attn-hero .ah-bar{width:118px;height:3px;background:rgba(220,220,226,0.12);margin-top:1px;position:relative}
+#attn-hero .ah-bar .fill{position:absolute;left:0;top:0;height:100%;width:50%;background:var(--ink);transition:width .12s,background .2s}
+#attn-hero.q-crystal .ah-num,#attn-hero.q-crystal .ah-state{color:var(--acid)}
+#attn-hero.q-crystal .ah-bar .fill{background:var(--acid)}
+#attn-hero.q-crystal{border-color:rgba(176,107,255,0.5)}
+#attn-hero.q-strong .ah-num,#attn-hero.q-strong .ah-state{color:#7df0c0}
+#attn-hero.q-strong .ah-bar .fill{background:#7df0c0}
+#attn-hero.q-compete .ah-num,#attn-hero.q-compete .ah-state{color:#ffd23d}
+#attn-hero.q-compete .ah-bar .fill{background:#ffd23d}
+#attn-hero.q-collapse .ah-num,#attn-hero.q-collapse .ah-state{color:#ff7a3d}
+#attn-hero.q-collapse .ah-bar .fill{background:#ff7a3d}
+#attn-hero.q-chaos{border-color:var(--hot);background:rgba(255,45,77,0.12)}
+#attn-hero.q-chaos .ah-num,#attn-hero.q-chaos .ah-state{color:var(--hot)}
+#attn-hero.q-chaos .ah-bar .fill{background:var(--hot)}
+
+/* keep small PRIMARY READ meter below the hero (demoted) */
+#vis-meter{top:60px;transform:translateX(-50%) scale(0.88);transform-origin:top center;opacity:0.9}
+
+/* ════════ GAZE HEATMAP canvas ════════ */
+#gaze-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;mix-blend-mode:screen;display:none}
+#gaze-canvas.on{display:block}
+.gaze-legend{
+  position:absolute;top:12px;right:16px;z-index:6;pointer-events:none;display:none;
+  font-family:var(--mono);font-size:7px;letter-spacing:0.12em;color:var(--dim);
+  background:rgba(5,5,7,0.72);border:1px solid var(--border2);padding:4px 8px;line-height:1.7;text-align:right;
+}
+.gaze-legend.on{display:block}
+.gaze-legend .gl-state{color:#ffe08a;font-weight:700;letter-spacing:0.16em}
+.gaze-legend .gl-state.scatter{color:#ff7a3d}
+.gaze-legend .gl-state.lost{color:var(--hot)}
+
+/* ════════ VISUAL HIERARCHY METER (panel) ════════ */
+.vh-row{margin-bottom:9px}
+.vh-row:last-child{margin-bottom:0}
+.vh-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:8px;letter-spacing:0.1em;margin-bottom:3px}
+.vh-head .vh-name{color:var(--ink);font-weight:700;letter-spacing:0.14em}
+.vh-head .vh-val{color:var(--dim);font-size:8px}
+.vh-track{height:9px;background:rgba(220,220,226,0.06);position:relative;border:1px solid var(--border2)}
+.vh-track .vh-fill{position:absolute;left:0;top:0;height:100%;width:0%;transition:width .1s linear}
+.vh-track.t-primary .vh-fill{background:var(--ink)}
+.vh-track.t-secondary .vh-fill{background:var(--sec)}
+.vh-track.t-noise .vh-fill{background:var(--hot)}
+.vh-verdict{
+  margin-top:9px;font-family:var(--mono);font-size:8px;letter-spacing:0.08em;
+  padding:6px 8px;border:1px solid var(--border);color:var(--dim);line-height:1.6;
+}
+.vh-verdict.ok{border-color:rgba(176,107,255,0.5);color:var(--acid)}
+.vh-verdict.warn{border-color:var(--hot);background:rgba(255,45,77,0.08);color:var(--hot)}
+.vh-verdict strong{letter-spacing:0.12em}
+
+/* ════════ ATTENTION SCORE breakdown (panel) ════════ */
+.as-score{display:flex;align-items:flex-end;gap:8px;margin-bottom:10px}
+.as-score .as-big{font-family:var(--cond);font-weight:900;font-size:52px;line-height:0.78;letter-spacing:-0.03em;color:var(--ink);transition:color .2s}
+.as-score .as-lab{display:flex;flex-direction:column;gap:2px;padding-bottom:4px}
+.as-score .as-state{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.12em;color:var(--ink)}
+.as-score .as-sub{font-family:var(--mono);font-size:7px;letter-spacing:0.08em;color:var(--dim2)}
+.as-metric{margin-bottom:7px}
+.as-metric .am-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:0.06em;color:var(--dim);margin-bottom:2px}
+.as-metric .am-head .am-v{color:var(--ink);font-weight:700}
+.as-metric .am-track{height:3px;background:rgba(220,220,226,0.1);position:relative}
+.as-metric .am-track .am-fill{position:absolute;left:0;top:0;height:100%;background:var(--acid);width:0%;transition:width .12s}
+
+/* ════════ CAUSE → EFFECT VIEW (panel) ════════ */
+.ce-chain{display:flex;flex-direction:column;gap:0}
+.ce-link{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.06em;padding:4px 0;position:relative}
+.ce-link .ce-dot{width:9px;height:9px;flex-shrink:0;border:1px solid var(--dim2);background:transparent;transition:all .15s}
+.ce-link .ce-name{color:var(--dim);flex:1;transition:color .15s}
+.ce-link .ce-fr{color:var(--dim2);font-size:7px}
+.ce-link.lit .ce-dot{background:var(--sec);border-color:var(--sec);box-shadow:0 0 8px var(--sec)}
+.ce-link.lit .ce-name{color:var(--ink)}
+.ce-link.cause .ce-dot{background:var(--ink);border-color:var(--ink)}
+.ce-link.cause.lit .ce-dot{background:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.8)}
+.ce-link.cause .ce-name{color:var(--ink);font-weight:700}
+.ce-arrow{font-family:var(--mono);font-size:8px;color:var(--dim3);padding-left:3px;line-height:0.6;height:7px}
+.ce-arrow.lit{color:var(--sec)}
+.ce-chain.locked .ce-link .ce-dot{background:var(--hot);border-color:var(--hot);box-shadow:none}
+.ce-chain.locked .ce-link .ce-name{color:var(--hot)}
+.ce-chain.locked .ce-arrow{color:var(--hot)}
+
+/* ════════ TIMELINE SCRUB (graph-zone overlay) ════════ */
+#scrub-bar{
+  position:absolute;bottom:0;left:0;right:0;z-index:8;
+  display:flex;align-items:center;gap:10px;padding:6px 16px 7px;
+  background:linear-gradient(0deg,rgba(5,5,7,0.94),rgba(5,5,7,0.62));
+  border-top:1px solid var(--border2);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.08em;
+}
+#scrub-bar .sb-play{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;font-weight:700;
+  border:1px solid var(--border);padding:3px 9px;cursor:pointer;color:var(--dim);
+  background:transparent;transition:all .12s;min-width:60px;text-align:center;
+}
+#scrub-bar .sb-play:hover{color:var(--ink);border-color:var(--dim)}
+#scrub-bar .sb-play.paused{color:#050507;background:var(--acid);border-color:var(--acid)}
+#scrub-bar .sb-lab{color:var(--dim);min-width:54px}
+#scrub-bar .sb-lab b{color:var(--ink)}
+#scrub-track-wrap{flex:1;position:relative;height:22px;display:flex;align-items:center}
+#scrub-ticks{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none}
+#scrub-ticks span{font-family:var(--mono);font-size:7px;color:var(--dim2);align-self:flex-start;margin-top:-1px}
+#scrub-range{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);cursor:pointer;outline:none;margin-top:7px}
+#scrub-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:5px;height:18px;background:var(--acid);border:none;cursor:pointer}
+#scrub-range::-moz-range-thumb{width:5px;height:18px;background:var(--acid);border:none;border-radius:0;cursor:pointer}
+#scrub-bar .sb-phase{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--sec);font-weight:700;min-width:96px;text-align:right}
+#graph-zone.scrubbing{box-shadow:inset 0 0 0 1px rgba(176,107,255,0.4)}
 </style>
 </head>
 <body>
@@ -164,7 +404,7 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
 
 <header id="topbar">
   <div class="left">
-    <span class="sys-id">KINETIC_GEOMETRY // LEC_07</span>
+    <span class="sys-id">ATTENTION_DESIGN_SIM // LEC_07</span>
     <span class="title-tag">PRINCIPLE_07 // SECONDARY ACTION</span>
   </div>
   <div class="right">
@@ -186,18 +426,57 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
 
   <!-- MAIN ZONE -->
   <div id="main-zone">
+    <div id="mute-bg"></div>
     <canvas id="main-canvas"></canvas>
+    <canvas id="gaze-canvas" class="on"></canvas>
     <div id="phase-badge">PHASE: IDLE</div>
+
+    <!-- ATTENTION SCORE — hero readout -->
+    <div id="attn-hero" class="q-strong">
+      <div class="ah-num" id="ah-num">—</div>
+      <div class="ah-meta">
+        <span class="ah-lab">ATTENTION SCORE</span>
+        <span class="ah-state" id="ah-state">STANDBY</span>
+        <div class="ah-bar"><div class="fill" id="ah-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- GAZE HEATMAP legend -->
+    <div class="gaze-legend on" id="gaze-legend">
+      GAZE ESTIMATE<br>
+      <span class="gl-state" id="gl-state">FOCUSED</span>
+    </div>
+
+    <!-- PRIMARY VISIBILITY METER — top center -->
+    <div id="vis-meter" class="s-balanced">
+      <span class="lab">PRIMARY READ</span>
+      <div class="bar"><div class="fill" id="vm-fill" style="width:50%"></div></div>
+      <span class="val" id="vm-state">BALANCED</span>
+    </div>
+
+    <!-- SYNC COLLAPSE banner -->
+    <div id="sync-warn">
+      <div class="big">// SYNC COLLAPSE //</div>
+      <div class="sub">PHASE LOCKED &nbsp; ALL LAYERS FIRE TOGETHER &nbsp; READ FAILS</div>
+    </div>
+
     <div id="main-hud">
       <div>PRIMARY_E&nbsp;<span class="val" id="h-primary">0.00</span></div>
       <div>WORLD_E&nbsp;<span class="val acid" id="h-world">0.00</span></div>
       <div>RESIDUAL&nbsp;<span class="val" id="h-resid">0.00</span></div>
       <div>STATE&nbsp;<span class="val" id="h-state">—</span></div>
     </div>
+
+    <!-- EYE FLOW indicator (only meaningful when toggle is ON) -->
+    <div class="eye-readout off" id="eye-readout">EYE FLOW  —  HIDDEN</div>
+
     <div class="world-tag" id="world-tag">
       <span class="lab" id="wt-status">WORLD: STABLE</span><br>
       <span class="ghost" id="wt-detail">no residual disturbance</span>
     </div>
+
+    <!-- GLITCH LAYER — signal corruption for SYNC / ONLY modes -->
+    <div id="glitch-layer"></div>
   </div>
 
   <!-- GRAPH -->
@@ -205,18 +484,29 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
     <div id="gz-header">
       <span>// <strong>PROPAGATION TIMELINE</strong></span>
       <span><span class="lg-sw" style="background:var(--ink)"></span>PRIMARY</span>
-      <span><span class="lg-sw" style="background:#7a8800"></span>SECONDARY</span>
+      <span><span class="lg-sw" style="background:#00e5ff"></span>SECONDARY</span>
       <span style="color:var(--dim2)">↗ DELAYED ECHO</span>
     </div>
     <div id="delay-readout">
-      <div class="row"><span class="name">PRIMARY</span><span class="fr">0fr</span></div>
-      <div class="row"><span class="name">SHOCK</span><span class="fr">+3fr</span></div>
-      <div class="row"><span class="name">GRID</span><span class="fr">+5fr</span></div>
-      <div class="row"><span class="name">TYPE</span><span class="fr">+9fr</span></div>
-      <div class="row"><span class="name">HUD</span><span class="fr">+13fr</span></div>
-      <div class="row"><span class="name">PHASE</span><span class="fr">+17fr</span></div>
+      <div class="row"><span class="name">PRIMARY</span><span class="fr" id="dr-primary">0fr</span></div>
+      <div class="row"><span class="name">SHOCK</span><span class="fr" id="dr-shock">+3fr</span></div>
+      <div class="row"><span class="name">GRID</span><span class="fr" id="dr-grid">+5fr</span></div>
+      <div class="row"><span class="name">TYPE</span><span class="fr" id="dr-type">+9fr</span></div>
+      <div class="row"><span class="name">HUD</span><span class="fr" id="dr-hud">+13fr</span></div>
+      <div class="row"><span class="name">PHASE</span><span class="fr" id="dr-phase">+17fr</span></div>
     </div>
     <canvas id="graph-canvas"></canvas>
+
+    <!-- TIMELINE SCRUB -->
+    <div id="scrub-bar">
+      <button class="sb-play" id="sb-play">❚❚ PAUSE</button>
+      <div id="scrub-track-wrap">
+        <div id="scrub-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+        <input type="range" id="scrub-range" min="0" max="1000" value="0">
+      </div>
+      <span class="sb-lab">t <b id="sb-frame">000</b>fr</span>
+      <span class="sb-phase" id="sb-phase">LIVE</span>
+    </div>
   </div>
 </main>
 
@@ -243,17 +533,83 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
     <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.8">
       Blade は下から上へ通過する。<br>
       通過位置から距離に応じて<br>
-      <strong style="color:#7a8800">空間が遅れて反応</strong>する。<br>
+      <strong style="color:var(--sec)">空間が遅れて反応</strong>する。<br>
       <span class="kbd">F</span> = fire &nbsp; <span class="kbd">M</span> = mute &nbsp; <span class="kbd">O</span> = only<br>
-      <span class="kbd">R</span> = reset world &nbsp;
+      <span class="kbd">S</span> = sync collapse &nbsp; <span class="kbd">R</span> = reset world
     </div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">CLIVE — リアルタイム</div>
+    <div class="sec-label">CATTENTION SCORE — 注意の総合計測</div>
+    <div class="as-score">
+      <div class="as-big" id="as-big">—</div>
+      <div class="as-lab">
+        <span class="as-state" id="as-state">STANDBY</span>
+        <span class="as-sub">0–100 / fire to measure</span>
+      </div>
+    </div>
+    <div class="as-metric">
+      <div class="am-head"><span>PRIMARY FOCUS</span><span class="am-v" id="am-pf-v">—</span></div>
+      <div class="am-track"><div class="am-fill" id="am-pf"></div></div>
+    </div>
+    <div class="as-metric">
+      <div class="am-head"><span>EYE STABILITY</span><span class="am-v" id="am-es-v">—</span></div>
+      <div class="am-track"><div class="am-fill" id="am-es"></div></div>
+    </div>
+    <div class="as-metric">
+      <div class="am-head"><span>MOTION HIERARCHY</span><span class="am-v" id="am-mh-v">—</span></div>
+      <div class="am-track"><div class="am-fill" id="am-mh"></div></div>
+    </div>
+    <div class="as-metric">
+      <div class="am-head"><span>VISUAL COMPETITION</span><span class="am-v" id="am-vc-v">—</span></div>
+      <div class="am-track"><div class="am-fill" id="am-vc"></div></div>
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">DVISUAL HIERARCHY — 主役 / 脇役 / ノイズ</div>
+    <div class="vh-row">
+      <div class="vh-head"><span class="vh-name">PRIMARY</span><span class="vh-val" id="vh-p-v">0%</span></div>
+      <div class="vh-track t-primary"><div class="vh-fill" id="vh-p"></div></div>
+    </div>
+    <div class="vh-row">
+      <div class="vh-head"><span class="vh-name">SECONDARY</span><span class="vh-val" id="vh-s-v">0%</span></div>
+      <div class="vh-track t-secondary"><div class="vh-fill" id="vh-s"></div></div>
+    </div>
+    <div class="vh-row">
+      <div class="vh-head"><span class="vh-name">NOISE</span><span class="vh-val" id="vh-n-v">0%</span></div>
+      <div class="vh-track t-noise"><div class="vh-fill" id="vh-n"></div></div>
+    </div>
+    <div class="vh-verdict" id="vh-verdict"><strong>IDEAL:</strong> PRIMARY &gt; SECONDARY &gt; NOISE</div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">ECAUSE → EFFECT — 因果チェーン</div>
+    <div class="ce-chain" id="ce-chain">
+      <div class="ce-link cause" data-fr="0" data-lay="primary"><span class="ce-dot"></span><span class="ce-name">PRIMARY ACTION</span><span class="ce-fr">CAUSE</span></div>
+      <div class="ce-arrow">↓</div>
+      <div class="ce-link" data-fr="3" data-lay="ring"><span class="ce-dot"></span><span class="ce-name">SHOCK FRONT</span><span class="ce-fr">+3fr</span></div>
+      <div class="ce-arrow">↓</div>
+      <div class="ce-link" data-fr="5" data-lay="grid"><span class="ce-dot"></span><span class="ce-name">GRID DISTORT</span><span class="ce-fr">+5fr</span></div>
+      <div class="ce-arrow">↓</div>
+      <div class="ce-link" data-fr="9" data-lay="type"><span class="ce-dot"></span><span class="ce-name">TYPE SHIFT</span><span class="ce-fr">+9fr</span></div>
+      <div class="ce-arrow">↓</div>
+      <div class="ce-link" data-fr="13" data-lay="hud"><span class="ce-dot"></span><span class="ce-name">HUD DRIFT</span><span class="ce-fr">+13fr</span></div>
+      <div class="ce-arrow">↓</div>
+      <div class="ce-link" data-fr="17" data-lay="phase"><span class="ce-dot"></span><span class="ce-name">WORLD MEMORY</span><span class="ce-fr">PERSIST</span></div>
+    </div>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:7px;color:var(--dim);line-height:1.7;letter-spacing:0.06em">
+      因果が空間へ伝播する順序。<br>
+      <span style="color:var(--hot)">SYNC</span> では全リンク同時 = 因果消失。
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">FLIVE — リアルタイム</div>
     <div class="data-row"><span class="dk">PHASE</span><span class="dv" id="lv-phase">IDLE</span></div>
     <div class="data-row"><span class="dk">PRIMARY_E</span><span class="dv" id="lv-primary">0.000</span></div>
     <div class="data-row"><span class="dk">WORLD_E</span><span class="dv acid" id="lv-world">0.000</span></div>
+    <div class="data-row"><span class="dk">READABILITY</span><span class="dv" id="lv-read">—</span></div>
     <div class="data-row"><span class="dk">RESIDUAL</span><span class="dv" id="lv-resid">0.000</span></div>
     <div class="data-row"><span class="dk">BLADE_Y</span><span class="dv" id="lv-bladey">—</span></div>
     <div class="data-row"><span class="dk">SPATIAL_DELAY</span><span class="dv" id="lv-sdelay">0.40</span></div>
@@ -262,49 +618,70 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
   </div>
 
   <div class="psec">
-    <div class="sec-label">DLAYERS — 副次レイヤー</div>
+    <div class="sec-label">GLAYERS — 副次階層 (semantic distance)</div>
     <div id="layer-list">
-      <div class="layer-row">
-        <span class="swatch" style="background:var(--ink)"></span>
-        <input type="checkbox" id="lay-primary" checked disabled>
-        <label for="lay-primary">PRIMARY (blade)</label>
-        <span class="lat">0fr</span>
+
+      <div class="lh-group">
+        <div class="lh-head"><span class="tag">PRIMARY</span><span class="dist">CAUSE</span></div>
+        <div class="layer-row">
+          <span class="swatch" style="background:var(--ink)"></span>
+          <input type="checkbox" id="lay-primary" checked disabled>
+          <label for="lay-primary">PRIMARY (blade)</label>
+          <span class="lat">0fr</span>
+        </div>
       </div>
-      <div class="layer-row">
-        <span class="swatch" style="background:#a8a8a8"></span>
-        <input type="checkbox" id="lay-ring" checked>
-        <label for="lay-ring">SHOCK FRONT</label>
-        <span class="lat">+3fr</span>
+
+      <div class="lh-group">
+        <div class="lh-head"><span class="tag">BODY SECONDARY</span><span class="dist">近距離</span></div>
+        <div class="layer-row">
+          <span class="swatch" style="background:#00e5ff"></span>
+          <input type="checkbox" id="lay-ring" checked>
+          <label for="lay-ring">SHOCK FRONT</label>
+          <span class="lat">+3fr</span>
+        </div>
+        <div class="layer-row">
+          <span class="swatch" style="background:#00e5ff"></span>
+          <input type="checkbox" id="lay-grid" checked>
+          <label for="lay-grid">GRID DISTORT</label>
+          <span class="lat">+5fr</span>
+        </div>
       </div>
-      <div class="layer-row">
-        <span class="swatch" style="background:#7a8800"></span>
-        <input type="checkbox" id="lay-grid" checked>
-        <label for="lay-grid">GRID DISTORT</label>
-        <span class="lat">+5fr</span>
+
+      <div class="lh-group">
+        <div class="lh-head"><span class="tag">CLOTH SECONDARY</span><span class="dist">中距離</span></div>
+        <div class="layer-row">
+          <span class="swatch" style="background:#dcdce2"></span>
+          <input type="checkbox" id="lay-type" checked>
+          <label for="lay-type">TYPE GLITCH</label>
+          <span class="lat">+9fr</span>
+        </div>
+        <div class="layer-row">
+          <span class="swatch" style="background:#00e5ff"></span>
+          <input type="checkbox" id="lay-hud" checked>
+          <label for="lay-hud">HUD DRIFT</label>
+          <span class="lat">+13fr</span>
+        </div>
       </div>
-      <div class="layer-row">
-        <span class="swatch" style="background:#444"></span>
-        <input type="checkbox" id="lay-type" checked>
-        <label for="lay-type">TYPE GLITCH</label>
-        <span class="lat">+9fr</span>
+
+      <div class="lh-group">
+        <div class="lh-head"><span class="tag">CONCEPTUAL</span><span class="dist">概念距離</span></div>
+        <div class="layer-row">
+          <span class="swatch" style="background:#9b5cff"></span>
+          <input type="checkbox" id="lay-phase" checked>
+          <label for="lay-phase">PHASE SHIFT</label>
+          <span class="lat">+17fr</span>
+        </div>
       </div>
-      <div class="layer-row">
-        <span class="swatch" style="background:#000;border:1px dashed #000"></span>
-        <input type="checkbox" id="lay-hud" checked>
-        <label for="lay-hud">HUD DRIFT</label>
-        <span class="lat">+13fr</span>
-      </div>
-      <div class="layer-row">
-        <span class="swatch" style="background:#bbb"></span>
-        <input type="checkbox" id="lay-phase" checked>
-        <label for="lay-phase">PHASE SHIFT</label>
-        <span class="lat">+17fr</span>
-      </div>
+
+    </div>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:7px;color:var(--dim);line-height:1.7;letter-spacing:0.06em">
+      意味が遠いほど位相が遅れる。<br>
+      盛りすぎ判定は <span style="color:var(--sec)">CONCEPTUAL</span> で決まる。
     </div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">EWORLD MEMORY — 残留状態</div>
+    <div class="sec-label">HWORLD MEMORY — 残留状態</div>
     <div class="data-row"><span class="dk">GRID_RESIDUAL</span><span class="dv" id="wm-grid">0%</span></div>
     <div class="data-row"><span class="dk">TYPE_CORRUPT</span><span class="dv" id="wm-type">0%</span></div>
     <div class="data-row"><span class="dk">PHASE_DRIFT</span><span class="dv" id="wm-phase">0.00</span></div>
@@ -312,7 +689,7 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
   </div>
 
   <div class="psec">
-    <div class="sec-label">FPARAMS — パラメータ</div>
+    <div class="sec-label">IPARAMS — パラメータ</div>
     <div class="sl-row">
       <div class="sl-label">PRIMARY POWER <span id="sl-pow-val">1.00</span></div>
       <input type="range" id="sl-pow" min="20" max="200" value="100">
@@ -332,28 +709,54 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
   </div>
 
   <div class="psec">
-    <div class="sec-label">GMODES — 教材モード</div>
+    <div class="sec-label">JMODES — 教材モード</div>
     <button class="btn" id="btnNormal">NORMAL</button>
     <button class="btn warn" id="btnMute">SECONDARY MUTE</button>
     <button class="btn warn" id="btnOnly">SECONDARY ONLY</button>
+    <button class="btn warn" id="btnSync">SYNC COLLAPSE</button>
     <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.7">
       <strong style="color:var(--ink)">MUTE</strong> → <span style="color:var(--hot)">TOO DEAD</span><br>
       <strong style="color:var(--ink)">ONLY</strong> → <span style="color:var(--hot)">GHOSTED WORLD</span><br>
-      &nbsp;&nbsp;&nbsp; (原因不明の揺れ)
+      <strong style="color:var(--ink)">SYNC</strong> → <span style="color:var(--hot)">SIGNAL CORRUPT</span><br>
+      &nbsp;&nbsp;&nbsp; (位相ズレ消失 = 主従消失)
+    </div>
+
+    <div class="toggle-row">
+      <div class="tg-label">
+        <span class="tg-name">GAZE HEATMAP</span>
+        <span class="tg-hint">視線推定 / where the eye goes</span>
+      </div>
+      <button class="toggle-btn on" id="btnGaze">ON</button>
+    </div>
+
+    <div class="toggle-row">
+      <div class="tg-label">
+        <span class="tg-name">EYE FLOW</span>
+        <span class="tg-hint">視線誘導ベクトル / from grid nodes</span>
+      </div>
+      <button class="toggle-btn" id="btnEyeFlow">OFF</button>
     </div>
   </div>
 
   <div class="psec">
-    <div class="sec-label">HINSIGHT</div>
+    <div class="sec-label">KINSIGHT</div>
     <div class="insight">
       <strong>// CAUSAL PROPAGATION</strong>
       Follow Through は1本の鎖の遅延。<br>
       Secondary Action は<br>
-      <span style="color:#7a8800">因果が空間へ伝播する</span>。<br><br>
+      <span style="color:var(--sec)">因果が空間へ伝播する</span>。<br><br>
       Primary は <strong>引き金</strong>。<br>
       Secondary が <strong>世界を支配</strong>する。<br><br>
       動きは終わっても、<br>
       世界はまだ覚えている。
+    </div>
+    <div class="insight" style="margin-top:6px">
+      <strong>// 最終到達点</strong>
+      Secondary Action とは:<br>
+      <span style="color:var(--sec)">主動作を読ませながら</span>、<br>
+      <span style="color:var(--sec)">世界の密度だけを増やす技術</span>。<br><br>
+      位相がズレるから読める。<br>
+      <span style="color:var(--hot)">SYNC</span> で試して確かめろ。
     </div>
   </div>
 
@@ -370,7 +773,10 @@ input[type=range]{width:100%;accent-color:var(--ink);cursor:pointer}
     <span class="kbd">F</span>FIRE
     <span class="kbd">M</span>MUTE
     <span class="kbd">O</span>ONLY
+    <span class="kbd">S</span>SYNC
     <span class="kbd">R</span>RESET
+    <span class="kbd">SPC</span>PAUSE
+    <span class="kbd">←→</span>SCRUB
     &nbsp;ID: SENTIENT-BP-2026-VLS.07
   </div>
 </footer>
@@ -439,17 +845,57 @@ let typeCorrupt = 0;   // 0..1
 let phaseDrift = 0;    // accumulates
 let hudError = 0;      // px offset
 
+// Smoothed readability score: primaryE / (worldEHud + ε)
+let readabilityScore = 1.0;
+
+// Optional overlays (off by default — kept as didactic options)
+let showEyeFlow = false;
+let showGaze = true;          // GAZE HEATMAP — on by default (core teaching view)
+
+// ── DETERMINISTIC RNG (so TIMELINE SCRUB can re-simulate exactly) ──
+// Physics uses srnd() instead of Math.random(); seed resets on every fire,
+// so a given (frame, params) always reproduces the same world state.
+const BASE_SEED = 0x9e3779b9;
+let simSeed = BASE_SEED;
+function srnd() {
+  simSeed = (Math.imul(simSeed, 1664525) + 1013904223) >>> 0;
+  return simSeed / 4294967296;
+}
+
+// ── ATTENTION INSTRUMENTS — smoothed signal state ──
+let primaryGlow = 0;          // decaying presence of the primary blade (0..1)
+let sm = {                    // smoothed sub-metrics (0..100)
+  pf: 70, es: 70, mh: 80, vc: 70, total: 72,
+  vhP: 0, vhS: 0, vhN: 0,     // hierarchy bar values (0..1)
+  coherence: 0.7              // gaze focus coherence (0..1)
+};
+
+// ── TIMELINE SCRUB state ──
+let paused = false;
+let scrubFrame = 0;                 // frame currently shown while paused
+const TIMELINE_LEN = 220;           // frames in one didactic fire→settle cycle
+
+// Glitch burst timing — for SYNC / ONLY modes
+// Bursts are intermittent: ~16-24fps flicker chunks rather than constant noise
+let glitchSeed = 0;
+let glitchBurstUntil = -1; // frameCount when current burst ends
+let glitchInvertActive = false; // negaposi inversion flag for this burst
+
 let frameCount = 0;
 
 function fire() {
   firedAt = frameCount;
   primaryE = 1.0 * primaryPower;
   bladeProgress = 0;
+  simSeed = BASE_SEED;   // deterministic world response per fire
+  primaryGlow = 1;       // primary is the loudest thing on screen, now
 }
 
 // ── CANVAS ──
 const mainC = document.getElementById('main-canvas');
 const mainCtx = mainC.getContext('2d');
+const gazeC = document.getElementById('gaze-canvas');
+const gazeCtx = gazeC.getContext('2d');
 const graphC = document.getElementById('graph-canvas');
 const graphCtx = graphC.getContext('2d');
 
@@ -463,6 +909,12 @@ function resize() {
   mainC.style.width = VW + 'px';
   mainC.style.height = VH + 'px';
   mainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  gazeC.width  = VW * DPR;
+  gazeC.height = VH * DPR;
+  gazeC.style.width = VW + 'px';
+  gazeC.style.height = VH + 'px';
+  gazeCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
   const gz = document.getElementById('graph-zone');
   GVW = gz.clientWidth;
@@ -501,7 +953,10 @@ function phaseLabel() {
   const t = frameCount - firedAt;
   if (t < 0) return 'IDLE';
   if (t < PRIMARY_FRAMES) return 'BLADE';
+  // After the blade is gone — Primary has disappeared, but world still reacts.
+  // This is the "WORLD TAKES OVER" zone.
   if (worldEHud > 0.10) return 'PROPAGATING';
+  if (worldEHud > 0.04) return 'AFTERMATH';
   if (worldEHud > 0.02 || typeCorrupt > 0.02 || phaseDrift > 0.5) return 'RESIDUAL';
   return 'SETTLED';
 }
@@ -509,7 +964,15 @@ function phaseLabel() {
 // ── SAMPLING WORLD ENERGY AT A POSITION ──
 // Given a y position, find the local delay = how far it is from the blade's current y
 // Then sample primaryHist at frameCount - localDelay
+//
+// SYNC COLLAPSE: all layers fire at delay=0 → phase locked → readability collapses
 function sampleLocalWorld(yNormalized, baseLayerDelay) {
+  if (mode === 'sync') {
+    // No spatial delay, no layer delay — everything fires with primary.
+    const idx = primaryHist.length - 1;
+    if (idx < 0) return 0;
+    return primaryHist[idx];
+  }
   // yNormalized: 0 (bottom) to 1 (top)
   // blade travels bottom→top, so blade y at progress p is at yNormalized = p
   const bladeY = bladeProgress; // 0..1
@@ -534,10 +997,10 @@ function sampleLocalWorldXY(xNorm, yNorm, baseLayerDelay) {
   return v;
 }
 
-// ── STEP ──
-function step() {
-  frameCount++;
-
+// ── STEP (physics only; caller advances frameCount) ──
+function physics() {
+  // primary presence spikes on the fire frame (needed for scrub re-sim too)
+  if (frameCount - firedAt === 0) primaryGlow = 1;
   // BLADE: primary energy is a SHORT impulse during PRIMARY_FRAMES
   const t = frameCount - firedAt;
   let bladeE = 0;
@@ -582,8 +1045,8 @@ function step() {
         const dx = (node.x - GRID_X / 2);
         const dy = (node.y - GRID_Y / 2);
         const len = Math.sqrt(dx*dx + dy*dy) + 0.01;
-        node.dx += (dx / len) * local * 1.2 * (Math.random()*0.5 + 0.5);
-        node.dy += (dy / len) * local * 1.2 * (Math.random()*0.5 + 0.5);
+        node.dx += (dx / len) * local * 1.2 * (srnd()*0.5 + 0.5);
+        node.dy += (dy / len) * local * 1.2 * (srnd()*0.5 + 0.5);
         node.lastImpact = frameCount;
       }
       // VERY SLOW decay — residual persistence
@@ -595,7 +1058,7 @@ function step() {
     typeCorrupt *= 0.985 + residualPersistence * 0.013;
     phaseDrift += avgWorld * 0.6;
     phaseDrift *= 0.99 + residualPersistence * 0.009;
-    hudError = hudError * (0.985 + residualPersistence * 0.013) + (Math.random() - 0.5) * avgWorld * 2;
+    hudError = hudError * (0.985 + residualPersistence * 0.013) + (srnd() - 0.5) * avgWorld * 2;
   } else {
     // Mute mode: rapid decay
     for (const node of wmNodes) { node.dx *= 0.85; node.dy *= 0.85; }
@@ -604,8 +1067,65 @@ function step() {
     hudError *= 0.85;
   }
 
-  // HUD updates
-  updateHUD();
+  // primary presence decays after the blade — used by the attention model
+  primaryGlow *= 0.90;
+}
+
+// ── GLITCH PALETTE + DATA DUST ──────────────────────────────
+const GLITCH_COLS = ['0,229,255','255,61,240','59,123,255','176,107,255','255,54,212','11,255,106'];
+function rgbStr(i, alpha){ return 'rgba(' + GLITCH_COLS[i % GLITCH_COLS.length] + ',' + alpha + ')'; }
+
+// Persistent scattered colour dots — the signature "broken signal" dust field.
+// Positions are stable (so it reads as decayed data, not TV snow); brightness
+// is modulated by local world energy + residual memory, with a slow twinkle.
+let dust = [];
+let dustKey = '';
+function seedDust(W, H){
+  const key = Math.round(W) + 'x' + Math.round(H);
+  if (key === dustKey && dust.length) return;
+  dustKey = key;
+  dust = [];
+  const count = Math.floor(W * H / 820);
+  for (let i = 0; i < count; i++){
+    dust.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      c: Math.floor(Math.random() * GLITCH_COLS.length),
+      s: Math.random() < 0.2 ? 2 : 1,
+      base: 0.16 + Math.random() * 0.6,
+      tw: Math.random() * Math.PI * 2,
+      sp: 0.06 + Math.random() * 0.16,
+    });
+  }
+}
+function drawDataDust(W, H){
+  seedDust(W, H);
+  const gate = fxGate();
+  const ambient = Math.min(0.42, worldEHud * 0.7 + typeCorrupt * 0.22 + 0.10) * gate;
+  for (const d of dust){
+    const yNorm = d.y / H, xNorm = d.x / W;
+    const local = sampleLocalWorldXY(xNorm, yNorm, 6);
+    // crisper, faster twinkle with stronger on/off contrast (メリハリ)
+    const tw = Math.sin(frameCount * d.sp + d.tw);
+    const twinkle = tw > 0.4 ? 1 : (tw > -0.2 ? 0.45 : 0.12);
+    const a = Math.min(0.85, (ambient * 0.7 + local * 1.4 * gate) * d.base * twinkle + 0.02);
+    if (a < 0.025) continue;
+    mainCtx.fillStyle = rgbStr(d.c, a);
+    mainCtx.fillRect(d.x | 0, d.y | 0, d.s, d.s);
+  }
+}
+
+// ── FX SUPPRESSION GATE ────────────────────────────
+// Hierarchy law: decorative FX must NEVER outshine the primary action.
+// During (and just after) the blade, decorative layers are held WAY down so
+// the eye locks onto the primary. The world's real reaction is spatially
+// delayed anyway, so it blooms AFTER the blade passes — clean 80/20 causality.
+function fxGate() {
+  const t = frameCount - firedAt;
+  if (t < 0) return 0.55;
+  if (t < PRIMARY_FRAMES) return 0.12;          // blade owns the frame
+  if (t < PRIMARY_FRAMES + 8) return 0.12 + (t - PRIMARY_FRAMES) / 8 * 0.78;
+  return 0.9;                                    // world's turn — but capped <1
 }
 
 // ── DRAW MAIN ──
@@ -613,76 +1133,104 @@ function drawMain() {
   const W = VW, H = VH;
   mainCtx.clearRect(0, 0, W, H);
 
-  // ── 1) DISTORTED GRID (node-based — vertices displaced, NOT cells) ──
+  // ── 0) DATA DUST (always-on broken-signal field) ──
+  if (mode !== 'mute') drawDataDust(W, H);
+
+  // ── 1) DISTORTED GRID (node-based mesh) ──
   if (layers.grid && mode !== 'mute') {
     mainCtx.save();
-    mainCtx.strokeStyle = `rgba(16,16,16,${0.06 + worldEHud * 0.06})`;
+    mainCtx.strokeStyle = `rgba(220,220,226,${0.04 + worldEHud * 0.05})`;
     mainCtx.lineWidth = 0.5;
-    const cellW = W / GRID_X;
-    const cellH = H / GRID_Y;
-
-    // Helper: compute screen-space position of node (ix, iy) including live wobble + residual
+    const cellW = W / GRID_X, cellH = H / GRID_Y;
     function nodeScreenPos(ix, iy) {
       const n = wmNode(ix, iy);
-      const xNorm = ix / GRID_X;
-      const yNorm = iy / GRID_Y;
-      const local = sampleLocalWorldXY(xNorm, yNorm, 5);
+      const local = sampleLocalWorldXY(ix / GRID_X, iy / GRID_Y, 5);
       const wob = local * 10;
-      const x = ix * cellW + n.dx + Math.sin(frameCount * 0.1 + iy) * wob;
-      const y = iy * cellH + n.dy + Math.cos(frameCount * 0.1 + ix) * wob;
-      return { x, y };
+      return { x: ix * cellW + n.dx + Math.sin(frameCount * 0.1 + iy) * wob,
+               y: iy * cellH + n.dy + Math.cos(frameCount * 0.1 + ix) * wob };
     }
-
-    // Vertical lines (one for each column of nodes)
     for (let ix = 0; ix < GRID_NODES_X; ix++) {
       mainCtx.beginPath();
       for (let iy = 0; iy < GRID_NODES_Y; iy++) {
         const p = nodeScreenPos(ix, iy);
-        if (iy === 0) mainCtx.moveTo(p.x, p.y);
-        else mainCtx.lineTo(p.x, p.y);
+        iy === 0 ? mainCtx.moveTo(p.x, p.y) : mainCtx.lineTo(p.x, p.y);
       }
       mainCtx.stroke();
     }
-    // Horizontal lines (one for each row of nodes)
     for (let iy = 0; iy < GRID_NODES_Y; iy++) {
       mainCtx.beginPath();
       for (let ix = 0; ix < GRID_NODES_X; ix++) {
         const p = nodeScreenPos(ix, iy);
-        if (ix === 0) mainCtx.moveTo(p.x, p.y);
-        else mainCtx.lineTo(p.x, p.y);
+        ix === 0 ? mainCtx.moveTo(p.x, p.y) : mainCtx.lineTo(p.x, p.y);
       }
       mainCtx.stroke();
     }
     mainCtx.restore();
   }
 
-  // ── 2) SHOCK FRONT — horizontal expanding line from blade ──
+  // ── 2) DATA-STREAM SLICES (the "world memory" — coloured horizontal streaks) ──
+  // Each grid row emits horizontal data streaks. Length / x-offset / brightness are
+  // driven by that row's accumulated node displacement (memory) + local world energy,
+  // so the streaks PERSIST after the blade is gone: the world stays altered.
+  if (layers.phase && mode !== 'mute') {
+    mainCtx.save();
+    const sgate = fxGate();
+    const cellH = H / GRID_Y;
+    for (let iy = 0; iy < GRID_Y; iy++) {
+      // row memory = avg displacement magnitude across this row's nodes
+      let mem = 0;
+      for (let ix = 0; ix <= GRID_X; ix++) { const n = wmNode(ix, iy); mem += Math.abs(n.dx) + Math.abs(n.dy); }
+      mem /= (GRID_X + 1);
+      const yNorm = (iy + 0.5) / GRID_Y;
+      const local = sampleLocalWorldXY(0.5, yNorm, 17);
+      // ambient floor keeps faint streaks alive in EVERY mode (アンビエント強化)
+      const energy = Math.min(1, local * 1.7 + mem * 0.06 + 0.10) * sgate;
+      if (energy < 0.04) continue;
+      const baseY = iy * cellH;
+      // number of streaks on this row scales with energy
+      const nStreaks = 1 + Math.floor(energy * 5);
+      for (let k = 0; k < nStreaks; k++) {
+        const seed = (iy * 53 + k * 17);
+        const rnd = (Math.sin(seed * 12.9898 + frameCount * 0.012) * 43758.5453) % 1;
+        const r = Math.abs(rnd);
+        const sy = baseY + r * cellH;
+        const sw = (12 + r * 130) * (0.4 + energy);
+        const sx = (Math.sin(seed * 2.1 + phaseDrift * 0.3) * 0.5 + 0.5) * (W - sw);
+        const sh = r < 0.18 ? 2 : 1;
+        const col = (iy + k) % GLITCH_COLS.length;
+        const a = Math.min(0.92, energy * (0.6 + r * 0.7));
+        mainCtx.fillStyle = rgbStr(col, a);
+        mainCtx.fillRect(sx, sy, sw, sh);
+        // occasional brighter cap at the streak head (data packet)
+        if (r > 0.7) {
+          mainCtx.fillStyle = rgbStr(col, Math.min(1, a + 0.3));
+          mainCtx.fillRect(sx + sw - 4, sy, 4, sh);
+        }
+      }
+    }
+    mainCtx.restore();
+  }
+
+  // ── 3) SHOCK FRONT — bright horizontal streak trailing the blade ──
   if (layers.ring && mode !== 'mute') {
-    // The shock travels with delay +3fr from primary
     const shockY = sampleHistoryAsBladePosition(3);
     if (shockY > 0) {
-      // Find the y at which the blade WAS 3 frames ago
-      const Hpx = H;
-      const yPx = (1 - shockY) * Hpx;
+      const yPx = (1 - shockY) * H;
       const sLocal = sampleLocalWorldXY(0.5, shockY, 3);
+      const alpha = Math.min(1, sLocal * 1.6);
       mainCtx.save();
-      const alpha = Math.min(1, sLocal * 1.5);
-      mainCtx.strokeStyle = `rgba(120,120,120,${alpha * 0.5})`;
-      mainCtx.lineWidth = 0.8;
-      mainCtx.setLineDash([6, 8]);
-      mainCtx.beginPath();
-      mainCtx.moveTo(0, yPx);
-      mainCtx.lineTo(W, yPx);
-      mainCtx.stroke();
-      mainCtx.setLineDash([]);
-      // Small inner shock band
-      mainCtx.fillStyle = `rgba(120,120,120,${alpha * 0.08})`;
-      mainCtx.fillRect(0, yPx - 8, W, 16);
+      // cyan shock line with RGB-split echo
+      mainCtx.fillStyle = `rgba(0,229,255,${alpha * 0.55})`;
+      mainCtx.fillRect(0, yPx - 0.5, W, 1);
+      mainCtx.fillStyle = `rgba(255,54,212,${alpha * 0.22})`;
+      mainCtx.fillRect(0, yPx + 1.5, W, 1);
+      mainCtx.fillStyle = `rgba(0,229,255,${alpha * 0.05})`;
+      mainCtx.fillRect(0, yPx - 7, W, 14);
       mainCtx.restore();
     }
   }
 
-  // ── 3) TYPOGRAPHY (corrupted labels — type glitch with phase shift) ──
+  // ── 4) TYPOGRAPHY (corrupted labels with RGB split) ──
   if (layers.type && mode !== 'mute') {
     const labels = [
       { x:60, y:38, text:'KINETIC // PRIMARY', y_norm:0.05 },
@@ -700,32 +1248,33 @@ function drawMain() {
       const jx = (Math.random()-0.5) * corrupt * 4;
       const jy = (Math.random()-0.5) * corrupt * 3;
       let txt = l.text;
-      // Phase shift: characters can drop / swap
       if (corrupt > 0.15) {
         const cs = txt.split('');
         for (let i = 0; i < cs.length; i++) {
-          if (Math.random() < corrupt * 0.08) {
-            cs[i] = '_#%@!?'[Math.floor(Math.random()*6)];
-          } else if (Math.random() < corrupt * 0.05) {
-            cs[i] = ' ';
-          }
+          if (Math.random() < corrupt * 0.08) cs[i] = '_#%@!?'[Math.floor(Math.random()*6)];
+          else if (Math.random() < corrupt * 0.05) cs[i] = ' ';
         }
         txt = cs.join('');
       }
-      mainCtx.fillStyle = `rgba(16,16,16,${0.42 + corrupt * 0.35})`;
+      // RGB split shadows when corrupt
+      if (corrupt > 0.12) {
+        mainCtx.fillStyle = `rgba(0,229,255,${corrupt*0.5})`;
+        mainCtx.fillText(txt, l.x + jx - corrupt*2, l.y + jy);
+        mainCtx.fillStyle = `rgba(255,54,212,${corrupt*0.5})`;
+        mainCtx.fillText(txt, l.x + jx + corrupt*2, l.y + jy);
+      }
+      mainCtx.fillStyle = `rgba(220,220,226,${0.5 + corrupt * 0.35})`;
       mainCtx.fillText(txt, l.x + jx, l.y + jy);
     }
     mainCtx.restore();
   }
 
-  // ── 4) HUD DRIFT (corner crosshairs with delayed drift) ──
+  // ── 5) HUD DRIFT (crosshairs with delayed drift) ──
   if (layers.hud && mode !== 'mute') {
     mainCtx.save();
     const positions = [
-      { x: 80, y: H*0.18, ynorm: 0.18 },
-      { x: W-80, y: H*0.18, ynorm: 0.18 },
-      { x: 80, y: H*0.82, ynorm: 0.82 },
-      { x: W-80, y: H*0.82, ynorm: 0.82 },
+      { x: 80, y: H*0.18, ynorm: 0.18 },{ x: W-80, y: H*0.18, ynorm: 0.18 },
+      { x: 80, y: H*0.82, ynorm: 0.82 },{ x: W-80, y: H*0.82, ynorm: 0.82 },
     ];
     for (const p of positions) {
       const local = sampleLocalWorldXY(p.x/W, p.ynorm, 13);
@@ -734,7 +1283,7 @@ function drawMain() {
       const hx = p.x + Math.sin(phase + p.x*0.01) * drift;
       const hy = p.y + Math.cos(phase * 1.3 + p.y*0.01) * drift * 0.7;
       const alpha = 0.4 + local * 0.4;
-      mainCtx.strokeStyle = `rgba(122,136,0,${alpha})`;
+      mainCtx.strokeStyle = `rgba(0,229,255,${alpha})`;
       mainCtx.lineWidth = 1;
       mainCtx.beginPath();
       mainCtx.moveTo(hx - 12, hy); mainCtx.lineTo(hx - 3, hy);
@@ -743,72 +1292,60 @@ function drawMain() {
       mainCtx.moveTo(hx, hy + 3); mainCtx.lineTo(hx, hy + 12);
       mainCtx.stroke();
       mainCtx.font = '8px IBM Plex Mono, monospace';
-      mainCtx.fillStyle = `rgba(122,136,0,${0.55 + local*0.3})`;
+      mainCtx.fillStyle = `rgba(0,229,255,${0.5 + local*0.3})`;
       mainCtx.fillText(`Δ${drift.toFixed(1)}`, hx + 14, hy - 5);
     }
     mainCtx.restore();
   }
 
-  // ── 5) PHASE SHIFT BANDS (subtle horizontal hue/contrast bands) ──
-  if (layers.phase && mode !== 'mute') {
-    const Hpx = H;
-    const stripes = 8;
-    mainCtx.save();
-    for (let i = 0; i < stripes; i++) {
-      const yNorm = i / stripes;
-      const yPx = yNorm * Hpx;
-      const local = sampleLocalWorldXY(0.5, yNorm, 17);
-      if (local < 0.05) continue;
-      const phaseShift = local * phaseDrift * 0.4;
-      const stripH = Hpx / stripes;
-      mainCtx.fillStyle = `rgba(16,16,16,${local * 0.03})`;
-      mainCtx.fillRect(Math.sin(phaseShift) * 3, yPx, W, stripH);
-      // Edge tick
-      mainCtx.strokeStyle = `rgba(16,16,16,${local * 0.1})`;
-      mainCtx.lineWidth = 0.5;
-      mainCtx.beginPath();
-      mainCtx.moveTo(0, yPx); mainCtx.lineTo(8, yPx);
-      mainCtx.moveTo(W-8, yPx); mainCtx.lineTo(W, yPx);
-      mainCtx.stroke();
-    }
-    mainCtx.restore();
-  }
-
-  // ── 6) THE BLADE (Primary) — vertical thin bar traveling up ──
+  // ── 6) THE BLADE (Primary) — bright RGB-split scan bar travelling up ──
   if (mode !== 'only') {
     const p = primaryProgressVal();
     if (p > 0 && p < 1) {
       const yPx = (1 - p) * H;
-      mainCtx.save();
-      // The blade is a HORIZONTAL line (full width) that travels UP
-      // It's a "cut" through space
       const intensity = Math.sin(p * Math.PI);
-      // Main blade
-      mainCtx.fillStyle = '#101010';
-      mainCtx.fillRect(0, yPx - 1.5, W, 3);
-      // Accent edge
-      mainCtx.fillStyle = '#CADC00';
-      mainCtx.fillRect(0, yPx - 1.5, W, 1);
-      // Motion trail below (where blade has been)
-      const trailH = 22 * intensity;
+      mainCtx.save();
+      // BLOOM — broad vertical halo so the blade is unmistakably the loudest thing
+      const bloomH = 150;
+      const bloom = mainCtx.createLinearGradient(0, yPx - bloomH/2, 0, yPx + bloomH/2);
+      bloom.addColorStop(0,   'rgba(176,107,255,0)');
+      bloom.addColorStop(0.5, `rgba(176,107,255,${0.30 * (0.6 + intensity*0.4)})`);
+      bloom.addColorStop(1,   'rgba(176,107,255,0)');
+      mainCtx.fillStyle = bloom;
+      mainCtx.fillRect(0, yPx - bloomH/2, W, bloomH);
+      // RGB split fringes (wider)
+      mainCtx.fillStyle = 'rgba(0,229,255,0.95)';
+      mainCtx.fillRect(0, yPx - 5, W, 2);
+      mainCtx.fillStyle = 'rgba(255,54,212,0.95)';
+      mainCtx.fillRect(0, yPx + 3, W, 2);
+      // white-hot core (thick + bright)
+      mainCtx.fillStyle = 'rgba(255,255,255,1)';
+      mainCtx.fillRect(0, yPx - 2, W, 4);
+      // acid glow edge
+      mainCtx.fillStyle = 'rgba(176,107,255,1)';
+      mainCtx.fillRect(0, yPx - 2.5, W, 1.2);
+      mainCtx.fillRect(0, yPx + 1.3, W, 1.2);
+      // motion trail below (where blade has been) — coloured, longer
+      const trailH = 44 * intensity;
       const grad = mainCtx.createLinearGradient(0, yPx, 0, yPx + trailH);
-      grad.addColorStop(0, 'rgba(16,16,16,0.25)');
-      grad.addColorStop(1, 'rgba(16,16,16,0)');
+      grad.addColorStop(0, 'rgba(176,107,255,0.45)');
+      grad.addColorStop(1, 'rgba(176,107,255,0)');
       mainCtx.fillStyle = grad;
       mainCtx.fillRect(0, yPx, W, trailH);
-      // Center marker
-      mainCtx.fillStyle = '#CADC00';
-      mainCtx.fillRect(W*0.5 - 3, yPx - 4, 6, 8);
+      // center marker (packet) — bigger, hotter
+      mainCtx.fillStyle = 'rgba(255,255,255,1)';
+      mainCtx.fillRect(W*0.5 - 5, yPx - 7, 10, 14);
+      mainCtx.fillStyle = 'rgba(176,107,255,1)';
+      mainCtx.fillRect(W*0.5 - 2, yPx - 11, 4, 22);
       mainCtx.restore();
     }
   } else {
-    // SECONDARY ONLY — show a phantom indicator
     mainCtx.save();
     mainCtx.font = '10px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
+    mainCtx.fillStyle = 'rgba(255,45,77,0.6)';
     mainCtx.textAlign = 'center';
     mainCtx.fillText('// PRIMARY MUTED — WORLD STILL REACTS //', W*0.5, 28);
-    mainCtx.fillStyle = 'rgba(255,45,45,0.3)';
+    mainCtx.fillStyle = 'rgba(255,45,77,0.35)';
     mainCtx.font = '8px IBM Plex Mono, monospace';
     mainCtx.fillText('cause unknown', W*0.5, 42);
     mainCtx.restore();
@@ -818,39 +1355,75 @@ function drawMain() {
   if (mode === 'mute') {
     mainCtx.save();
     mainCtx.font = 'bold 13px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = 'rgba(255,45,45,0.85)';
+    mainCtx.fillStyle = 'rgba(255,45,77,0.9)';
     mainCtx.textAlign = 'center';
-    mainCtx.fillText('// TOO DEAD //', W*0.5, H*0.5 - 8);
+    mainCtx.fillText('// TOO DEAD //', W*0.5, H*0.5 - 12);
     mainCtx.font = '9px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
-    mainCtx.fillText('PRIMARY FIRES, WORLD DOES NOTHING', W*0.5, H*0.5 + 8);
+    mainCtx.fillStyle = 'rgba(220,220,226,0.5)';
+    mainCtx.fillText('PRIMARY FIRES — WORLD DOES NOTHING', W*0.5, H*0.5 + 4);
+    mainCtx.font = '8px IBM Plex Mono, monospace';
+    mainCtx.fillStyle = 'rgba(220,220,226,0.32)';
+    mainCtx.fillText('[UI-DEMO BUILD · NO SECONDARY DATA · v0.0.1]', W*0.5, H*0.5 + 18);
     mainCtx.restore();
   }
   if (mode === 'only') {
     mainCtx.save();
     mainCtx.font = 'bold 13px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = 'rgba(255,45,45,0.85)';
+    mainCtx.fillStyle = 'rgba(255,45,77,0.85)';
     mainCtx.textAlign = 'center';
     mainCtx.fillText('// GHOSTED WORLD //', W*0.5, H*0.5 - 8);
     mainCtx.font = '9px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = 'rgba(255,45,45,0.55)';
+    mainCtx.fillStyle = 'rgba(255,45,77,0.55)';
     mainCtx.fillText('SECONDARY WITHOUT CAUSE', W*0.5, H*0.5 + 8);
     mainCtx.restore();
   }
 
-  // ── 8) MOUSE FIELD INDICATOR (subtle) ──
+  // ── 8) MOUSE FIELD INDICATOR ──
   if (mouseActive && worldEHud > 0.05) {
     mainCtx.save();
     const grad = mainCtx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 250);
-    grad.addColorStop(0, `rgba(122,136,0,${worldEHud * 0.18})`);
-    grad.addColorStop(0.5, `rgba(122,136,0,${worldEHud * 0.05})`);
-    grad.addColorStop(1, 'rgba(122,136,0,0)');
+    grad.addColorStop(0, `rgba(0,229,255,${worldEHud * 0.20})`);
+    grad.addColorStop(0.5, `rgba(0,229,255,${worldEHud * 0.05})`);
+    grad.addColorStop(1, 'rgba(0,229,255,0)');
     mainCtx.fillStyle = grad;
     mainCtx.fillRect(mouseX - 250, mouseY - 250, 500, 500);
-    // small label
     mainCtx.font = '7px IBM Plex Mono, monospace';
-    mainCtx.fillStyle = `rgba(122,136,0,${0.55 + worldEHud * 0.3})`;
+    mainCtx.fillStyle = `rgba(0,229,255,${0.55 + worldEHud * 0.3})`;
     mainCtx.fillText('▸ SPACE WEAK POINT', mouseX + 14, mouseY - 14);
+    mainCtx.restore();
+  }
+
+  // ── 9) EYE FLOW VECTORS (toggleable) ──
+  if (showEyeFlow && mode !== 'mute' && (primaryE > 0.05 || worldEHud > 0.04)) {
+    mainCtx.save();
+    const cellW = W / GRID_X, cellH = H / GRID_Y;
+    let overload = 0;
+    if (mode === 'sync') overload = 1.0;
+    else if (mode === 'only') overload = 0.85;
+    else overload = Math.min(1, worldEHud / 0.55);
+    const arrowAlpha = 0.18 + (primaryE + worldEHud) * 0.4;
+    for (let cy = 0; cy < GRID_Y; cy += 2) {
+      for (let cx = 0; cx < GRID_X; cx += 2) {
+        const n00 = wmNode(cx,cy), n10 = wmNode(cx+1,cy), n01 = wmNode(cx,cy+1), n11 = wmNode(cx+1,cy+1);
+        const px = ((cx*cellW+n00.dx)+((cx+1)*cellW+n10.dx)+(cx*cellW+n01.dx)+((cx+1)*cellW+n11.dx))*0.25;
+        const py = ((cy*cellH+n00.dy)+(cy*cellH+n10.dy)+((cy+1)*cellH+n01.dy)+((cy+1)*cellH+n11.dy))*0.25;
+        let ang = -Math.PI / 2;
+        const localE = sampleLocalWorldXY((cx+0.5)/GRID_X, (cy+0.5)/GRID_Y, 7);
+        const jitter = Math.sin(cx*1.7+cy*2.3+frameCount*0.03)*0.5 + Math.cos(cx*2.1+cy*1.3)*0.5;
+        ang += jitter*overload*Math.PI*0.9 + (Math.random()-0.5)*overload*0.3;
+        const len = 12 + localE * 14;
+        const ex = px + Math.cos(ang)*len, ey = py + Math.sin(ang)*len;
+        const a = arrowAlpha * (0.5 + localE * 0.8);
+        const col = overload > 0.6 ? `rgba(255,45,77,${a})` : `rgba(176,107,255,${a})`;
+        mainCtx.strokeStyle = col; mainCtx.lineWidth = 0.8;
+        mainCtx.beginPath(); mainCtx.moveTo(px, py); mainCtx.lineTo(ex, ey); mainCtx.stroke();
+        mainCtx.fillStyle = col; mainCtx.fillRect(px-1, py-1, 2, 2);
+        mainCtx.beginPath();
+        mainCtx.moveTo(ex, ey); mainCtx.lineTo(ex - Math.cos(ang-0.4)*4, ey - Math.sin(ang-0.4)*4);
+        mainCtx.moveTo(ex, ey); mainCtx.lineTo(ex - Math.cos(ang+0.4)*4, ey - Math.sin(ang+0.4)*4);
+        mainCtx.stroke();
+      }
+    }
     mainCtx.restore();
   }
 }
@@ -873,7 +1446,7 @@ function drawGraph() {
   const gh = H - pad.t - pad.b;
 
   // axis grid
-  graphCtx.strokeStyle = 'rgba(16,16,16,0.08)';
+  graphCtx.strokeStyle = 'rgba(220,220,226,0.07)';
   graphCtx.lineWidth = 0.5;
   for (let i = 0; i <= 4; i++) {
     const y = pad.t + (gh / 4) * i;
@@ -883,14 +1456,14 @@ function drawGraph() {
   }
 
   graphCtx.font = '8px IBM Plex Mono, monospace';
-  graphCtx.fillStyle = 'rgba(16,16,16,0.4)';
+  graphCtx.fillStyle = 'rgba(220,220,226,0.4)';
   graphCtx.fillText('ENERGY', pad.l - 42, pad.t + 4);
   graphCtx.fillText('1.0', pad.l - 22, pad.t + 4);
   graphCtx.fillText('0.5', pad.l - 22, pad.t + gh/2 + 3);
   graphCtx.fillText('0.0', pad.l - 22, pad.t + gh + 3);
   graphCtx.fillText('← time', pad.l + gw - 36, pad.t + gh + 14);
 
-  graphCtx.strokeStyle = 'rgba(16,16,16,0.25)';
+  graphCtx.strokeStyle = 'rgba(220,220,226,0.22)';
   graphCtx.lineWidth = 0.5;
   graphCtx.beginPath();
   graphCtx.moveTo(pad.l, pad.t + gh);
@@ -899,21 +1472,21 @@ function drawGraph() {
 
   const histLen = Math.min(primaryHist.length, gw);
 
-  // Compute world energy history from primaryHist
-  // For graph, sample at center of stage (yNorm=0.5)
-  // Actually, we want to show what the WORLD did: this is the average response
-  // We approximate by low-pass filtering primary history with worldDecay
   const worldHist = [];
-  let wAcc = 0;
-  for (let i = 0; i < primaryHist.length; i++) {
-    wAcc = wAcc * worldDecay + primaryHist[i] * (1 - worldDecay) * 4;
-    worldHist.push(wAcc);
+  if (mode === 'sync') {
+    for (let i = 0; i < primaryHist.length; i++) worldHist.push(primaryHist[i]);
+  } else {
+    let wAcc = 0;
+    for (let i = 0; i < primaryHist.length; i++) {
+      wAcc = wAcc * worldDecay + primaryHist[i] * (1 - worldDecay) * 4;
+      worldHist.push(wAcc);
+    }
   }
 
-  // SECONDARY (filled area)
+  // SECONDARY (filled area) — teal/green
   if (mode !== 'mute') {
-    graphCtx.fillStyle = 'rgba(122,136,0,0.18)';
-    graphCtx.strokeStyle = '#7a8800';
+    graphCtx.fillStyle = 'rgba(0,229,255,0.14)';
+    graphCtx.strokeStyle = '#00e5ff';
     graphCtx.lineWidth = 1.2;
     graphCtx.beginPath();
     for (let i = 0; i < histLen; i++) {
@@ -930,9 +1503,9 @@ function drawGraph() {
     graphCtx.fill();
   }
 
-  // PRIMARY (sharp spike)
+  // PRIMARY (sharp spike) — acid lime
   if (mode !== 'only') {
-    graphCtx.strokeStyle = '#101010';
+    graphCtx.strokeStyle = '#b06bff';
     graphCtx.lineWidth = 1.5;
     graphCtx.beginPath();
     for (let i = 0; i < histLen; i++) {
@@ -949,7 +1522,7 @@ function drawGraph() {
   const sinceFire = frameCount - firedAt;
   if (sinceFire < gw && sinceFire >= 0) {
     const x = pad.l + gw - sinceFire;
-    graphCtx.strokeStyle = 'rgba(255,45,45,0.5)';
+    graphCtx.strokeStyle = 'rgba(255,45,77,0.5)';
     graphCtx.setLineDash([3,3]);
     graphCtx.lineWidth = 0.8;
     graphCtx.beginPath();
@@ -957,7 +1530,7 @@ function drawGraph() {
     graphCtx.lineTo(x, pad.t + gh);
     graphCtx.stroke();
     graphCtx.setLineDash([]);
-    graphCtx.fillStyle = 'rgba(255,45,45,0.7)';
+    graphCtx.fillStyle = 'rgba(255,45,77,0.75)';
     graphCtx.font = '8px IBM Plex Mono, monospace';
     graphCtx.fillText('FIRE', x + 2, pad.t + 10);
   }
@@ -986,6 +1559,131 @@ function updateHUD() {
   document.getElementById('bb-fr').textContent = String(frameCount).padStart(3,'0');
   document.getElementById('bb-state').textContent = ph;
 
+  // ─── PRIMARY VISIBILITY METER ───
+  // readability = primaryE / (worldEHud + ε)
+  // Concept: during BLADE phase, primary should DOMINATE. If world swamps primary, read fails.
+  // We evaluate it during the BLADE window with a smoothed readability score.
+  // Outside that window, we show "—" (nothing to read).
+  const vm = document.getElementById('vis-meter');
+  const vmFill = document.getElementById('vm-fill');
+  const vmState = document.getElementById('vm-state');
+  const tSinceFire = frameCount - firedAt;
+  if (tSinceFire >= 0 && tSinceFire < PRIMARY_FRAMES + 6) {
+    // Active read window
+    const r = primaryE / (worldEHud + 0.001);
+    readabilityScore = readabilityScore * 0.7 + r * 0.3;
+    // r > 2.2 = CLEAR (primary >> world)
+    // 0.8 < r < 2.2 = BALANCED
+    // r < 0.8 = OVERSHADOWED (world drowns primary)
+    let cls, label, fillPct;
+    if (mode === 'sync') {
+      // Sync collapse: by definition the read fails — primary and world fire together.
+      cls = 's-overshadowed'; label = 'COLLAPSED'; fillPct = 10;
+    } else if (mode === 'only') {
+      cls = 's-overshadowed'; label = 'NO PRIMARY'; fillPct = 5;
+    } else if (mode === 'mute') {
+      cls = 's-clear'; label = 'PRIMARY ONLY'; fillPct = 100;
+    } else if (readabilityScore > 2.2) {
+      cls = 's-clear'; label = 'CLEAR'; fillPct = Math.min(100, 60 + readabilityScore * 8);
+    } else if (readabilityScore > 0.8) {
+      cls = 's-balanced'; label = 'BALANCED'; fillPct = 40 + (readabilityScore - 0.8) * 20;
+    } else {
+      cls = 's-overshadowed'; label = 'OVERSHADOWED'; fillPct = Math.max(5, readabilityScore * 35);
+    }
+    vm.classList.remove('s-clear','s-balanced','s-overshadowed');
+    vm.classList.add(cls);
+    vmFill.style.width = fillPct + '%';
+    vmState.textContent = label;
+  } else {
+    // No active blade — show prior state ghosted, but for clarity reset to neutral
+    readabilityScore *= 0.92;
+    if (mode === 'sync') {
+      vm.classList.remove('s-clear','s-balanced');
+      vm.classList.add('s-overshadowed');
+      vmState.textContent = 'STANDBY';
+    } else {
+      vm.classList.remove('s-clear','s-overshadowed');
+      vm.classList.add('s-balanced');
+      vmState.textContent = 'STANDBY';
+    }
+    vmFill.style.width = '20%';
+  }
+
+  // ─── SYNC COLLAPSE warning banner ───
+  const sw = document.getElementById('sync-warn');
+  if (mode === 'sync' && tSinceFire >= 0 && tSinceFire < PRIMARY_FRAMES + 20) {
+    sw.classList.add('on');
+  } else {
+    sw.classList.remove('on');
+  }
+
+  // ─── MUTE BACKGROUND (uglified UI-demo aesthetic) ───
+  document.getElementById('mute-bg').classList.toggle('on', mode === 'mute');
+
+  // ─── EYE FLOW readout ───
+  const er = document.getElementById('eye-readout');
+  if (!showEyeFlow) {
+    er.classList.remove('scatter');
+    er.classList.add('off');
+    er.textContent = 'EYE FLOW  —  HIDDEN';
+  } else if (mode === 'mute') {
+    er.classList.remove('scatter','off');
+    er.textContent = 'EYE FLOW  —  NO MOTION';
+  } else if (mode === 'sync') {
+    er.classList.remove('off');
+    er.classList.add('scatter');
+    er.textContent = 'EYE FLOW  ✕  SCATTERED  ·  ATTENTION LOST';
+  } else if (mode === 'only') {
+    er.classList.remove('off');
+    er.classList.add('scatter');
+    er.textContent = 'EYE FLOW  ?  DRIFTING  ·  NO ANCHOR';
+  } else {
+    er.classList.remove('off');
+    // Scatter = how much secondary overpowers primary
+    const overload = Math.min(1, worldEHud / 0.7);
+    if (overload > 0.7) {
+      er.classList.add('scatter');
+      er.textContent = 'EYE FLOW  ✕  SCATTERED  ·  SECONDARY OVERLOAD';
+    } else {
+      er.classList.remove('scatter');
+      const arrow = bladeProgress < 1 ? '↗' : '↑';
+      er.textContent = 'EYE FLOW  ' + arrow + '  UPWARD  ·  COHERENT';
+    }
+  }
+
+  // ─── TOPBAR state line ───
+  const tb = document.getElementById('topbar-state');
+  if (mode === 'sync') {
+    tb.textContent = 'SPATIAL_DELAY: 0 // PHASE: LOCKED // READ: FAILED';
+  } else if (mode === 'mute') {
+    tb.textContent = 'SPATIAL_DELAY: — // WORLD_MEMORY: SUPPRESSED';
+  } else if (mode === 'only') {
+    tb.textContent = 'PRIMARY: MUTED // WORLD: ORPHANED ECHO';
+  } else {
+    tb.textContent = 'SPATIAL_DELAY: ON // WORLD_MEMORY: ENABLED';
+  }
+
+  // ─── DELAY READOUT (graph right side) — show phase collapse explicitly ───
+  if (mode === 'sync') {
+    document.getElementById('dr-shock').textContent = '0fr';
+    document.getElementById('dr-grid').textContent  = '0fr';
+    document.getElementById('dr-type').textContent  = '0fr';
+    document.getElementById('dr-hud').textContent   = '0fr';
+    document.getElementById('dr-phase').textContent = '0fr';
+    ['dr-shock','dr-grid','dr-type','dr-hud','dr-phase'].forEach(id => {
+      document.getElementById(id).style.color = 'var(--hot)';
+    });
+  } else {
+    document.getElementById('dr-shock').textContent = '+3fr';
+    document.getElementById('dr-grid').textContent  = '+5fr';
+    document.getElementById('dr-type').textContent  = '+9fr';
+    document.getElementById('dr-hud').textContent   = '+13fr';
+    document.getElementById('dr-phase').textContent = '+17fr';
+    ['dr-shock','dr-grid','dr-type','dr-hud','dr-phase'].forEach(id => {
+      document.getElementById(id).style.color = '';
+    });
+  }
+
   // World memory readouts
   let totalDisplace = 0;
   for (const n of wmNodes) totalDisplace += Math.sqrt(n.dx*n.dx + n.dy*n.dy);
@@ -995,10 +1693,27 @@ function updateHUD() {
   document.getElementById('wm-phase').textContent = phaseDrift.toFixed(2);
   document.getElementById('wm-hud').textContent = (hudError >= 0 ? '+' : '') + hudError.toFixed(1) + 'px';
 
+  // READABILITY readout in CLIVE
+  const lr = document.getElementById('lv-read');
+  if (lr) {
+    if (tSinceFire >= 0 && tSinceFire < PRIMARY_FRAMES + 6) {
+      lr.textContent = readabilityScore.toFixed(2);
+      lr.classList.remove('hot','acid');
+      if (mode === 'sync' || mode === 'only' || readabilityScore < 0.8) lr.classList.add('hot');
+      else if (readabilityScore > 2.2) lr.classList.add('acid');
+    } else {
+      lr.textContent = '—';
+      lr.classList.remove('hot','acid');
+    }
+  }
+
   // World tag bottom-right of stage
   const wt = document.getElementById('wt-status');
   const wtd = document.getElementById('wt-detail');
-  if (worldEHud > 0.20 || gridPct > 20 || typeCorrupt > 0.2) {
+  if (ph === 'AFTERMATH') {
+    wt.textContent = 'WORLD: TAKES OVER';
+    wtd.textContent = 'primary gone — only world remains';
+  } else if (worldEHud > 0.20 || gridPct > 20 || typeCorrupt > 0.2) {
     if (ph === 'PROPAGATING') {
       wt.textContent = 'WORLD: PROPAGATING';
       wtd.textContent = 'causal wave traveling';
@@ -1019,12 +1734,442 @@ function updateHUD() {
 }
 
 // ── LOOP ──
+
+// ── GLITCH OVERLAY ────────────────────────────────────────────
+// Signal-corruption overlay for SYNC / ONLY modes.
+// Bursts are intermittent (~16-24fps flicker), not constant noise,
+// so the screen reads as "broken signal" rather than ambient texture.
+//
+// SYNC: heavy bursts during BLADE phase + lingering chunks after (read fails outright)
+// ONLY: lighter, sporadic chunks (orphaned echo — something is off but unclear)
+// NORMAL / MUTE: no glitch
+function updateGlitch() {
+  const layer = document.getElementById('glitch-layer');
+  const stage = document.getElementById('main-zone');
+  if (!layer || !stage) return;
+
+  // Frozen during scrub — keep the teaching frame clean (no flicker)
+  if (paused) {
+    layer.classList.remove('on');
+    stage.classList.remove('fx-invert');
+    if (layer.children.length > 0) layer.innerHTML = '';
+    return;
+  }
+
+  // Decide if glitch should be active right now
+  const tSinceFire = frameCount - firedAt;
+  let active = false;
+  let intensity = 0; // 0..1 — controls burst frequency and chunk count
+
+  if (mode === 'sync') {
+    // SYNC: corruption ramps with primary+world energy; lingers + charged ambient hum
+    if (tSinceFire >= 0 && tSinceFire < PRIMARY_FRAMES + 28) {
+      active = true;
+      const phaseE = (primaryE + worldEHud * 0.6);
+      intensity = Math.min(1, phaseE * 1.45 + (tSinceFire < PRIMARY_FRAMES ? 0.5 : 0.12));
+    } else {
+      active = true; intensity = 0.3 + worldEHud * 0.5;
+    }
+  } else if (mode === 'only') {
+    // ONLY: orphaned echo — steady sporadic chunks
+    active = true;
+    intensity = Math.min(0.62, 0.2 + worldEHud * 0.9);
+  } else if (mode === 'mute') {
+    // dead screen still drops a few faint packets (アンビエント：全モード)
+    active = true; intensity = 0.12;
+  } else {
+    // NORMAL: ambient glitch that BLOOMS AFTER the blade (gated), never with it
+    active = true;
+    intensity = Math.min(0.6, 0.13 + worldEHud * 0.85) * fxGate();
+  }
+
+  if (!active) {
+    layer.classList.remove('on');
+    stage.classList.remove('fx-invert');
+    if (layer.children.length > 0) layer.innerHTML = '';
+    glitchBurstUntil = -1;
+    return;
+  }
+
+  layer.classList.add('on');
+
+  // Burst gating: only re-roll a new burst when the previous one ends.
+  // Burst rate scales with intensity (more intensity = shorter gaps).
+  if (frameCount > glitchBurstUntil) {
+    // Probability of starting a new burst this frame
+    const fireProb = 0.2 + intensity * 0.6;
+    if (Math.random() < fireProb) {
+      // shorter holds = crisper, faster flicker (点滅を速く、メリハリ)
+      glitchBurstUntil = frameCount + 1 + Math.floor(Math.random() * 4);
+      // full-frame invert is dramatic — keep it mostly to SYNC
+      glitchInvertActive = Math.random() < (mode === 'sync' ? 0.34 : (mode === 'only' ? 0.07 : 0.025));
+      glitchSeed = Math.random() * 100000;
+      buildGlitchFrame(layer, intensity);
+    } else {
+      // Quiet frame between bursts — clear the layer
+      if (layer.children.length > 0) layer.innerHTML = '';
+      stage.classList.remove('fx-invert');
+    }
+  }
+  // During a burst, hold the current chunks (don't redraw every frame —
+  // that would look like static instead of bursts).
+
+  // Apply / remove full-frame invert per current burst state
+  if (frameCount <= glitchBurstUntil && glitchInvertActive) {
+    stage.classList.add('fx-invert');
+  } else {
+    stage.classList.remove('fx-invert');
+  }
+}
+
+function buildGlitchFrame(layer, intensity) {
+  layer.innerHTML = '';
+  const W = VW, H = VH;
+  if (W <= 0 || H <= 0) return;
+  // purple / pink / blue fluorescent palette + minor green
+  const COLS = ['#00e5ff','#ff3df0','#3b7bff','#b06bff','#ff36d4','#0bff6a'];
+  const pick = () => COLS[Math.floor(Math.random()*COLS.length)];
+  const k = Math.max(0.05, Math.min(1, intensity)); // clamped intensity
+  const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
+
+  const add = (x, y, w, h, css) => {
+    const el = document.createElement('div');
+    el.className = 'slice';
+    el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.right = 'auto';
+    el.style.width = w + 'px'; el.style.height = h + 'px';
+    for (const key in css) el.style[key] = css[key];
+    layer.appendChild(el);
+    return el;
+  };
+
+  // 1) THIN DATA STREAKS (ref_3) — crisp 1px coloured lines, varied length,
+  //    strong opacity contrast: a few bright, most faint.
+  const thinCount = 5 + Math.floor(k * 26);
+  for (let i = 0; i < thinCount; i++) {
+    const y = Math.random() * H;
+    const w = rnd(8, W * 0.55) * (0.4 + k);
+    const x = Math.random() * (W - w);
+    const c = pick();
+    const bright = Math.random() < 0.22;
+    add(x, y, w, 1, {
+      background: c,
+      opacity: bright ? rnd(0.85, 1) : rnd(0.12, 0.4),
+      mixBlendMode: 'screen',
+      boxShadow: bright ? 'inset -3px 0 0 #fff' : 'none',
+    });
+  }
+
+  // 2) DENSE PIXEL-BLOCK CLUSTERS (ref_5) — 1-2 regions packed with a precise
+  //    grid of tiny rectangles + checker tiles. The intricate, "datamoshed
+  //    memory bank" look. Only appears once intensity is meaningful.
+  const clusters = k > 0.45 ? (1 + (Math.random() < k ? 1 : 0)) : (Math.random() < k ? 1 : 0);
+  for (let c = 0; c < clusters; c++) {
+    const cw = rnd(60, 170) * (0.5 + k);
+    const ch = rnd(36, 120) * (0.5 + k);
+    const cx = Math.random() * Math.max(1, W - cw);
+    const cy = Math.random() * Math.max(1, H - ch);
+    const cell = [4, 5, 6, 7][Math.floor(Math.random()*4)];
+    const cols = Math.floor(cw / cell);
+    const rows = Math.floor(ch / cell);
+    const fill = 0.26 + k * 0.34; // packing density
+    const clusterCols = [pick(), pick(), '#fff'];
+    let drawn = 0; const MAX = 460; // hard cap to keep the DOM cheap
+    for (let ry = 0; ry < rows && drawn < MAX; ry++) {
+      for (let rx = 0; rx < cols && drawn < MAX; rx++) {
+        if (Math.random() > fill) continue;
+        const col = clusterCols[Math.floor(Math.random()*clusterCols.length)];
+        add(cx + rx*cell, cy + ry*cell, cell, cell, {
+          background: col,
+          opacity: Math.random() < 0.3 ? rnd(0.7, 1) : rnd(0.18, 0.5),
+          mixBlendMode: 'screen',
+        });
+        drawn++;
+      }
+    }
+    // checker tile band inside the cluster (precise dither)
+    if (Math.random() < 0.7) {
+      const bandH = cell * 2 * Math.floor(rnd(1, 3));
+      const cc = pick();
+      const band = add(cx, cy + rnd(0, ch - bandH), cw, bandH, {
+        background: 'repeating-conic-gradient(' + cc + ' 0% 25%, transparent 0% 50%)',
+        backgroundSize: (cell*2) + 'px ' + (cell*2) + 'px',
+        opacity: rnd(0.5, 0.9), mixBlendMode: 'screen',
+      });
+      band.style.imageRendering = 'pixelated';
+    }
+  }
+
+  // 3) RGB-SPLIT BLOCKS — offset cyan/magenta rectangles (chromatic aberration)
+  const blockCount = 2 + Math.floor(k * 7);
+  for (let i = 0; i < blockCount; i++) {
+    const bw = rnd(24, 160) * (0.5 + k);
+    const bh = rnd(4, 18) * (0.5 + k);
+    const bx = Math.random() * (W - bw);
+    const by = Math.random() * (H - bh);
+    const off = rnd(2, 6) * (0.5 + k);
+    add(bx - off, by, bw, bh, { background:'#00e5ff', opacity: rnd(0.35,0.6), mixBlendMode:'screen' });
+    add(bx + off, by, bw, bh, { background:'#ff3df0', opacity: rnd(0.35,0.6), mixBlendMode:'screen' });
+  }
+
+  // 4) NEGAPOSI INVERT CHUNKS — local difference-blend rectangles
+  const invCount = 1 + Math.floor(k * 5);
+  for (let i = 0; i < invCount; i++) {
+    const bw = rnd(16, 120) * (0.5 + k);
+    const bh = rnd(3, 14) * (0.5 + k);
+    const el = add(Math.random()*(W-bw), Math.random()*(H-bh), bw, bh, {
+      background: Math.random() < 0.5 ? '#fff' : pick(), opacity: '0.85',
+    });
+    el.style.mixBlendMode = 'difference';
+  }
+
+  // 5) SCAN LINES — a couple of bright thin horizontals (crisp)
+  const scanCount = Math.random() < 0.5 + k*0.3 ? 1 + Math.floor(Math.random()*2) : 0;
+  for (let i = 0; i < scanCount; i++) {
+    const el = add(0, Math.random()*H, W, 1, { background: pick(), opacity:'0.85', mixBlendMode:'screen' });
+    el.style.right = '0'; el.style.width = 'auto';
+  }
+}
+// ──────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════
+// ATTENTION INSTRUMENTS  —  gaze / score / hierarchy / cause-effect
+// ═══════════════════════════════════════════════════════════════
+function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+
+// ── GAZE HEATMAP ──────────────────────────────────────────────
+function paintGaze(x, y, r, a, focus){
+  const g = gazeCtx.createRadialGradient(x, y, 0, x, y, r);
+  if (focus){
+    g.addColorStop(0,   `rgba(255,255,255,${Math.min(0.9,a)})`);
+    g.addColorStop(0.28,`rgba(255,242,170,${a*0.72})`);
+    g.addColorStop(0.62,`rgba(255,186,64,${a*0.26})`);
+    g.addColorStop(1,   'rgba(255,150,0,0)');
+  } else {
+    g.addColorStop(0,   `rgba(255,232,128,${Math.min(0.82,a)})`);
+    g.addColorStop(0.5, `rgba(255,158,46,${a*0.4})`);
+    g.addColorStop(1,   'rgba(255,96,20,0)');
+  }
+  gazeCtx.fillStyle = g;
+  gazeCtx.fillRect(x - r, y - r, 2*r, 2*r);
+}
+const DISTRACT = [[0.18,0.20],[0.82,0.20],[0.18,0.80],[0.82,0.80],[0.50,0.14],[0.50,0.86],[0.30,0.50],[0.70,0.50]];
+function drawGaze(){
+  gazeCtx.clearRect(0, 0, VW, VH);
+  if (!showGaze) return;
+  const W = VW, H = VH;
+  const coh = sm.coherence;                 // 0 = lost, 1 = locked on primary
+  // ── PRIMARY FOCUS POINT ──
+  const t = frameCount - firedAt;
+  let fy;
+  if (t >= 0 && t < PRIMARY_FRAMES) fy = (1 - bladeProgress) * H;   // ride the blade
+  else fy = H * 0.44;                                               // settle near the action
+  paintGaze(W*0.5, fy, 80 + coh*150, 0.18 + coh*0.55, true);
+  // ── SCATTER (eye pulled toward loud world regions) ──
+  const scatter = 1 - coh;
+  if (scatter > 0.02){
+    const breathe = 0.6 + 0.4*Math.sin(frameCount*0.06);
+    for (let i = 0; i < DISTRACT.length; i++){
+      const dx = DISTRACT[i][0], dy = DISTRACT[i][1];
+      const local = sampleLocalWorldXY(dx, dy, 8);
+      const a = scatter * (0.10 + local*1.3) * (0.7 + 0.3*Math.sin(frameCount*0.05 + i));
+      if (a < 0.03) continue;
+      paintGaze(dx*W, dy*H, 50 + local*70 + scatter*30, a * breathe, false);
+    }
+  }
+}
+
+// ── ATTENTION SCORE / HIERARCHY / CAUSE-EFFECT ────────────────
+const ceLinks = Array.from(document.querySelectorAll('#ce-chain .ce-link'));
+const ceArrows = Array.from(document.querySelectorAll('#ce-chain .ce-arrow'));
+const ceChain = document.getElementById('ce-chain');
+
+function scoreBand(v){
+  if (v >= 88) return ['CRYSTAL CLEAR','q-crystal'];
+  if (v >= 70) return ['STRONG FOCUS','q-strong'];
+  if (v >= 50) return ['COMPETING SIGNALS','q-compete'];
+  if (v >= 30) return ['ATTENTION COLLAPSE','q-collapse'];
+  return ['VISUAL CHAOS','q-chaos'];
+}
+
+function updateInstruments(snap){
+  const t = frameCount - firedAt;
+
+  // ── raw signal strengths (0..1) ──
+  let totalDisplace = 0;
+  for (const n of wmNodes) totalDisplace += Math.sqrt(n.dx*n.dx + n.dy*n.dy);
+  const gridPct = clamp01(totalDisplace / (wmNodes.length * 0.4));
+  const pSecondary = clamp01(worldEHud / 0.4);
+  const pNoise = clamp01(typeCorrupt*0.65 + gridPct*0.5 + Math.abs(hudError)/16 + (mode==='sync'?0.45:0));
+  let pPrimary = primaryGlow;
+  if (mode === 'only') pPrimary = 0;
+  if (mode === 'mute') pPrimary = Math.max(pPrimary, 0.55);
+
+  const evalActive = (t >= 0 && t < 110) || worldEHud > 0.05 || pPrimary > 0.05;
+
+  // ── sub-metric targets (0..100) ──
+  let pf, es, mh, vc;
+  if (evalActive){
+    const denom = pPrimary + pSecondary*0.7 + pNoise + 0.05;
+    pf = clamp01(pPrimary / denom) * 100;
+    es = (1 - clamp01(pNoise*0.8 + Math.max(0,pSecondary-0.6)*1.3 + (mode==='sync'?0.55:0) + (mode==='only'?0.5:0))) * 100;
+    mh = mode==='sync' ? 8 : mode==='only' ? 32 : clamp01(1 - Math.max(0,pSecondary-0.5)*1.1 - pNoise*0.45) * 100;
+    vc = (1 - clamp01((pSecondary + pNoise) / (pPrimary + 0.2) / 2.4)) * 100;
+  } else {
+    pf = 60; es = 76; mh = 82; vc = 72;   // relaxed STANDBY
+  }
+
+  const k = snap ? 1 : 0.16;
+  sm.pf += (pf - sm.pf) * k;
+  sm.es += (es - sm.es) * k;
+  sm.mh += (mh - sm.mh) * k;
+  sm.vc += (vc - sm.vc) * k;
+  const total = sm.pf*0.32 + sm.es*0.28 + sm.mh*0.22 + sm.vc*0.18;
+  sm.total += (total - sm.total) * (snap ? 1 : 0.5);
+
+  // hierarchy bars (smoothed)
+  const hk = snap ? 1 : 0.18;
+  sm.vhP += (pPrimary - sm.vhP) * hk;
+  sm.vhS += (pSecondary - sm.vhS) * hk;
+  sm.vhN += (pNoise - sm.vhN) * hk;
+
+  // gaze coherence target
+  const cohTarget = clamp01(sm.total / 100 * 0.9 + 0.05);
+  sm.coherence += (cohTarget - sm.coherence) * (snap ? 1 : 0.12);
+
+  // ── PAINT: hero ──
+  const [label, cls] = scoreBand(sm.total);
+  const hero = document.getElementById('attn-hero');
+  hero.className = '';
+  hero.classList.add(cls);
+  document.getElementById('ah-num').textContent = Math.round(sm.total);
+  document.getElementById('ah-state').textContent = (evalActive ? label : 'STANDBY');
+  document.getElementById('ah-fill').style.width = sm.total + '%';
+
+  // ── PAINT: score breakdown ──
+  document.getElementById('as-big').textContent = Math.round(sm.total);
+  const asBig = document.getElementById('as-big');
+  asBig.style.color = ({'q-crystal':'var(--acid)','q-strong':'#7df0c0','q-compete':'#ffd23d','q-collapse':'#ff7a3d','q-chaos':'var(--hot)'})[cls];
+  document.getElementById('as-state').textContent = (evalActive ? label : 'STANDBY');
+  document.getElementById('as-state').style.color = asBig.style.color;
+  const setM = (id, v) => {
+    document.getElementById('am-'+id).style.width = v + '%';
+    document.getElementById('am-'+id+'-v').textContent = Math.round(v);
+  };
+  setM('pf', sm.pf); setM('es', sm.es); setM('mh', sm.mh); setM('vc', sm.vc);
+
+  // ── PAINT: visual hierarchy bars ──
+  document.getElementById('vh-p').style.width = (sm.vhP*100) + '%';
+  document.getElementById('vh-s').style.width = (sm.vhS*100) + '%';
+  document.getElementById('vh-n').style.width = (sm.vhN*100) + '%';
+  document.getElementById('vh-p-v').textContent = Math.round(sm.vhP*100) + '%';
+  document.getElementById('vh-s-v').textContent = Math.round(sm.vhS*100) + '%';
+  document.getElementById('vh-n-v').textContent = Math.round(sm.vhN*100) + '%';
+  const verdict = document.getElementById('vh-verdict');
+  if (sm.vhN >= sm.vhP*0.82 && (sm.vhN > 0.12 || mode==='sync')){
+    verdict.className = 'vh-verdict warn';
+    verdict.innerHTML = '<strong>危険:</strong> PRIMARY ≒ NOISE — READ FAILS';
+  } else if (sm.vhP > sm.vhS && sm.vhS >= sm.vhN && sm.vhP > 0.12){
+    verdict.className = 'vh-verdict ok';
+    verdict.innerHTML = '<strong>理想:</strong> PRIMARY &gt; SECONDARY &gt; NOISE';
+  } else {
+    verdict.className = 'vh-verdict';
+    verdict.innerHTML = '<strong>IDEAL:</strong> PRIMARY &gt; SECONDARY &gt; NOISE';
+  }
+
+  // ── PAINT: cause → effect chain ──
+  const fired = t >= 0;
+  const locked = (mode === 'sync' && fired && t < 60);
+  ceChain.classList.toggle('locked', locked);
+  for (const link of ceLinks){
+    const fr = +link.dataset.fr;
+    const lay = link.dataset.lay;
+    const layerOn = lay === 'primary' ? true : (layers[lay] !== false);
+    let lit;
+    if (mode === 'mute'){
+      lit = lay === 'primary' && fired && t < 30;
+    } else if (locked){
+      lit = layerOn;
+    } else if (lay === 'primary'){
+      lit = fired && t < 40;
+    } else {
+      lit = layerOn && fired && t >= fr && (t < fr + 170 || worldEHud > 0.03 || gridPct > 0.05);
+    }
+    link.classList.toggle('lit', !!lit);
+  }
+  // arrows light when the link AFTER them is lit
+  for (let i = 0; i < ceArrows.length; i++){
+    const next = ceLinks[i+1];
+    ceArrows[i].classList.toggle('lit', next && next.classList.contains('lit') && !locked);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMELINE SCRUB  —  deterministic re-simulation of one fire cycle
+// ═══════════════════════════════════════════════════════════════
+function resetSimState(){
+  worldEHud = 0; primaryHist = []; initWM();
+  typeCorrupt = 0; phaseDrift = 0; hudError = 0;
+  readabilityScore = 1.0; primaryGlow = 0;
+}
+function runToFrame(Tt){
+  resetSimState();
+  simSeed = BASE_SEED;
+  firedAt = 0;
+  for (let f = 0; f <= Tt; f++){ frameCount = f; physics(); }
+  scrubFrame = Tt;
+}
+function scrubPhase(f){
+  if (f < PRIMARY_FRAMES) return '① 主動作 PRIMARY';
+  if (f < 46)  return '② 副次発生 SECONDARY';
+  if (f < 120) return '③ 余韻 AFTERMATH';
+  if (f < 200) return '④ 残留 RESIDUAL';
+  return '⑤ 収束 SETTLED';
+}
+const sbPlay = document.getElementById('sb-play');
+const scrubRange = document.getElementById('scrub-range');
+function renderScrub(Tt){
+  runToFrame(Tt);
+  drawMain(); drawGraph(); drawGaze();
+  updateGlitch(); updateHUD(); updateInstruments(true);
+  document.getElementById('sb-frame').textContent = String(Tt).padStart(3,'0');
+  document.getElementById('sb-phase').textContent = scrubPhase(Tt);
+}
+function setPaused(p){
+  paused = p;
+  sbPlay.classList.toggle('paused', p);
+  sbPlay.textContent = p ? '▶ PLAY' : '❚❚ PAUSE';
+  document.getElementById('graph-zone').classList.toggle('scrubbing', p);
+  if (p){
+    const Tt = Math.round(scrubRange.value/1000 * TIMELINE_LEN);
+    renderScrub(Tt);
+  } else {
+    document.getElementById('sb-phase').textContent = 'LIVE';
+  }
+}
+sbPlay.addEventListener('click', () => setPaused(!paused));
+scrubRange.addEventListener('input', () => {
+  if (!paused) setPaused(true);
+  renderScrub(Math.round(scrubRange.value/1000 * TIMELINE_LEN));
+});
+
+// ── LOOP ──
 function loop() {
-  step();
+  if (!paused){
+    frameCount++;
+    physics();
+    if (frameCount - firedAt > 240) fire();
+  }
   drawMain();
   drawGraph();
-  // Auto-fire on frame basis (avoids drift from setInterval vs RAF mismatch)
-  if (frameCount - firedAt > 320) fire();
+  drawGaze();
+  updateGlitch();
+  updateHUD();
+  updateInstruments(false);
+  if (!paused){
+    scrubFrame = Math.min(TIMELINE_LEN, Math.max(0, frameCount - firedAt));
+    scrubRange.value = Math.round(scrubFrame / TIMELINE_LEN * 1000);
+    document.getElementById('sb-frame').textContent = String(scrubFrame).padStart(3,'0');
+  }
   requestAnimationFrame(loop);
 }
 
@@ -1033,12 +2178,32 @@ document.getElementById('btnFire').addEventListener('click', fire);
 document.getElementById('btnNormal').addEventListener('click', () => setMode('normal'));
 document.getElementById('btnMute').addEventListener('click', () => setMode('mute'));
 document.getElementById('btnOnly').addEventListener('click', () => setMode('only'));
+document.getElementById('btnSync').addEventListener('click', () => setMode('sync'));
+
+const btnEyeFlow = document.getElementById('btnEyeFlow');
+btnEyeFlow.addEventListener('click', () => {
+  showEyeFlow = !showEyeFlow;
+  btnEyeFlow.textContent = showEyeFlow ? 'ON' : 'OFF';
+  btnEyeFlow.classList.toggle('on', showEyeFlow);
+});
+
+const btnGaze = document.getElementById('btnGaze');
+btnGaze.addEventListener('click', () => {
+  showGaze = !showGaze;
+  btnGaze.textContent = showGaze ? 'ON' : 'OFF';
+  btnGaze.classList.toggle('on', showGaze);
+  gazeC.classList.toggle('on', showGaze);
+  document.getElementById('gaze-legend').classList.toggle('on', showGaze);
+  if (!showGaze) gazeCtx.clearRect(0, 0, VW, VH);
+  if (paused) drawGaze();
+});
 
 function setMode(m) {
   mode = m;
   document.getElementById('btnNormal').classList.toggle('active', m==='normal');
   document.getElementById('btnMute').classList.toggle('active', m==='mute');
   document.getElementById('btnOnly').classList.toggle('active', m==='only');
+  document.getElementById('btnSync').classList.toggle('active', m==='sync');
 }
 setMode('normal');
 
@@ -1070,12 +2235,29 @@ slRes.addEventListener('input', () => {
 
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape') { window.location.href = 'index.html'; return; }
-  if (e.code === 'KeyF') { e.preventDefault(); fire(); }
+  if (e.code === 'KeyF') { e.preventDefault(); if (paused) setPaused(false); fire(); }
   if (e.code === 'KeyM') { setMode(mode==='mute'?'normal':'mute'); }
   if (e.code === 'KeyO') { setMode(mode==='only'?'normal':'only'); }
+  if (e.code === 'KeyS') { setMode(mode==='sync'?'normal':'sync'); }
+  if (e.code === 'Space') { e.preventDefault(); setPaused(!paused); }
+  if (e.code === 'ArrowLeft' && paused) {
+    e.preventDefault();
+    renderScrub(Math.max(0, scrubFrame - 1));
+    scrubRange.value = Math.round(scrubFrame / TIMELINE_LEN * 1000);
+  }
+  if (e.code === 'ArrowRight' && paused) {
+    e.preventDefault();
+    renderScrub(Math.min(TIMELINE_LEN, scrubFrame + 1));
+    scrubRange.value = Math.round(scrubFrame / TIMELINE_LEN * 1000);
+  }
   if (e.code === 'KeyR') {
+    paused = false;
+    sbPlay.classList.remove('paused'); sbPlay.textContent = '❚❚ PAUSE';
+    document.getElementById('graph-zone').classList.remove('scrubbing');
+    document.getElementById('sb-phase').textContent = 'LIVE';
     frameCount = 0; firedAt = -9999; primaryE = 0; worldEHud = 0;
     primaryHist = []; initWM(); typeCorrupt = 0; phaseDrift = 0; hudError = 0;
+    readabilityScore = 1.0; primaryGlow = 0;
   }
 });
 
