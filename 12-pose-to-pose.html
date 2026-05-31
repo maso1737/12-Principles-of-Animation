@@ -1181,7 +1181,7 @@ function jointColor(side, alpha=1){
   return `rgba(255,255,255,${alpha})`;
 }
 function jointRadius(sz, scale=1){
-  const base = {XL:22, L:11, M:7.5, S:5, XS:3.5};
+  const base = {XL:48, L:11, M:7.5, S:5, XS:3.5};
   return (base[sz]||7)*scale;
 }
 
@@ -1338,8 +1338,12 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
   for(const [a,b] of BONES){
     if(!pose[a] || !pose[b]) continue;
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
-    const ax = pose[a][0]*w*dpr, ay = pose[a][1]*h*dpr;
-    const bx = pose[b][0]*w*dpr, by = pose[b][1]*h*dpr;
+    let ax = pose[a][0]*w*dpr, ay = pose[a][1]*h*dpr;
+    let bx = pose[b][0]*w*dpr, by = pose[b][1]*h*dpr;
+    // 頭につながる骨は頭の円周で止める（首の線が頭・目に突き抜けるのを回避）
+    const headR = jointRadius('XL', dpr);
+    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
+    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
     if(ghostMode){
       c.strokeStyle = 'rgba(255,79,168,0.35)';
     } else {
@@ -1370,7 +1374,7 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
       // eye: 顔の向き（head.x vs neck.x）で左右反転
       if(!ghostMode){
         const fs = facingSign(pose);
-        c.beginPath(); c.arc(x + fs * r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
+        c.beginPath(); c.arc(x + fs * r*0.30, y - r*0.04, r*0.24, 0, Math.PI*2);
         c.fillStyle='rgba(255,255,255,0.95)'; c.fill();
       }
     } else {
@@ -1511,8 +1515,12 @@ function drawEdit(){
   for(const [a,b] of BONES){
     if(!editor.poseData[a] || !editor.poseData[b]) continue;
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
-    const ax = editor.poseData[a][0]*w*dpr, ay = editor.poseData[a][1]*h*dpr;
-    const bx = editor.poseData[b][0]*w*dpr, by = editor.poseData[b][1]*h*dpr;
+    let ax = editor.poseData[a][0]*w*dpr, ay = editor.poseData[a][1]*h*dpr;
+    let bx = editor.poseData[b][0]*w*dpr, by = editor.poseData[b][1]*h*dpr;
+    // 頭につながる骨は頭の円周で止める（突き抜け回避）
+    const headR = jointRadius('XL', dpr)*1.1;
+    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
+    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
     const grad = editCtx.createLinearGradient(ax,ay,bx,by);
     grad.addColorStop(0, jointColor(jA?.side||'c', 0.95));
     grad.addColorStop(1, jointColor(jB?.side||'c', 0.95));
@@ -1547,7 +1555,7 @@ function drawEdit(){
       // eye: 顔の向きで左右反転
       const fs = facingSign(editor.poseData);
       editCtx.beginPath();
-      editCtx.arc(x + fs * r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
+      editCtx.arc(x + fs * r*0.30, y - r*0.04, r*0.24, 0, Math.PI*2);
       editCtx.fillStyle = 'rgba(255,255,255,0.95)';
       editCtx.fill();
     } else {
@@ -2176,8 +2184,11 @@ function exportSVG(){
   for(const [a,b] of BONES){
     if(!pose[a] || !pose[b]) continue;
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
-    const ax = pose[a][0]*W, ay = pose[a][1]*H;
-    const bx = pose[b][0]*W, by = pose[b][1]*H;
+    let ax = pose[a][0]*W, ay = pose[a][1]*H;
+    let bx = pose[b][0]*W, by = pose[b][1]*H;
+    const headR = jointRadius('XL');
+    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
+    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
     const colA = jointColor(jA?.side||'c', 0.9);
     const colB = jointColor(jB?.side||'c', 0.9);
     const gid = `g_${a}_${b}`;
@@ -2192,7 +2203,7 @@ function exportSVG(){
     if(j.k === 'head'){
       svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>`;
       const fs = facingSign(pose);
-      svg += `<circle cx="${x + fs * r*0.30}" cy="${y - r*0.04}" r="${r*0.18}" fill="rgba(255,255,255,0.95)"/>`;
+      svg += `<circle cx="${x + fs * r*0.30}" cy="${y - r*0.04}" r="${r*0.24}" fill="rgba(255,255,255,0.95)"/>`;
     } else {
       const col = jointColor(j.side, 0.9);
       svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"`;

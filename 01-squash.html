@@ -806,7 +806,7 @@ input[type=range].warn::-moz-range-thumb{background:var(--warn)}
             <input type="range" id="sl-stretch" min="100" max="300" value="160">
           </div>
           <div class="sl-row">
-            <div class="sl-head"><span class="sl-name">BOUNCE&nbsp;HEIGHT</span><span class="sl-val" id="val-height">140 PX</span></div>
+            <div class="sl-head"><span class="sl-name">BOUNCE&nbsp;HEIGHT</span><span class="sl-val" id="val-height">58 %</span></div>
             <input type="range" id="sl-height" min="60" max="240" value="140">
           </div>
           <div class="sl-row">
@@ -955,8 +955,9 @@ const state = {
 // ════════════════════════════════════════════════════════════
 function easePow(u, power){ return Math.pow(u, power); }
 
-function getBallState(frame, params, groundY){
+function getBallState(frame, params, groundY, bouncePx){
   groundY = (groundY !== undefined) ? groundY : GROUND_Y;
+  const bounce = (bouncePx !== undefined) ? bouncePx : params.height;
   const t = frame / state.totalFrames;
   const power = params.ease;
   const cycle = t % 1.0;
@@ -970,7 +971,7 @@ function getBallState(frame, params, groundY){
     eased = easePow(1 - u, power);
     phase = eased;
   }
-  const topY = groundY - BALL_R - params.height;
+  const topY = groundY - BALL_R - bounce;
   const bottomY = groundY - BALL_R;
   const cy = topY + (bottomY - topY) * phase;
   const dPhase = (cycle < 0.5)
@@ -1025,8 +1026,13 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
   svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
   // 接地ラインは常に下端から6.5%に固定 → どのウィンドウサイズでも必ず表示内
   const groundY = h - Math.max(18, Math.round(h * 0.065));
+  // バウンス量はコンテナの利用可能高さに対する割合で算出
+  //  → どのウィンドウサイズでも最大値で上端付近まで届き、はみ出さない
+  const topPad = Math.max(20, Math.round(h * 0.07));
+  const maxBounce = Math.max(40, groundY - BALL_R - topPad);
+  const bouncePx = maxBounce * (params.height / 240);
 
-  const bs = getBallState(state.frame, params, groundY);
+  const bs = getBallState(state.frame, params, groundY, bouncePx);
   const cx = w / 2;
 
   let rx, ry, squashW = 0, stretchW = 0;
@@ -1043,7 +1049,7 @@ function renderPanel(svgEl, withSS, params, features, isBreak, panelKey){
 
   // arc
   if(features.arc){
-    const topY = groundY - BALL_R - params.height;
+    const topY = groundY - BALL_R - bouncePx;
     const midY = (topY + groundY - BALL_R) / 2;
     const arcH = (groundY - BALL_R - topY) / 2;
     parts.push(`<ellipse cx="${cx}" cy="${midY}" rx="${w*0.18}" ry="${arcH}"
@@ -1325,7 +1331,7 @@ function bindSl(id, key, fn, fmt){
 }
 bindSl('squash',  'squash',  v=>v/100, v=>(v/100).toFixed(2));
 bindSl('stretch', 'stretch', v=>v/100, v=>(v/100).toFixed(2));
-bindSl('height',  'height',  v=>v,     v=>`${v} PX`);
+bindSl('height',  'height',  v=>v,     v=>`${Math.round(v/240*100)} %`);
 bindSl('speed',   'speed',   v=>v/100, v=>`${(v/100).toFixed(1)}×`);
 bindSl('ease',    'ease',    v=>v/10,  v=>(v/10).toFixed(1));
 
