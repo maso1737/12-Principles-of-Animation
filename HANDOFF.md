@@ -57,7 +57,10 @@
 - ✅ **ターンA（完了）**: ①BELIEVABILITY METER（ステージ上部常設・SAFE→UNBELIEVABLE、♥スイートスポット表示）＋ ⑤APPEAL PRESERVATION（パネル H セクション・山型カーブで「壊れる直前=魅力ピーク」、PEAK_APPEAL記録）。算出は `appealOf()` / `believabilityZone()`、`SWEET=0.78`。`updateBelievability()` を `updateHUD()` から毎フレーム呼ぶ。
 - ✅ **ターンB（完了）**: ③BELIEVABILITY FAILURE演出（`triggerFailure()`・3メッセージ循環 "YOU BROKE THE ILLUSION"/"AUDIENCE LOST TRUST"/"FORM NO LONGER READS"・`#main-zone.broken` で全体 saturate↓/contrast↑＋scanlineグリッチ・FORM BREAK big-status を置換）＋ ④STRETCH VISUALIZER（`drawStretchGhost()` カーソル位置に NORMAL/EXAGGERATED/OVERDRIVE の輪郭ゴースト・凡例 `#ghost-legend`・`[G]`キー/ボタンでトグル `showGhost`）
   - 🐛 **ついでに修正**: メインcanvasに DPR 変換が抜けていてカーソルとエフェクトがずれていた（左上一致・離れるほどズレ）。`draw()` 冒頭に `ctx.setTransform(DPR,0,0,DPR,0,0)` を追加して解決
-- ⬜ **ターンC（未）**: ②COMPARISON MODE（NORMAL/EXAGGERATED/OVERDRIVE 3トグル比較描画）
+- ✅ **ターンC（完了）**: ②COMPARISON MODE（`exaggMode` + `EXAGG{NORMAL:0.5/EXAGGERATED:1.0/OVERDRIVE:1.7}`・`exaggMult()` を believability の `ex`／fracture閾値／歪み量／STRETCHゴーストに反映・パネル I セクション3トグル＋`[1][2][3]`キー＋ステージ左上 `#mode-badge`）
+  - 教材的整合: NORMAL は exEff 上限0.575でスイートスポット(0.78)に届かず崩壊もしない＝「地味で安全」、EXAGGERATED はスイートスポットに到達可能＝「理想」、OVERDRIVE は即 FORM BREAK＝「崩壊」。
+
+**→ 09 EXAGGERATION ブラッシュアップ（txt 5要素）すべて完了。** UI改善方針（FXは主役にしない／Shape Readability優先）も維持。
 
 ## 既知の保留事項 / TODO
 

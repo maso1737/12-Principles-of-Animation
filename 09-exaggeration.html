@@ -224,6 +224,34 @@ body{
 }
 .mini-toggle.on{color:var(--bg);background:var(--acid);border-color:var(--acid);font-weight:700}
 
+/* COMPARISON MODE */
+#mode-badge{
+  position:absolute;top:44px;left:16px;
+  font-family:var(--bank);font-size:10px;letter-spacing:0.16em;
+  padding:4px 9px;border:1px solid var(--border);color:var(--dim);
+  background:rgba(10,14,10,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:4;pointer-events:none;transition:color .15s,border-color .15s;
+}
+#mode-badge.NORMAL{color:var(--ice);border-color:var(--ice)}
+#mode-badge.EXAGGERATED{color:var(--acid);border-color:var(--acid)}
+#mode-badge.OVERDRIVE{color:var(--hot);border-color:var(--hot)}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.cmp-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.04em;text-align:center;
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--dim);
+  padding:7px 2px;cursor:pointer;transition:all .15s;line-height:1.3;
+}
+.cmp-btn .cmp-k{display:block;font-size:6.5px;color:var(--dim2);margin-top:2px}
+.cmp-btn:hover{border-color:var(--dim)}
+.cmp-btn.active{font-weight:700}
+.cmp-btn.active .cmp-k{color:rgba(0,0,0,0.6)}
+.cmp-btn.NORMAL.active{background:var(--ice);border-color:var(--ice);color:var(--bg)}
+.cmp-btn.EXAGGERATED.active{background:var(--acid);border-color:var(--acid);color:var(--bg)}
+.cmp-btn.OVERDRIVE.active{background:var(--hot);border-color:var(--hot);color:#fff}
+.cmp-btn.OVERDRIVE.active .cmp-k{color:rgba(255,255,255,0.7)}
+.cmp-desc{font-family:var(--jp);font-size:9.5px;color:var(--dim);line-height:1.7;
+  border-left:2px solid var(--border);padding-left:8px}
+
 /* TIMELINE COMPRESSION strip — bottom */
 #timeline-strip{
   position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
@@ -410,6 +438,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     <div class="strain-label br" id="strain-br">PRESSURE +0% ◂</div>
 
     <div id="phase-badge" class="LOW">DRIVE: STANDBY</div>
+    <div id="mode-badge" class="EXAGGERATED">MODE · EXAGGERATED</div>
 
     <!-- BELIEVABILITY METER — always-on -->
     <div id="believe-meter">
@@ -611,6 +640,16 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     </div>
   </div>
 
+  <div class="psec">
+    <div class="sec-label">ICOMPARISON — 比較モード</div>
+    <div class="cmp-grid">
+      <button class="cmp-btn NORMAL" data-mode="NORMAL">NORMAL<span class="cmp-k">[1]</span></button>
+      <button class="cmp-btn EXAGGERATED active" data-mode="EXAGGERATED">EXAGGER.<span class="cmp-k">[2]</span></button>
+      <button class="cmp-btn OVERDRIVE" data-mode="OVERDRIVE">OVERDRIVE<span class="cmp-k">[3]</span></button>
+    </div>
+    <div class="cmp-desc" id="cmp-desc">理想状態 — 説得力を保ったまま最大化。</div>
+  </div>
+
 </aside>
 
 <footer id="bottombar">
@@ -665,6 +704,16 @@ const FAIL_MSGS = [
   ['AUDIENCE LOST TRUST',    'READ · FAILED'],
   ['FORM NO LONGER READS',   'SILHOUETTE · COLLAPSED'],
 ];
+
+// ── COMPARISON MODE ──
+let exaggMode = 'EXAGGERATED';
+const EXAGG = { NORMAL: 0.5, EXAGGERATED: 1.0, OVERDRIVE: 1.7 };
+const CMP_DESC = {
+  NORMAL:      '現実寄り — 控えめ。壊れにくいが地味。',
+  EXAGGERATED: '理想状態 — 説得力を保ったまま最大化。',
+  OVERDRIVE:   '説得力崩壊 — 押しすぎ。すぐ FORM BREAK。',
+};
+function exaggMult(){ return EXAGG[exaggMode]; }
 
 let frameTime = 0;
 let startTime = performance.now();
@@ -765,6 +814,9 @@ window.addEventListener('keydown', (e) => {
     logEvent('RESET', 'system cleared');
   }
   if (e.code === 'KeyG') setGhost(!showGhost);
+  if (e.code === 'Digit1') setMode('NORMAL');
+  if (e.code === 'Digit2') setMode('EXAGGERATED');
+  if (e.code === 'Digit3') setMode('OVERDRIVE');
 });
 
 // ── STAGE ──
@@ -916,8 +968,8 @@ function triggerFailure() {
 function drawStretchGhost(cx, cy) {
   const R = 32;
   const d = Math.max(0, drive);
-  const sEx = 1 + d * 1.2;           // 現在の誇張量
-  const sOv = 1 + d * 1.2 + 0.7;     // 理論上のオーバードライブ（さらに押し込んだ形）
+  const sEx = 1 + d * 1.2 * exaggMult();  // 現在の誇張量（比較モード反映）
+  const sOv = 1 + d * 1.2 + 0.7;          // 理論上のオーバードライブ（さらに押し込んだ形）
   ctx.save();
   ctx.translate(cx, cy);
   // NORMAL — 基準（dim dashed circle）
@@ -981,8 +1033,10 @@ function step(dt) {
     spawnSparks(mouseX, mouseY, drive);
     if (drive > 0.7) spawnSmear(mouseX, mouseY, drive);
 
-    if (drive > 0.95) {
-      fracture += dt * 1.4;
+    // 実効誇張量 = drive × 比較モード倍率 → OVERDRIVE はすぐ崩壊、NORMAL は粘る
+    const exEff = drive * exaggMult();
+    if (exEff > 0.9) {
+      fracture += dt * 1.4 * exaggMult();
       if (!formBroken && fracture > 0.5) {
         formBroken = true;
         formBreakTime = frameTime;
@@ -1050,7 +1104,7 @@ function draw() {
   ctx.clearRect(0, 0, W, H);
 
   const rec = recoveryFactor();
-  const effectiveStrain = drive + rec * 0.5; // recovery has residual ripples
+  const effectiveStrain = (drive + rec * 0.5) * exaggMult(); // 比較モードで歪み量が変化
   const cx = mouseX, cy = mouseY;
 
   // 1) DISTORTED GRID — kinetic geometry identity (warped toward cursor)
@@ -1428,8 +1482,8 @@ function appealOf(ex){
   return Math.max(0, Math.min(1, a));
 }
 function updateBelievability(){
-  // 誇張量: drive を基準に、破断時はさらに上限超えへ押し込む
-  const ex = Math.max(0, drive + (formBroken ? Math.min(0.2, fracture * 0.25) : 0));
+  // 誇張量: drive × 比較モード倍率。破断時はさらに上限超えへ押し込む
+  const ex = Math.max(0, drive * exaggMult() + (formBroken ? Math.min(0.2, fracture * 0.25) : 0));
   const [zone, zCol] = believabilityZone(ex);
   const appeal = appealOf(ex);
   if (isHolding && appeal > appealPeak) appealPeak = appeal;
@@ -1571,6 +1625,19 @@ function setGhost(on){
   ghostLegend.style.display = on ? 'block' : 'none';
 }
 ghostBtn.addEventListener('click', () => setGhost(!showGhost));
+
+// ── COMPARISON MODE toggle ──
+const modeBadge = document.getElementById('mode-badge');
+function setMode(m){
+  if (!EXAGG[m]) return;
+  exaggMode = m;
+  document.querySelectorAll('.cmp-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+  document.getElementById('cmp-desc').textContent = CMP_DESC[m];
+  modeBadge.textContent = 'MODE · ' + m;
+  modeBadge.className = m;
+  logEvent('MODE', m.toLowerCase() + ' profile');
+}
+document.querySelectorAll('.cmp-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
 
 // ── MAIN LOOP ──
 let lastT = performance.now();
