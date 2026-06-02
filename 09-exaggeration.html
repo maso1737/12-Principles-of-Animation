@@ -203,6 +203,22 @@ body{
 #main-zone.broken{filter:saturate(0.35) contrast(1.3)}
 @keyframes failShift{0%{transform:translateX(0)}50%{transform:translateX(-2px)}100%{transform:translateX(2px)}}
 
+/* DANGER — スイートスポットを超えた「赤点滅」アラート */
+#fx-danger{
+  position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0;
+  box-shadow:inset 0 0 130px 24px rgba(255,61,107,0.5);transition:opacity .12s;
+}
+#main-zone.danger #fx-danger{opacity:1;animation:dangerPulse .46s ease-in-out infinite}
+@keyframes dangerPulse{0%,100%{opacity:0.3}50%{opacity:0.95}}
+@keyframes redFlash{0%,100%{filter:brightness(1)}50%{filter:brightness(1.9)}}
+/* BELIEVABILITY メーターの赤点滅 */
+#believe-meter.danger .bm-fill{background:var(--hot);animation:redFlash .42s ease-in-out infinite}
+#believe-meter.danger .bm-zone{color:var(--hot)!important;animation:redFlash .42s ease-in-out infinite}
+#believe-meter.danger .bm-track{border-color:var(--hot)}
+/* DRIVE ゲージの赤点滅 */
+#gauge-wrap.danger #gauge-fill{animation:redFlash .42s ease-in-out infinite}
+#gauge-wrap.danger #gauge-pct{color:var(--hot)!important;animation:redFlash .42s ease-in-out infinite}
+
 /* STRETCH VISUALIZER legend */
 #ghost-legend{
   position:absolute;bottom:48px;right:18px;
@@ -420,6 +436,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
   <div id="main-zone">
     <canvas id="main-canvas"></canvas>
     <div id="fx-fail"></div>
+    <div id="fx-danger"></div>
 
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
@@ -964,26 +981,76 @@ function triggerFailure() {
   logEvent('FAIL', m.toLowerCase());
 }
 
-// ── STRETCH VISUALIZER（輪郭ゴースト）──
-function drawStretchGhost(cx, cy) {
+// アシッド(182,255,31) → ホット赤(255,61,107) を danger で補間
+function chargeRGB(t) {
+  t = Math.max(0, Math.min(1, t));
+  return [
+    Math.round(182 + (255 - 182) * t),
+    Math.round(255 + (61 - 255) * t),
+    Math.round(31 + (107 - 31) * t),
+  ];
+}
+// 危険度: スイートスポット(0.78)を超えた後に 0→1。flash は高速点滅。
+function dangerInfo() {
+  const ex = drive * exaggMult() + (formBroken ? 0.2 : 0);
+  let level = Math.max(0, Math.min(1, (ex - 0.82) / 0.30));
+  if (formBroken) level = 1;
+  const flash = 0.5 + 0.5 * Math.sin(frameTime * 18);
+  return { level, flash };
+}
+
+// ── STRETCH VISUALIZER（輪郭ゴースト＋回転＋4枚の羽）──
+function drawStretchGhost(cx, cy, dg) {
   const R = 32;
   const d = Math.max(0, drive);
   const sEx = 1 + d * 1.2 * exaggMult();  // 現在の誇張量（比較モード反映）
   const sOv = 1 + d * 1.2 + 0.7;          // 理論上のオーバードライブ（さらに押し込んだ形）
+  const spin = frameTime * (0.8 + d * 6); // 伸びるほど速く回る → ギューン
+  // 羽・現在リングの色（danger で赤へ点滅連動）
+  const [cr, cg, cb] = chargeRGB(dg.level * (0.55 + 0.45 * dg.flash));
+
   ctx.save();
   ctx.translate(cx, cy);
-  // NORMAL — 基準（dim dashed circle）
+
+  // NORMAL — 基準（回転なし・dim dashed circle）
   ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
   ctx.strokeStyle = 'rgba(232,245,220,0.35)';
   ctx.beginPath(); ctx.ellipse(0, 0, R, R, 0, 0, Math.PI * 2); ctx.stroke();
-  // OVERDRIVE — 限界（hot dashed）
+
+  // OVERDRIVE — 限界（回転なし・hot dashed・基準）
   ctx.setLineDash([6, 4]);
   ctx.strokeStyle = 'rgba(255,61,107,0.5)';
   ctx.beginPath(); ctx.ellipse(0, 0, R / Math.sqrt(sOv), R * sOv, 0, 0, Math.PI * 2); ctx.stroke();
-  // EXAGGERATED — 現在値（solid acid）
-  ctx.setLineDash([]); ctx.lineWidth = 1.6;
-  ctx.strokeStyle = 'rgba(182,255,31,0.9)';
+  ctx.setLineDash([]);
+
+  // 4枚の羽 — 円とは「逆方向」に回転、色は赤へ連動
+  const wingLen = R * sEx + 18 + d * 44;
+  ctx.save();
+  ctx.rotate(-spin);
+  for (let i = 0; i < 4; i++) {
+    ctx.rotate(Math.PI / 2);
+    const w = 3 + d * 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-w, -wingLen * 0.55);
+    ctx.lineTo(0, -wingLen);
+    ctx.lineTo(w, -wingLen * 0.55);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.22 + d * 0.5})`;
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // EXAGGERATED — 現在値（伸びた楕円を回転・solid・danger で赤へ）
+  ctx.save();
+  ctx.rotate(spin);
+  ctx.lineWidth = 1.6 + d * 1.4;
+  ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.92)`;
+  ctx.shadowColor = `rgba(${cr},${cg},${cb},${0.6 * dg.level})`;
+  ctx.shadowBlur = 14 * dg.level;
   ctx.beginPath(); ctx.ellipse(0, 0, R / Math.sqrt(sEx), R * sEx, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+
   ctx.restore();
 }
 
@@ -1106,12 +1173,14 @@ function draw() {
   const rec = recoveryFactor();
   const effectiveStrain = (drive + rec * 0.5) * exaggMult(); // 比較モードで歪み量が変化
   const cx = mouseX, cy = mouseY;
+  const dg = dangerInfo();                       // 危険度（赤点滅）
+  const flashRed = dg.level > 0.3 && dg.flash > 0.55;
 
   // 1) DISTORTED GRID — kinetic geometry identity (warped toward cursor)
   drawDistortedGrid(cx, cy, effectiveStrain * spaceStrain);
 
   // 1.5) STRETCH VISUALIZER — 輪郭ゴーストでどこを誇張したか可視化
-  if (showGhost && (isHolding || drive > 0.04)) drawStretchGhost(cx, cy);
+  if (showGhost && (isHolding || drive > 0.04)) drawStretchGhost(cx, cy, dg);
 
   // 2) Radial pull lines toward cursor (during hold)
   if (isHolding && drive > 0.03) {
@@ -1193,8 +1262,9 @@ function draw() {
   for (const p of particles) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, p.life);
-    ctx.fillStyle = p.color;
-    ctx.strokeStyle = p.color;
+    const pcol = flashRed ? '#FF3D6B' : p.color;   // 危険時は素材も赤点滅
+    ctx.fillStyle = pcol;
+    ctx.strokeStyle = pcol;
     const lifeR = Math.max(0, p.life);
     if (p.kind === 'dot') {
       ctx.beginPath();
@@ -1505,6 +1575,13 @@ function updateBelievability(){
   const fill = document.getElementById('appeal-fill');
   fill.style.width = (appeal * 100) + '%';
   document.getElementById('lv-appeal-peak').textContent = Math.round(appealPeak * 100) + '%';
+
+  // DANGER 赤点滅トグル（スイートスポット超え）
+  const dgLv = dangerInfo().level;
+  const isDanger = dgLv > 0.25;
+  stage.classList.toggle('danger', isDanger);
+  document.getElementById('believe-meter').classList.toggle('danger', isDanger);
+  document.getElementById('gauge-wrap').classList.toggle('danger', isDanger);
 }
 
 function updateHUD() {

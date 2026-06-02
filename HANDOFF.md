@@ -62,6 +62,11 @@
 
 **→ 09 EXAGGERATION ブラッシュアップ（txt 5要素）すべて完了。** UI改善方針（FXは主役にしない／Shape Readability優先）も維持。
 
+- ✅ **演出ポリッシュ（追加）**: スイートスポット(0.78)を超えると「赤点滅アラート」。`dangerInfo()`（ex 0.82→1.12 で level 0→1）＋ `chargeRGB()`（アシッド→赤補間）。
+  - カーソルの伸びた楕円が回転（`spin = frameTime*(0.8+d*6)`）＋**4枚の羽が逆回転**（`drawStretchGhost` に統合）、色は danger で赤へ点滅連動＝「ギューン」感。
+  - 赤点滅対象: キャンバス赤ビネット `#fx-danger`／BELIEVABILITYメーター(`.danger`)／DRIVEゲージ(`.danger`)／パーティクル（`flashRed` で素材も赤）。CSS `@keyframes redFlash`。
+  - 狙い: スイートスポットまではカラフル→超えると真っ赤、で「壊れる直前のカラフルな瞬間に放すと綺麗」が直感的に伝わる。
+
 ## 既知の保留事項 / TODO
 
 ### デザイン統一
