@@ -15,24 +15,24 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#050807; --bg2:#070C0A; --panel:rgba(8,12,11,0.62);
-  --acid:#36FF00; --neon:#7FFF9B; --ice:#9FF6FF; --warm:#FFE066; --hot:#FF4F4F;
-  --ink:#DCFFE0;
-  --dim:rgba(220,255,224,0.5); --dim2:rgba(220,255,224,0.3); --dim3:rgba(220,255,224,0.12);
-  --border:rgba(54,255,0,0.20); --border2:rgba(54,255,0,0.07);
+  --bg:#07050F; --bg2:#0A0716; --panel:rgba(16,10,28,0.62);
+  --acid:#C28BFF; --neon:#9D9CFF; --ice:#7FE8FF; --warm:#FFCB57; --hot:#FF5C8A;
+  --ink:#ECE4FF;
+  --dim:rgba(236,228,255,0.5); --dim2:rgba(236,228,255,0.3); --dim3:rgba(236,228,255,0.12);
+  --border:rgba(194,139,255,0.22); --border2:rgba(194,139,255,0.08);
   --mono:'IBM Plex Mono',monospace;
   --cond:'Barlow Condensed',sans-serif;
   --bank:'Bank Gothic','Barlow Condensed',sans-serif;
   --jp:'Noto Sans JP',sans-serif;
-  --glow-acid:0 0 12px rgba(54,255,0,0.55);
+  --glow-acid:0 0 14px rgba(194,139,255,0.55);
 }
 html,body{width:100%;height:100%;overflow:hidden;color:var(--ink)}
 body{
   background:
-    radial-gradient(120% 80% at 50% -10%, rgba(54,255,0,0.10), transparent 55%),
-    radial-gradient(100% 90% at 110% 120%, rgba(159,246,255,0.09), transparent 50%),
-    radial-gradient(90% 70% at 50% 55%, rgba(54,255,0,0.04), transparent 70%),
-    linear-gradient(160deg, #08100B 0%, #050807 45%, #03070A 100%);
+    radial-gradient(120% 80% at 50% -10%, rgba(150,90,255,0.15), transparent 55%),
+    radial-gradient(100% 90% at 110% 120%, rgba(255,90,200,0.10), transparent 50%),
+    radial-gradient(90% 70% at 25% 65%, rgba(90,150,255,0.08), transparent 70%),
+    linear-gradient(160deg, #130B22 0%, #0A0716 45%, #06040E 100%);
 }
 /* ── cinematic overlays ── */
 #fx-grain,#fx-scan,#fx-vig{position:fixed;inset:0;pointer-events:none;z-index:9999}
@@ -41,7 +41,7 @@ body{
 #fx-grain{opacity:0.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grainShift .6s steps(3) infinite}
 @keyframes grainShift{0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(-2%,-1%)}}
 #fx-sweep{position:fixed;left:0;right:0;height:140px;top:-140px;pointer-events:none;z-index:9998;
-  background:linear-gradient(180deg, transparent, rgba(54,255,0,0.05) 60%, transparent);
+  background:linear-gradient(180deg, transparent, rgba(194,139,255,0.06) 60%, transparent);
   animation:sweepDown 9s linear infinite}
 @keyframes sweepDown{0%{top:-160px}100%{top:100%}}
 #app{display:grid;grid-template-rows:44px 1fr 44px;grid-template-columns:1fr 320px;height:100vh;width:100vw}
@@ -52,7 +52,7 @@ body{
   font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
   background:linear-gradient(180deg, rgba(10,16,11,0.85), rgba(6,9,7,0.55));
   backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
-  box-shadow:0 1px 0 rgba(54,255,0,0.08), 0 8px 24px rgba(0,0,0,0.4);z-index:10;
+  box-shadow:0 1px 0 rgba(194,139,255,0.08), 0 8px 24px rgba(0,0,0,0.4);z-index:10;
 }
 #topbar .left,#topbar .right{display:flex;align-items:center;gap:16px}
 .sys-id{color:var(--dim);font-size:9px;font-family:var(--bank);letter-spacing:0.18em}
@@ -64,7 +64,7 @@ body{
 .stage-bignum{
   position:absolute;font-family:var(--bank);font-weight:700;
   font-size:clamp(200px,26vw,360px);color:transparent;
-  -webkit-text-stroke:1px rgba(54,255,0,0.06);
+  -webkit-text-stroke:1px rgba(194,139,255,0.06);
   line-height:1;bottom:-40px;left:-10px;pointer-events:none;user-select:none;letter-spacing:0.02em;z-index:1;
 }
 .corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3}
@@ -76,7 +76,7 @@ body{
 .po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
 .po-en{font-size:13px;color:var(--acid);font-weight:400;letter-spacing:0.22em;font-family:var(--bank);text-shadow:var(--glow-acid)}
 .po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
-.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(54,255,0,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;z-index:2}
+.checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(194,139,255,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;z-index:2}
 .checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
 
 #main-zone{position:relative;flex:1;overflow:hidden;cursor:ns-resize}
@@ -99,17 +99,17 @@ body{
   transition:color .15s, border-color .15s, box-shadow .15s, background .15s;
 }
 #phase-badge.POINT{color:var(--ink);border-color:var(--dim2)}
-#phase-badge.EDGE{color:var(--neon);border-color:var(--neon);box-shadow:0 0 18px rgba(127,255,155,0.35), inset 0 0 12px rgba(127,255,155,0.12)}
-#phase-badge.FACE{color:var(--ice);border-color:var(--ice);box-shadow:0 0 20px rgba(159,246,255,0.38), inset 0 0 12px rgba(159,246,255,0.12)}
-#phase-badge.AMBIGUITY{color:var(--warm);border-color:var(--warm);background:rgba(255,224,102,0.08);box-shadow:0 0 22px rgba(255,224,102,0.4), inset 0 0 14px rgba(255,224,102,0.14);animation:pulse .4s infinite}
-#phase-badge.VOLUME{color:var(--acid);border-color:var(--acid);background:rgba(54,255,0,0.12);box-shadow:0 0 24px rgba(54,255,0,0.5), inset 0 0 16px rgba(54,255,0,0.16)}
-#phase-badge.BROKEN{color:var(--hot);border-color:var(--hot);background:rgba(255,79,79,0.1);box-shadow:0 0 24px rgba(255,79,79,0.45), inset 0 0 16px rgba(255,79,79,0.16)}
+#phase-badge.EDGE{color:var(--neon);border-color:var(--neon);box-shadow:0 0 18px rgba(157,156,255,0.35), inset 0 0 12px rgba(157,156,255,0.12)}
+#phase-badge.FACE{color:var(--ice);border-color:var(--ice);box-shadow:0 0 20px rgba(125,232,255,0.38), inset 0 0 12px rgba(125,232,255,0.12)}
+#phase-badge.AMBIGUITY{color:var(--warm);border-color:var(--warm);background:rgba(255,203,87,0.08);box-shadow:0 0 22px rgba(255,203,87,0.4), inset 0 0 14px rgba(255,203,87,0.14);animation:pulse .4s infinite}
+#phase-badge.VOLUME{color:var(--acid);border-color:var(--acid);background:rgba(194,139,255,0.12);box-shadow:0 0 24px rgba(194,139,255,0.5), inset 0 0 16px rgba(194,139,255,0.16)}
+#phase-badge.BROKEN{color:var(--hot);border-color:var(--hot);background:rgba(255,92,138,0.1);box-shadow:0 0 24px rgba(255,92,138,0.45), inset 0 0 16px rgba(255,92,138,0.16)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.55}}
 
 #big-form{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   font-family:var(--bank);font-weight:700;font-size:46px;letter-spacing:0.18em;
-  color:var(--acid);text-shadow:0 0 36px rgba(54,255,0,0.6), 0 0 8px rgba(255,255,255,0.35);
+  color:var(--acid);text-shadow:0 0 36px rgba(194,139,255,0.6), 0 0 8px rgba(255,255,255,0.35);
   pointer-events:none;z-index:5;opacity:0;
   transition:opacity .2s;
 }
@@ -148,15 +148,15 @@ body{
   transition:background .15s, color .15s;
 }
 .dens-seg:last-child{border-right:none}
-.dens-seg.active{background:rgba(54,255,0,0.15);color:var(--acid);font-weight:700}
+.dens-seg.active{background:rgba(194,139,255,0.15);color:var(--acid);font-weight:700}
 .dens-seg.AMBIGUITY{flex:0.6}
-.dens-seg.AMBIGUITY.active{background:rgba(255,224,102,0.18);color:var(--warm)}
+.dens-seg.AMBIGUITY.active{background:rgba(255,203,87,0.18);color:var(--warm)}
 
 #panel{
   border-left:1px solid var(--border);
   background:linear-gradient(180deg, rgba(9,14,11,0.66), rgba(6,9,8,0.72));
   backdrop-filter:blur(16px) saturate(1.15);-webkit-backdrop-filter:blur(16px) saturate(1.15);
-  box-shadow:inset 1px 0 0 rgba(54,255,0,0.06), -12px 0 40px rgba(0,0,0,0.45);
+  box-shadow:inset 1px 0 0 rgba(194,139,255,0.06), -12px 0 40px rgba(0,0,0,0.45);
   overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--acid) transparent;
 }
 #panel::-webkit-scrollbar{width:2px}
@@ -178,7 +178,7 @@ body{
 .layer-row:last-child{border-bottom:none}
 .layer-row.active{color:var(--ink)}
 .layer-row .swatch{width:10px;height:10px;flex-shrink:0;border:1px solid var(--dim2);transition:all .15s}
-.layer-row.active .swatch{border-color:var(--acid);background:rgba(54,255,0,0.3)}
+.layer-row.active .swatch{border-color:var(--acid);background:rgba(194,139,255,0.3)}
 .layer-row .name{flex:1;letter-spacing:0.08em}
 .layer-row .vis{font-family:var(--mono);font-size:8px;color:var(--acid)}
 .layer-row .rng{color:var(--dim2);font-size:8px}
@@ -198,7 +198,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
 .btn.warn:hover{color:var(--hot);border-color:var(--hot)}
 .btn.warn.active{background:var(--hot);color:#fff;border-color:var(--hot)}
 
-.insight{background:rgba(54,255,0,0.04);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
+.insight{background:rgba(194,139,255,0.04);border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:8px;line-height:1.8;color:var(--dim);margin-top:8px}
 .insight strong{color:var(--acid);display:block;margin-bottom:4px;letter-spacing:0.1em}
 
 .subsys-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:0.04em}
@@ -216,7 +216,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
   font-family:var(--mono);font-size:9px;letter-spacing:0.06em;
   background:linear-gradient(0deg, rgba(10,16,11,0.85), rgba(6,9,7,0.55));
   backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
-  box-shadow:0 -1px 0 rgba(54,255,0,0.08), 0 -8px 24px rgba(0,0,0,0.4);
+  box-shadow:0 -1px 0 rgba(194,139,255,0.08), 0 -8px 24px rgba(0,0,0,0.4);
 }
 .bl{color:var(--dim);display:flex;gap:16px}.bc{color:var(--acid);font-weight:700}.br{color:var(--dim)}
 .bc.lock{color:var(--ice);text-shadow:0 0 6px var(--ice)}
@@ -332,7 +332,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
       <span class="swatch"></span><span class="name">FACE</span><span class="rng">42–78%</span><span class="vis" id="vis-FACE">0%</span>
     </div>
     <div class="layer-row" id="lay-AMBIGUITY">
-      <span class="swatch" style="background:rgba(255,224,102,0.3);border-color:var(--warm)"></span>
+      <span class="swatch" style="background:rgba(255,203,87,0.3);border-color:var(--warm)"></span>
       <span class="name" style="color:var(--warm)">AMBIGUITY</span><span class="rng">72–86%</span><span class="vis" id="vis-AMBIGUITY">0%</span>
     </div>
     <div class="layer-row" id="lay-VOLUME">
@@ -461,6 +461,53 @@ let formLockT = 0;
 let formLockTrigger = -9999;
 let lastInLockZone = false;
 
+// ── FORM-LOCK flourish: graphical ripples (波紋) + sparkle crackle (パチパチ) ──
+let ripples = [];          // expanding rings
+let sparkles = [];         // tiny crackling flashes
+let kiras = [];            // kira-silhouette sparkles that bloom on entering VOLUME
+let sparkleEmitUntil = -9999;
+
+// 4-point kira silhouette (from kirakira.svg): vertical, concave-pinched.
+// width/height ≈ 0.678. s = half-height in px. No rotation (always upright).
+function kiraPath(ctx, x, y, s){
+  const w = 0.678 * s, h = s;
+  ctx.beginPath();
+  ctx.moveTo(x + w, y);
+  ctx.quadraticCurveTo(x, y, x, y + h);
+  ctx.quadraticCurveTo(x, y, x - w, y);
+  ctx.quadraticCurveTo(x, y, x, y - h);
+  ctx.quadraticCurveTo(x, y, x + w, y);
+  ctx.closePath();
+}
+
+function spawnFormLockFX(){
+  const cx = W*0.5, cy = H*0.5;
+  const maxR = Math.min(W,H) * 0.62;
+  for (let i=0;i<3;i++){
+    ripples.push({ t0: frameTime + i*0.13, x:cx, y:cy, max: maxR*(0.66+i*0.2), dur: 0.95 + i*0.18, hue: 274 - i*22 });
+  }
+  // kira bloom: a ring of upright sparkles around the form, twinkling (チカチカ)
+  // and drifting faintly outward (うっすら広がる). Colours match the opening
+  // particle palette (cyan→blue→violet→pink, centred on violet).
+  const base = Math.min(W,H);
+  const N = 20;
+  for (let i=0;i<N;i++){
+    const ang = (i/N)*Math.PI*2 + (Math.random()-0.5)*0.32;
+    kiras.push({
+      cx, cy, ang,
+      r0: base*(0.17 + Math.random()*0.15),         // start radius
+      drift: base*(0.09 + Math.random()*0.12),       // how far it eases outward
+      t0: frameTime + Math.random()*0.38,            // staggered bloom
+      life: 0.95 + Math.random()*0.7,
+      size: base*(0.013 + Math.random()*0.017),      // half-height
+      hue: 198 + Math.random()*142,                  // particle palette
+      twF: 15 + Math.random()*15,                    // チカチカ flicker speed
+      twP: Math.random()*Math.PI*2,
+    });
+  }
+  sparkleEmitUntil = frameTime + 0.75;   // ~0.75s of staccato face flashes
+}
+
 let frameTime = 0;
 let startTime = performance.now();
 
@@ -482,6 +529,9 @@ function generatePoints(n) {
       cx:0, cy:0, cz:0,
       collapse:Math.random()*0.3,
       phase:Math.random()*Math.PI*2,
+      // colorful jewel hue, centred on violet (cyan→blue→violet→magenta→pink)
+      hue: 198 + (i / n) * 142 + (Math.random()*16 - 8),
+      twPhase: Math.random()*Math.PI*2,
     });
   }
 }
@@ -622,6 +672,7 @@ function step(dt){
     formLockTrigger = frameTime;
     formLocked = true;
     showBigForm('FORM LOCK');
+    spawnFormLockFX();
   }
   if (!inLockZone) formLocked = false;
   lastInLockZone = inLockZone;
@@ -703,6 +754,8 @@ function draw(){
 
   const vis = layerVis(zoom);
   const tensionLevel = vis.fc * 0.5 + vis.vol * 1.0;
+  // brief crackle right after the form locks → faces flash
+  const lockFlash = formLocked ? Math.max(0, 1 - (frameTime - formLockTrigger) / 0.5) : 0;
 
   const proj = points.map(p => {
     const pr = project(p.cx, p.cy, p.cz);
@@ -723,9 +776,9 @@ function draw(){
     const gAlpha = Math.min(1, guidanceLevel) * 0.18;
     const pulseR = 60 + Math.sin(frameTime * 1.5) * 8;
     const grad = ctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, 200 + pulseR);
-    grad.addColorStop(0, `rgba(54,255,0,${gAlpha})`);
-    grad.addColorStop(0.5, `rgba(54,255,0,${gAlpha * 0.3})`);
-    grad.addColorStop(1, 'rgba(54,255,0,0)');
+    grad.addColorStop(0, `rgba(194,139,255,${gAlpha})`);
+    grad.addColorStop(0.5, `rgba(194,139,255,${gAlpha * 0.3})`);
+    grad.addColorStop(1, 'rgba(194,139,255,0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0,0,W,H);
   }
@@ -769,7 +822,7 @@ function draw(){
       if (vis.amb > 0.1 && topoMode === 'good') ambFlicker = 0.5 + Math.random()*0.5;
       const a = edgeAlphaBase * lenFade * avgDepth * ambFlicker * 0.9;
       ctx.strokeStyle = topoMode === 'bad' && zoom > 0.4
-        ? `rgba(255,79,79,${a})` : `rgba(127,255,155,${a})`;
+        ? `rgba(255,92,138,${a})` : `rgba(157,156,255,${a})`;
       ctx.lineWidth = Math.max(0.1, 0.4 + lenFade * 0.5 + tensionLevel * 0.4);
       ctx.beginPath();
       ctx.moveTo(A.sx, A.sy);
@@ -828,11 +881,12 @@ function draw(){
 
         let fillCol;
         if (topoMode === 'bad' && zoom > 0.4) {
-          fillCol = `rgba(255,79,79,${a * 0.6})`;
+          fillCol = `rgba(255,92,138,${a * 0.6})`;
         } else if (vis.vol > 0.5 && formLockT > 0.3) {
-          fillCol = `rgba(54,255,0,${a * (0.8 + formLockT * 0.4)})`;
+          const flick = lockFlash > 0 ? (0.6 + Math.random()*0.9) : 1;
+          fillCol = `rgba(206,158,255,${a * (0.8 + formLockT * 0.4) * (1 + lockFlash * 1.6) * flick})`;
         } else {
-          fillCol = `rgba(159,246,255,${a})`;
+          fillCol = `rgba(125,232,255,${a})`;
         }
         ctx.fillStyle = fillCol;
         ctx.beginPath();
@@ -855,7 +909,7 @@ function draw(){
     const zAx = [project(0,0,-axisL), project(0,0,axisL)];
     ctx.save();
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `rgba(54,255,0,${a * 0.5})`;
+    ctx.strokeStyle = `rgba(194,139,255,${a * 0.5})`;
     ctx.setLineDash([3,4]);
     for (const ax of [xAx,yAx,zAx]) {
       ctx.beginPath();
@@ -866,7 +920,7 @@ function draw(){
     ctx.setLineDash([]);
     const contourPts = 48;
     for (let c=0; c<3; c++) {
-      ctx.strokeStyle = `rgba(54,255,0,${a * 0.4})`;
+      ctx.strokeStyle = `rgba(194,139,255,${a * 0.4})`;
       ctx.lineWidth = 0.6;
       ctx.beginPath();
       for (let i=0; i<=contourPts; i++) {
@@ -887,19 +941,17 @@ function draw(){
     const silAlpha = vis.vol * (0.5 + formLockT * 0.5);
     const hull = convexHull2D(proj);
     if (hull.length >= 3) {
-      // glow
+      // crisp double-stroke silhouette (no glow)
       ctx.save();
-      ctx.shadowColor = 'rgba(54,255,0,0.9)';
-      ctx.shadowBlur = 18 + formLockT * 22;
-      ctx.strokeStyle = `rgba(54,255,0,${silAlpha * 0.3})`;
-      ctx.lineWidth = 8 + formLockT * 6;
+      ctx.strokeStyle = `rgba(194,139,255,${silAlpha * 0.22})`;
+      ctx.lineWidth = 3 + formLockT * 2.5;
       ctx.lineJoin = 'round';
       ctx.beginPath();
       hull.forEach((pt, i) => i===0 ? ctx.moveTo(pt.sx, pt.sy) : ctx.lineTo(pt.sx, pt.sy));
       ctx.closePath();
       ctx.stroke();
       // sharp
-      ctx.strokeStyle = `rgba(54,255,0,${silAlpha * 0.85})`;
+      ctx.strokeStyle = `rgba(214,178,255,${silAlpha * 0.9})`;
       ctx.lineWidth = 1.2 + formLockT * 1.2;
       ctx.beginPath();
       hull.forEach((pt, i) => i===0 ? ctx.moveTo(pt.sx, pt.sy) : ctx.lineTo(pt.sx, pt.sy));
@@ -916,7 +968,7 @@ function draw(){
         }
         const pad = 14, blen = 14;
         ctx.save();
-        ctx.strokeStyle = `rgba(159,246,255,${formLockT * 0.9})`;
+        ctx.strokeStyle = `rgba(125,232,255,${formLockT * 0.9})`;
         ctx.lineWidth = 1.2;
         const corners = [
           [minX-pad, minY-pad,  1,  1],
@@ -930,9 +982,9 @@ function draw(){
           ctx.stroke();
         }
         ctx.font = 'bold 9px IBM Plex Mono, monospace';
-        ctx.fillStyle = `rgba(159,246,255,${formLockT})`;
+        ctx.fillStyle = `rgba(125,232,255,${formLockT})`;
         ctx.fillText('▸ FORM LOCK', minX-pad, minY-pad-8);
-        ctx.fillStyle = `rgba(159,246,255,${formLockT * 0.6})`;
+        ctx.fillStyle = `rgba(125,232,255,${formLockT * 0.6})`;
         ctx.font = '8px IBM Plex Mono, monospace';
         ctx.fillText('topology stable', maxX+pad-80, maxY+pad+14);
         ctx.restore();
@@ -949,7 +1001,7 @@ function draw(){
       const phase = frameTime * (1.5 + k*0.6) + k*0.7;
       const rBase = 80 + Math.sin(phase) * 12;
       const wobble = Math.sin(phase * 1.4) * 6;
-      ctx.strokeStyle = `rgba(255,224,102,${aA * 0.20 * (1 - k/wobN)})`;
+      ctx.strokeStyle = `rgba(255,203,87,${aA * 0.20 * (1 - k/wobN)})`;
       ctx.lineWidth = 0.6;
       ctx.setLineDash([2,4]);
       ctx.beginPath();
@@ -965,52 +1017,152 @@ function draw(){
     }
     ctx.setLineDash([]);
     ctx.font = 'bold 9px IBM Plex Mono, monospace';
-    ctx.fillStyle = `rgba(255,224,102,${aA * 0.85})`;
+    ctx.fillStyle = `rgba(255,203,87,${aA * 0.85})`;
     ctx.fillText('▸ AMBIGUITY', W*0.5 - 200, H*0.5 - 80);
     ctx.font = '8px IBM Plex Mono, monospace';
-    ctx.fillStyle = `rgba(255,224,102,${aA * 0.55})`;
+    ctx.fillStyle = `rgba(255,203,87,${aA * 0.55})`;
     ctx.fillText('contour conflict / fake depth', W*0.5 - 200, H*0.5 - 66);
     ctx.restore();
   }
 
-  // POINTS with occlusion (sorted back to front)
+  // POINTS with occlusion (sorted back to front) — colourful jewels, no glow
   const sortedProj = [...proj].sort((a,b) => b.z - a.z);
   const ptAlpha = Math.max(0.18, vis.pt) * 0.95;
+  // how strongly the cloud has converged toward the unified violet of VOLUME
+  const conv = Math.min(1, vis.vol * 1.15);
   ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
   for (const pr of sortedProj) {
     const depthA = Math.max(0, pr.depthAlpha);
     const baseSize = Math.max(0.4, 1.2 + Math.max(0, pr.persp) * 1.3);
-    let col, glowCol;
+    const front = Math.max(0, pr.depthFront);
+    let hue, sat, light, alpha;
     if (topoMode === 'bad' && zoom > 0.4) {
-      col = `rgba(255,79,79,${ptAlpha * depthA})`; glowCol = 'rgba(255,79,79,0.9)';
-    } else if (vis.vol > 0.3) {
-      col = `rgba(54,255,0,${ptAlpha * depthA})`; glowCol = 'rgba(54,255,0,0.9)';
-    } else if (vis.amb > 0.3) {
-      col = `rgba(255,224,102,${ptAlpha * depthA})`; glowCol = 'rgba(255,224,102,0.9)';
-    } else if (vis.fc > 0.3) {
-      col = `rgba(159,246,255,${ptAlpha * depthA})`; glowCol = 'rgba(159,246,255,0.9)';
-    } else if (vis.eg > 0.3) {
-      col = `rgba(127,255,155,${ptAlpha * depthA})`; glowCol = 'rgba(127,255,155,0.9)';
+      hue = 338; sat = 90; light = 64; alpha = ptAlpha * depthA;
     } else {
-      col = `rgba(220,255,224,${ptAlpha * depthA})`; glowCol = 'rgba(220,255,224,0.8)';
+      // each point keeps its own colour, drifting toward violet as VOLUME forms
+      hue = pr.p.hue + (272 - pr.p.hue) * conv * 0.8;
+      sat = 88 - conv * 8;
+      const tw = Math.sin(frameTime * 3.2 + pr.p.twPhase) * 7;   // gentle twinkle
+      light = 58 + front * 14 + tw + conv * 6;
+      alpha = ptAlpha * depthA;
     }
-    ctx.fillStyle = col;
-    ctx.shadowColor = glowCol;
-    ctx.shadowBlur = 6 + Math.max(0, pr.depthFront) * 8;
+    const r1 = Math.max(0.3, baseSize * (0.6 + front * 0.7));
+    ctx.fillStyle = `hsla(${hue},${sat}%,${light}%,${alpha})`;
     ctx.beginPath();
-    const r1 = Math.max(0.3, baseSize * (0.6 + Math.max(0, pr.depthFront) * 0.6));
     ctx.arc(pr.sx, pr.sy, r1, 0, Math.PI*2);
     ctx.fill();
-    if (vis.vol > 0.4 && formLockT > 0.2) {
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = `rgba(54,255,0,${ptAlpha * Math.max(0, depthA) * 0.18 * formLockT})`;
+    // crisp bright core on the nearest points → faceted gem read
+    if (front > 0.55) {
+      ctx.fillStyle = `hsla(${hue},${Math.max(0,sat-30)}%,92%,${alpha * 0.9})`;
       ctx.beginPath();
-      ctx.arc(pr.sx, pr.sy, Math.max(0.5, baseSize * 3.2), 0, Math.PI*2);
+      ctx.arc(pr.sx, pr.sy, r1 * 0.45, 0, Math.PI*2);
       ctx.fill();
     }
   }
   ctx.restore();
+
+  // ── FORM-LOCK FLOURISH ────────────────────────────────────────────
+  // gentle ongoing twinkle while the form stays locked (upright, no rotation)
+  const frontPts = proj.filter(pr => pr.depthFront > 0.32);
+  if (formLockT > 0.5 && frontPts.length && Math.random() < 0.25) {
+    const pr = frontPts[(Math.random()*frontPts.length)|0];
+    sparkles.push({ x:pr.sx, y:pr.sy, t0:frameTime, life:0.3+Math.random()*0.25,
+      size:3+Math.random()*4, rot:0, hue:[272,300,200][(Math.random()*3)|0] });
+  }
+
+  // draw + cull sparkles (crisp 4-point stars, no blur)
+  if (sparkles.length){
+    ctx.save();
+    ctx.lineCap = 'round';
+    sparkles = sparkles.filter(s => frameTime - s.t0 < s.life);
+    for (const s of sparkles){
+      const age = (frameTime - s.t0) / s.life;
+      const pop = age < 0.28 ? age/0.28 : 1;          // quick pop-in
+      const a = (1 - age) * pop;
+      const r = s.size * (0.5 + pop*0.6);
+      ctx.strokeStyle = `hsla(${s.hue},95%,72%,${a})`;
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(s.x - Math.cos(s.rot)*r, s.y - Math.sin(s.rot)*r);
+      ctx.lineTo(s.x + Math.cos(s.rot)*r, s.y + Math.sin(s.rot)*r);
+      ctx.moveTo(s.x - Math.cos(s.rot+Math.PI/2)*r, s.y - Math.sin(s.rot+Math.PI/2)*r);
+      ctx.lineTo(s.x + Math.cos(s.rot+Math.PI/2)*r, s.y + Math.sin(s.rot+Math.PI/2)*r);
+      ctx.stroke();
+      ctx.fillStyle = `hsla(${s.hue},90%,90%,${a})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 1.1*pop, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // kira-silhouette bloom (rises only when entering VOLUME) — upright, twinkling,
+  // drifting faintly outward. Colours drawn from the opening particle palette.
+  if (kiras.length){
+    ctx.save();
+    ctx.lineJoin = 'round';
+    kiras = kiras.filter(k => (frameTime - k.t0) < k.life);
+    for (const k of kiras){
+      if (frameTime < k.t0) continue;
+      const age = (frameTime - k.t0) / k.life;
+      const env = Math.sin(Math.min(1, age) * Math.PI);     // bloom in & out
+      const flick = 0.5 + 0.5 * Math.sin(frameTime * k.twF + k.twP); // チカチカ
+      const a = env * (0.35 + 0.65 * flick);
+      if (a <= 0.01) continue;
+      const eased = 1 - Math.pow(1 - age, 2);               // easeOut drift
+      const R = k.r0 + eased * k.drift;
+      const x = k.cx + Math.cos(k.ang) * R;
+      const y = k.cy + Math.sin(k.ang) * R;
+      const s = k.size * (0.7 + env * 0.5);
+      // soft glow
+      ctx.shadowColor = `hsla(${k.hue},95%,72%,${a*0.9})`;
+      ctx.shadowBlur = s * 2.2;
+      // filled silhouette
+      kiraPath(ctx, x, y, s);
+      ctx.fillStyle = `hsla(${k.hue},92%,74%,${a*0.85})`;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // bright core
+      kiraPath(ctx, x, y, s * 0.5);
+      ctx.fillStyle = `hsla(${k.hue},85%,93%,${a})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // graphical ripples (波紋) expanding outward + fading
+  if (ripples.length){
+    ctx.save();
+    ripples = ripples.filter(rp => (frameTime - rp.t0) < rp.dur);
+    for (const rp of ripples){
+      if (frameTime < rp.t0) continue;
+      const age = (frameTime - rp.t0) / rp.dur;
+      const eased = 1 - Math.pow(1 - age, 3);          // easeOutCubic
+      const R = eased * rp.max;
+      const a = (1 - age) * 0.7;
+      // transparent expanding fill (面) — faint volumetric body that grows and fades
+      const grad = ctx.createRadialGradient(rp.x, rp.y, R*0.2, rp.x, rp.y, R);
+      grad.addColorStop(0, `hsla(${rp.hue},90%,68%,0)`);
+      grad.addColorStop(0.72, `hsla(${rp.hue},90%,66%,${a*0.05})`);
+      grad.addColorStop(1, `hsla(${rp.hue},92%,70%,${a*0.16})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, R, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = `hsla(${rp.hue},90%,72%,${a})`;
+      ctx.lineWidth = 2.2 * (1 - age) + 0.5;
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, R, 0, Math.PI*2);
+      ctx.stroke();
+      // faint trailing ring
+      ctx.strokeStyle = `hsla(${rp.hue},85%,64%,${a*0.4})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, R*0.86, 0, Math.PI*2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   window._edgeCount = edges.length;
   window._faceCount = faceCount;
