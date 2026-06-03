@@ -32,7 +32,7 @@ body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(r
 .corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
 .corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
 .corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
-.po{position:absolute;top:6px;right:26px;text-align:right;pointer-events:none;z-index:3;}
+.po{position:absolute;top:6px;right:34px;text-align:right;pointer-events:none;z-index:3;}
 .po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
 #main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
 #main.editing-mode .stage-bignum{color:rgba(136,136,136,0.05);}
@@ -288,13 +288,14 @@ body::after{
   font-family:var(--disp) !important;   /* 右上の数字(po-num)と同じフォントに */
   font-style:italic !important;
   font-weight:900 !important;
-  font-size:clamp(150px,22vw,300px) !important;  /* 右端で縦に削れるのを防ぐ */
+  font-size:clamp(170px,24vw,330px) !important;
+  left:-34px !important;                 /* 左へ寄せて右端の縦切れを軽減 */
   background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
   -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
   color:transparent !important;
   -webkit-text-stroke:1px rgba(255,210,122,0.10);
-  letter-spacing:-0.04em !important;
+  letter-spacing:0.01em !important;      /* 1 と 2 の重なりを解消 */
 }
 #main.editing-mode .stage-bignum{
   background-image:linear-gradient(135deg, rgba(157,141,179,0.12) 0%, rgba(157,141,179,0.06) 100%) !important;
@@ -1327,16 +1328,24 @@ const editCtx = editC.getContext('2d');
 function avEl(){ return document.getElementById('anim-view'); }
 function avW(){ return avEl().offsetWidth; }
 function avH(){ return avEl().offsetHeight; }
-// ── 縦横比を保つ正方形ビューポート（中央寄せ）→ ブラウザ伸縮でも図が歪まない ──
+// ── 縦横比を固定した横長ビューポート（中央寄せ）→ 伸縮で歪まない＋移動幅を広く ──
+// VIEW_AR = 横:縦。大きいほど横長（広い移動幅）。SVG書き出し(16:9)と一致させて
+// 「現フレームSVG」と表示・サムネの見た目を揃える。
+const VIEW_AR = 16/9;
+function fitBox(w, h, ar){
+  let bw, bh;
+  if(w/h > ar){ bh = h; bw = h*ar; } else { bw = w; bh = w/ar; }
+  return { bw, bh, ox:(w-bw)/2, oy:(h-bh)/2 };
+}
 function viewBox(){
   const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
-  const S=Math.min(w,h);
-  return { dpr, S, ox:(w-S)/2, oy:(h-S)/2 };
+  const f = fitBox(w, h, VIEW_AR);
+  return { dpr, bw:f.bw, bh:f.bh, ox:f.ox, oy:f.oy };
 }
-function MX(px){ const v=viewBox(); return (v.ox + px*v.S)*v.dpr; }
-function MY(py){ const v=viewBox(); return (v.oy + py*v.S)*v.dpr; }
-function invX(cx){ const v=viewBox(); return (cx - v.ox)/v.S; }
-function invY(cy){ const v=viewBox(); return (cy - v.oy)/v.S; }
+function MX(px){ const v=viewBox(); return (v.ox + px*v.bw)*v.dpr; }
+function MY(py){ const v=viewBox(); return (v.oy + py*v.bh)*v.dpr; }
+function invX(cx){ const v=viewBox(); return (cx - v.ox)/v.bw; }
+function invY(cy){ const v=viewBox(); return (cy - v.oy)/v.bh; }
 function resizeCanvas(){
   const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
   animC.width=w*dpr; animC.height=h*dpr; animC.style.width=w+'px'; animC.style.height=h+'px';
@@ -1739,14 +1748,18 @@ function drawMiniPose(mc, pose, type){
   if(!pose) return;
   const dpr = window.devicePixelRatio||1;
   const mw = mc.width/dpr, mh = mc.height/dpr;
+  // メイン表示と同じ横長アスペクトでフィット（現フレームと見た目を一致させる）
+  const f = fitBox(mw, mh, VIEW_AR);
+  const mmx = px => (f.ox + px*f.bw)*dpr;
+  const mmy = py => (f.oy + py*f.bh)*dpr;
   const c = mc.getContext('2d');
   c.clearRect(0, 0, mc.width, mc.height);
   c.save();
   for(const [a,b] of BONES){
     if(!pose[a] || !pose[b]) continue;
     const col = type==='key' ? 'rgba(255,79,168,0.75)' : 'rgba(136,136,136,0.45)';
-    let ax = pose[a][0]*mw*dpr, ay = pose[a][1]*mh*dpr;
-    let bx = pose[b][0]*mw*dpr, by = pose[b][1]*mh*dpr;
+    let ax = mmx(pose[a][0]), ay = mmy(pose[a][1]);
+    let bx = mmx(pose[b][0]), by = mmy(pose[b][1]);
     // 頭に繋がるボーンは頭の縁で止める
     if(a==='head'||b==='head'){
       const hr = 3.5*dpr;
@@ -1766,7 +1779,7 @@ function drawMiniPose(mc, pose, type){
     const r = (j.sz==='XL'?3.5 : j.sz==='L'?1.8 : j.sz==='S'?0.9 : j.sz==='XS'?0.7 : 1.3)*dpr;
     const col = type==='key' ? jointColor(j.side, 0.85) : 'rgba(136,136,136,0.45)';
     c.beginPath();
-    c.arc(pose[j.k][0]*mw*dpr, pose[j.k][1]*mh*dpr, r, 0, Math.PI*2);
+    c.arc(mmx(pose[j.k][0]), mmy(pose[j.k][1]), r, 0, Math.PI*2);
     c.fillStyle = col;
     c.fill();
   }
@@ -1919,7 +1932,14 @@ function loop(now){
 }
 
 function togglePlay(){
-  if(editor.active) return;
+  // 編集モード中に再生したら、作業中ポーズを保存してビューモードへ戻ってから再生
+  if(editor.active){
+    savePose();
+    toggleEditMode();
+    state.playing = true;
+    syncPlayBtn();
+    return;
+  }
   state.playing = !state.playing;
   syncPlayBtn();
 }
@@ -1965,7 +1985,7 @@ function loadPreset(name){
   const seq = PRESET_SEQUENCES[name];
   if(!seq) return;
   pushHistory();
-  state.keyFrames = seq.map(s => ({ poseData: getPose(s.p), label: s.l, phase: s.ph }));
+  state.keyFrames = seq.map(s => ({ poseData: getPose(s.p), origPose: getPose(s.p), label: s.l, phase: s.ph }));
   state.frame = 0;
   buildFrames(); buildStrip();
   state.playing = true; syncPlayBtn();
@@ -2067,7 +2087,12 @@ function savePose(){
 
 function resetPoseFromKey(){
   if(!editor.active || editor.keyIdx<0) return;
-  editor.poseData = clonePose(state.keyFrames[editor.keyIdx].poseData);
+  const kf = state.keyFrames[editor.keyIdx];
+  const orig = kf.origPose ? clonePose(kf.origPose) : clonePose(kf.poseData);
+  pushHistory();
+  kf.poseData = clonePose(orig);   // 保存内容も最初のポーズへ戻す
+  editor.poseData = clonePose(orig);
+  buildFrames(); buildStrip();
   updateUI();
 }
 
@@ -2122,7 +2147,7 @@ function addKeyFrame(){
   const basePose = editor.poseData ? clonePose(editor.poseData) : clonePose(state.keyFrames[insertAfter].poseData);
   const label = 'KEY_' + state.keyFrames.length;
   const phase = state.keyFrames[insertAfter]?.phase || 'ACTION';
-  state.keyFrames.splice(insertAfter+1, 0, { poseData: basePose, label, phase });
+  state.keyFrames.splice(insertAfter+1, 0, { poseData: basePose, origPose: clonePose(basePose), label, phase });
   buildFrames(); buildStrip();
   enterEdit(insertAfter+1);
 }
@@ -2133,13 +2158,13 @@ function canvasToNorm(cx, cy){
   return [invX(cx-r.left), invY(cy-r.top)];
 }
 function findJointAt(nx, ny){
-  const w=avW(), h=avH();
+  const v = viewBox();
   // 大きい順から（手と頭が大きいので先）
   const sorted = [...JOINTS].sort((a,b) => jointRadius(b.sz) - jointRadius(a.sz));
   for(const j of sorted){
     if(!editor.poseData[j.k]) continue;
     const jx = editor.poseData[j.k][0], jy = editor.poseData[j.k][1];
-    const r  = jointRadius(j.sz) / Math.min(w,h) * 2.2;  // ヒット範囲を少し広く
+    const r  = jointRadius(j.sz) / Math.min(v.bw,v.bh) * 2.2;  // ヒット範囲を少し広く
     if((nx-jx)*(nx-jx) + (ny-jy)*(ny-jy) < r*r) return j;
   }
   return null;
@@ -2189,6 +2214,7 @@ function snapshot(){
   return {
     keyFrames: state.keyFrames.map(kf => ({
       poseData: clonePose(kf.poseData),
+      origPose: kf.origPose ? clonePose(kf.origPose) : clonePose(kf.poseData),
       label: kf.label,
       phase: kf.phase
     })),
@@ -2205,6 +2231,7 @@ function pushHistory(){
 function restore(snap){
   state.keyFrames = snap.keyFrames.map(kf => ({
     poseData: clonePose(kf.poseData),
+    origPose: kf.origPose ? clonePose(kf.origPose) : clonePose(kf.poseData),
     label: kf.label,
     phase: kf.phase
   }));
@@ -2312,6 +2339,7 @@ function importJSON(){
     pushHistory();
     state.keyFrames = data.keyFrames.map(kf => ({
       poseData: clonePose(kf.poseData),
+      origPose: clonePose(kf.poseData),
       label: kf.label || 'KEY',
       phase: kf.phase || 'ACTION'
     }));

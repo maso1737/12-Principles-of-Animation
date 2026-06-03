@@ -423,18 +423,18 @@ html,body{
   width:5px;height:5px;background:var(--ink);
 }
 
-/* hover state */
-.card:not(.disabled):hover{background:var(--acc);color:var(--ink)}
+/* hover state — モノクロ・ネガ反転（地=黒, 文字=白。アクセント色なし） */
+.card:not(.disabled):hover{background:var(--ink);color:var(--bg)}
 .card:not(.disabled):hover .num,
-.card:not(.disabled):hover .en{color:var(--ink)}
+.card:not(.disabled):hover .en{color:var(--bg)}
 .card:not(.disabled):hover .jp,
 .card:not(.disabled):hover .row-top,
 .card:not(.disabled):hover .row-bot,
 .card:not(.disabled):hover .row-top .id,
-.card:not(.disabled):hover .row-bot .arrow{color:var(--ink)}
-.card:not(.disabled):hover .row-top .stamp{border-color:var(--ink);color:var(--ink)}
-.card:not(.disabled):hover .ghost{color:rgba(10,10,10,0.08)}
-.card:not(.disabled):hover .row-bot .frame .dot{background:var(--ink)}
+.card:not(.disabled):hover .row-bot .arrow{color:var(--bg)}
+.card:not(.disabled):hover .row-top .stamp{border-color:var(--bg);color:var(--bg)}
+.card:not(.disabled):hover .ghost{color:rgba(255,255,255,0.07)}
+.card:not(.disabled):hover .row-bot .frame .dot{background:var(--bg)}
 
 /* disabled */
 .card.disabled .num,
@@ -453,7 +453,7 @@ html,body{
 .card.highlight .ghost{color:rgba(10,10,10,0.08)}
 .card.highlight:hover{background:var(--ink)}
 .card.highlight:hover .num,
-.card.highlight:hover .en{color:var(--acc)}
+.card.highlight:hover .en{color:var(--bg)}
 
 /* card SVG mark */
 .card .mark{
@@ -465,8 +465,8 @@ html,body{
 .card .mark svg .stroke{stroke:var(--ink);stroke-width:1.4;fill:none}
 .card .mark svg .fill{fill:var(--ink)}
 .card .mark svg .acc{fill:var(--acc)}
-.card:hover .mark svg .stroke{stroke:var(--ink)}
-.card:hover .mark svg .fill{fill:var(--ink)}
+.card:hover .mark svg .stroke{stroke:var(--bg)}
+.card:hover .mark svg .fill{fill:var(--bg)}
 .card.disabled .mark svg .stroke{stroke:var(--mute-2)}
 .card.disabled .mark svg .fill{fill:var(--mute-2)}
 .card.highlight .mark svg .stroke{stroke:var(--ink)}
