@@ -372,8 +372,8 @@ body::after{
 
 /* Big principle number — gold/pink gradient text */
 .po-num{
-  background:linear-gradient(135deg, #FFE9B0 0%, #FFD27A 30%, #FF4FA8 70%, #B58EFF 100%) !important;
-  -webkit-background-clip:text;background-clip:text;
+  background-image:linear-gradient(135deg, #FFE9B0 0%, #FFD27A 30%, #FF4FA8 70%, #B58EFF 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
   color:transparent !important;
   filter:drop-shadow(0 0 18px rgba(255,79,168,0.35));
@@ -396,12 +396,16 @@ body::after{
   font-family:var(--orn) !important;
   font-style:italic !important;
   font-weight:700 !important;
+  background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
   color:transparent !important;
-  -webkit-text-stroke:1.5px rgba(255,210,122,0.13);
+  -webkit-text-stroke:1px rgba(255,210,122,0.10);
   letter-spacing:-0.04em !important;
 }
 #main.editing-mode .stage-bignum{
-  -webkit-text-stroke:1.5px rgba(157,141,179,0.08) !important;
+  background-image:linear-gradient(135deg, rgba(157,141,179,0.12) 0%, rgba(157,141,179,0.06) 100%) !important;
+  -webkit-text-stroke:1px rgba(157,141,179,0.07) !important;
 }
 
 /* Anim-view: refined frame with corner accents */
@@ -539,6 +543,7 @@ body::after{
   border-radius:3px;
   position:relative;
   overflow:hidden;
+  transition:background 0.18s, border-color 0.18s, box-shadow 0.18s !important;
 }
 #edit-toggle::before{
   content:'';
@@ -987,6 +992,7 @@ textarea{
     <div class="spl"><span class="lt">A</span>DEMO — FPS</div>
     <div class="fpr">
       <div class="fp on"  id="fps-6"  onclick="setFps(6)">6 FPS</div>
+      <div class="fp off" id="fps-8"  onclick="setFps(8)">8 FPS</div>
       <div class="fp off" id="fps-12" onclick="setFps(12)">12 FPS</div>
       <div class="fp off" id="fps-24" onclick="setFps(24)">24 FPS</div>
     </div>
@@ -1039,30 +1045,32 @@ textarea{
   </div>
 
   <div class="sp">
-    <div class="spl"><span class="lt">G</span>APPLY — 応用パターン</div>
+    <div class="spl"><span class="lt">G</span>APPLY — 応用サンプル</div>
 
-    <div class="ba" title="押す前に膨らむ → 押下 → オーバーシュート">
-      <div class="ba-lbl"><span>BUTTON · 押下</span><em>anticipation</em></div>
-      <div class="ba-jp">膨らむ → 押す → 戻る</div>
-      <div class="ba-stage"><div class="ba-btn">PUSH</div></div>
+    <div class="ba">
+      <div class="ba-lbl"><span>BUTTON</span><em>swell &amp; press</em></div>
+      <div class="ba-jp">押す前に膨らんで → 凹む</div>
+      <div class="ba-stage"><div class="ba-btn">TAP</div></div>
     </div>
 
-    <div class="ba" title="開く前に一瞬閉じる">
-      <div class="ba-lbl"><span>DOOR · 開閉</span><em>pull-back</em></div>
-      <div class="ba-jp">1F 逆方向 → スライド</div>
-      <div class="ba-stage" style="align-items:center;padding-bottom:0;"><div class="ba-door"><div class="ba-door-L"></div><div class="ba-door-R"></div></div></div>
+    <div class="ba">
+      <div class="ba-lbl"><span>DOOR / CURTAIN</span><em>pull · open</em></div>
+      <div class="ba-jp">開く前に一瞬引く</div>
+      <div class="ba-stage">
+        <div class="ba-door"><div class="ba-door-L"></div><div class="ba-door-R"></div></div>
+      </div>
     </div>
 
-    <div class="ba" title="膝を曲げてからジャンプ">
-      <div class="ba-lbl"><span>JUMP · 跳躍</span><em>crouch + leap</em></div>
-      <div class="ba-jp">屈む → 跳ぶ → Squash → 着地</div>
-      <div class="ba-stage"><div class="ba-jumper"></div></div>
+    <div class="ba">
+      <div class="ba-lbl"><span>JUMP</span><em>crouch · leap</em></div>
+      <div class="ba-jp">膝を曲げてから跳ぶ</div>
+      <div class="ba-stage" style="align-items:flex-end;padding-bottom:8px;"><div class="ba-jumper"></div></div>
     </div>
 
-    <div class="ba" title="消える前にぎゅっと">
-      <div class="ba-lbl"><span>DELETE · 消去</span><em>bloat → poof</em></div>
-      <div class="ba-jp">膨らむ → ぎゅっと縮む</div>
-      <div class="ba-stage" style="align-items:center;padding-bottom:0;"><div class="ba-del"></div></div>
+    <div class="ba">
+      <div class="ba-lbl"><span>DELETE</span><em>bloat · poof</em></div>
+      <div class="ba-jp">消える前に小さくふくらむ</div>
+      <div class="ba-stage" style="align-items:center;padding:0;"><div class="ba-del"></div></div>
     </div>
   </div>
   </div><!-- /view-mode -->
@@ -1824,7 +1832,7 @@ function resetPlay(){state.frame=0;accumMs=0;}
 function scrubTo(v){state.frame=parseInt(v);}
 function setFps(fps){
   state.fps=fps;accumMs=0;
-  [6,12,24].forEach(f=>{document.getElementById(`fps-${f}`).className='fp '+(f===fps?'on':'off');});
+  [6,8,12,24].forEach(f=>{document.getElementById(`fps-${f}`).className='fp '+(f===fps?'on':'off');});
 }
 function togF(key){
   state.feat[key]=!state.feat[key];

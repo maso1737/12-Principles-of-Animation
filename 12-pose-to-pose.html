@@ -264,8 +264,8 @@ body::after{
 
 /* Big principle number — gold/pink gradient text */
 .po-num{
-  background:linear-gradient(135deg, #FFE9B0 0%, #FFD27A 30%, #FF4FA8 70%, #B58EFF 100%) !important;
-  -webkit-background-clip:text;background-clip:text;
+  background-image:linear-gradient(135deg, #FFE9B0 0%, #FFD27A 30%, #FF4FA8 70%, #B58EFF 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
   color:transparent !important;
   filter:drop-shadow(0 0 18px rgba(255,79,168,0.35));
@@ -288,12 +288,16 @@ body::after{
   font-family:var(--orn) !important;
   font-style:italic !important;
   font-weight:700 !important;
+  background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
   color:transparent !important;
-  -webkit-text-stroke:1.5px rgba(255,210,122,0.13);
+  -webkit-text-stroke:1px rgba(255,210,122,0.10);
   letter-spacing:-0.04em !important;
 }
 #main.editing-mode .stage-bignum{
-  -webkit-text-stroke:1.5px rgba(157,141,179,0.08) !important;
+  background-image:linear-gradient(135deg, rgba(157,141,179,0.12) 0%, rgba(157,141,179,0.06) 100%) !important;
+  -webkit-text-stroke:1px rgba(157,141,179,0.07) !important;
 }
 
 /* Anim-view: refined frame with corner accents */
@@ -431,6 +435,7 @@ body::after{
   border-radius:3px;
   position:relative;
   overflow:hidden;
+  transition:background 0.18s, border-color 0.18s, box-shadow 0.18s !important;
 }
 #edit-toggle::before{
   content:'';
@@ -811,6 +816,23 @@ textarea{
   100% { opacity:0; }
 }
 
+/* ── click-to-step (12 I APPLY) ── */
+.ba.js-step{cursor:pointer;}
+.ba.js-step:hover{border-color:rgba(90,233,255,0.45);}
+.ba.js-step:active{transform:scale(0.985);}
+.ba.js-step .ba-emote-dot,
+.ba.js-step .ba-cam-hero,
+.ba.js-step .ba-bullet,
+.ba.js-step .ba-ks-cell{
+  animation:none !important;
+  transition:transform .2s ease, left .2s ease, opacity .18s ease, filter .2s ease, box-shadow .2s ease;
+}
+.ba-fc{
+  position:absolute;bottom:3px;right:6px;z-index:3;pointer-events:none;
+  font-family:var(--mono);font-size:7px;letter-spacing:0.14em;
+  color:rgba(90,233,255,0.85);text-shadow:0 0 6px rgba(90,233,255,0.4);
+}
+
 /* === END STAGE OVERLAY === */
 
 </style>
@@ -883,6 +905,7 @@ textarea{
       <div class="spl"><span class="lt">A</span>DEMO — PLAYBACK</div>
       <div class="fpr">
         <div class="fp on"  id="fps-6"  onclick="setFps(6)">6 FPS</div>
+        <div class="fp off" id="fps-8"  onclick="setFps(8)">8 FPS</div>
         <div class="fp off" id="fps-12" onclick="setFps(12)">12 FPS</div>
         <div class="fp off" id="fps-24" onclick="setFps(24)">24 FPS</div>
       </div>
@@ -966,12 +989,13 @@ textarea{
     </div>
 
     <div class="sp">
-      <div class="spl"><span class="lt">I</span>APPLY — 応用パターン</div>
+      <div class="spl"><span class="lt">I</span>APPLY — 応用サンプル</div>
+      <div style="font-size:8px;color:rgba(90,233,255,0.55);margin:-2px 0 10px;letter-spacing:0.12em;line-height:1.6;">▷ サンプルをクリックでコマ送り（原画から原画へ）</div>
 
-      <div class="ba" title="開始 / 中間 / 終了の3点を原画化">
-        <div class="ba-lbl"><span>UI ANIMATION</span><em>key 3点</em></div>
-        <div class="ba-jp">開始 / 中間 / 終了の3点</div>
-        <div class="ba-stage" style="align-items:center;padding-bottom:0;">
+      <div class="ba js-step" data-app="keys" data-steps="3" data-step="0">
+        <div class="ba-lbl"><span>UI ANIM</span><em>3 key poses</em></div>
+        <div class="ba-jp">開始 / 中間 / 終了の3点だけ決める</div>
+        <div class="ba-stage" style="align-items:center;padding:0;">
           <div class="ba-keystrip">
             <div class="ba-ks-cell key"></div>
             <div class="ba-ks-cell"></div>
@@ -979,38 +1003,42 @@ textarea{
             <div class="ba-ks-cell"></div>
             <div class="ba-ks-cell key"></div>
           </div>
+          <div class="ba-fc">F1/3</div>
         </div>
       </div>
 
-      <div class="ba" title="感情の節目を原画化">
-        <div class="ba-lbl"><span>ACTING BEATS</span><em>emotional keys</em></div>
-        <div class="ba-jp">感情の節目を原画化</div>
-        <div class="ba-stage" style="align-items:center;padding-bottom:0;">
+      <div class="ba js-step" data-app="emote" data-steps="3" data-step="0">
+        <div class="ba-lbl"><span>CHARACTER</span><em>emotional beats</em></div>
+        <div class="ba-jp">感情の節目を原画化する</div>
+        <div class="ba-stage" style="align-items:center;padding:0;">
           <div class="ba-emote">
             <div class="ba-emote-dot"></div>
             <div class="ba-emote-dot"></div>
             <div class="ba-emote-dot"></div>
           </div>
+          <div class="ba-fc">F1/3</div>
         </div>
       </div>
 
-      <div class="ba" title="見せ場 (HERO SHOT) で止める">
-        <div class="ba-lbl"><span>CAMERA FRAMING</span><em>HERO SHOT</em></div>
+      <div class="ba js-step" data-app="camera" data-steps="5" data-step="0">
+        <div class="ba-lbl"><span>CAMERA</span><em>hold the hero shot</em></div>
         <div class="ba-jp">見せ場で止める</div>
-        <div class="ba-stage" style="align-items:center;padding-bottom:0;">
+        <div class="ba-stage" style="align-items:center;padding:0;">
           <div class="ba-cam"><div class="ba-cam-hero"></div></div>
+          <div class="ba-fc">F1/5</div>
         </div>
       </div>
 
-      <div class="ba" title="要点だけ残し補間は省略">
-        <div class="ba-lbl"><span>PRESENTATION</span><em>staccato</em></div>
+      <div class="ba js-step" data-app="bullets" data-steps="3" data-step="0">
+        <div class="ba-lbl"><span>PRESENTATION</span><em>skip the in-between</em></div>
         <div class="ba-jp">要点だけ残し補間は省略</div>
-        <div class="ba-stage" style="align-items:center;padding-bottom:0;">
+        <div class="ba-stage" style="align-items:center;padding:0;">
           <div class="ba-bullets">
             <div class="ba-bullet"></div>
             <div class="ba-bullet"></div>
             <div class="ba-bullet"></div>
           </div>
+          <div class="ba-fc">F1/3</div>
         </div>
       </div>
     </div>
@@ -1181,7 +1209,7 @@ function jointColor(side, alpha=1){
   return `rgba(255,255,255,${alpha})`;
 }
 function jointRadius(sz, scale=1){
-  const base = {XL:48, L:11, M:7.5, S:5, XS:3.5};
+  const base = {XL:22, L:11, M:7.5, S:5, XS:3.5};
   return (base[sz]||7)*scale;
 }
 
@@ -1340,10 +1368,12 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
     let ax = pose[a][0]*w*dpr, ay = pose[a][1]*h*dpr;
     let bx = pose[b][0]*w*dpr, by = pose[b][1]*h*dpr;
-    // 頭につながる骨は頭の円周で止める（首の線が頭・目に突き抜けるのを回避）
-    const headR = jointRadius('XL', dpr);
-    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
-    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
+    // 頭は円。頭に繋がるボーンは円の縁で止めて貫通させない
+    if(a==='head'||b==='head'){
+      const hr = jointRadius('XL', dpr);
+      if(a==='head'){ const dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||1; ax+=dx/d*hr; ay+=dy/d*hr; }
+      else          { const dx=ax-bx,dy=ay-by,d=Math.hypot(dx,dy)||1; bx+=dx/d*hr; by+=dy/d*hr; }
+    }
     if(ghostMode){
       c.strokeStyle = 'rgba(255,79,168,0.35)';
     } else {
@@ -1374,7 +1404,7 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
       // eye: 顔の向き（head.x vs neck.x）で左右反転
       if(!ghostMode){
         const fs = facingSign(pose);
-        c.beginPath(); c.arc(x + fs * r*0.30, y - r*0.04, r*0.24, 0, Math.PI*2);
+        c.beginPath(); c.arc(x + fs * r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
         c.fillStyle='rgba(255,255,255,0.95)'; c.fill();
       }
     } else {
@@ -1517,10 +1547,12 @@ function drawEdit(){
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
     let ax = editor.poseData[a][0]*w*dpr, ay = editor.poseData[a][1]*h*dpr;
     let bx = editor.poseData[b][0]*w*dpr, by = editor.poseData[b][1]*h*dpr;
-    // 頭につながる骨は頭の円周で止める（突き抜け回避）
-    const headR = jointRadius('XL', dpr)*1.1;
-    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
-    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
+    // 頭は円。頭に繋がるボーンは円の縁で止めて貫通させない（編集表示は半径×1.1）
+    if(a==='head'||b==='head'){
+      const hr = jointRadius('XL', dpr)*1.1;
+      if(a==='head'){ const dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||1; ax+=dx/d*hr; ay+=dy/d*hr; }
+      else          { const dx=ax-bx,dy=ay-by,d=Math.hypot(dx,dy)||1; bx+=dx/d*hr; by+=dy/d*hr; }
+    }
     const grad = editCtx.createLinearGradient(ax,ay,bx,by);
     grad.addColorStop(0, jointColor(jA?.side||'c', 0.95));
     grad.addColorStop(1, jointColor(jB?.side||'c', 0.95));
@@ -1555,7 +1587,7 @@ function drawEdit(){
       // eye: 顔の向きで左右反転
       const fs = facingSign(editor.poseData);
       editCtx.beginPath();
-      editCtx.arc(x + fs * r*0.30, y - r*0.04, r*0.24, 0, Math.PI*2);
+      editCtx.arc(x + fs * r*0.30, y - r*0.04, r*0.18, 0, Math.PI*2);
       editCtx.fillStyle = 'rgba(255,255,255,0.95)';
       editCtx.fill();
     } else {
@@ -1675,9 +1707,17 @@ function drawMiniPose(mc, pose, type){
   for(const [a,b] of BONES){
     if(!pose[a] || !pose[b]) continue;
     const col = type==='key' ? 'rgba(255,79,168,0.75)' : 'rgba(136,136,136,0.45)';
+    let ax = pose[a][0]*mw*dpr, ay = pose[a][1]*mh*dpr;
+    let bx = pose[b][0]*mw*dpr, by = pose[b][1]*mh*dpr;
+    // 頭に繋がるボーンは頭の縁で止める
+    if(a==='head'||b==='head'){
+      const hr = 3.5*dpr;
+      if(a==='head'){ const dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||1; ax+=dx/d*hr; ay+=dy/d*hr; }
+      else          { const dx=ax-bx,dy=ay-by,d=Math.hypot(dx,dy)||1; bx+=dx/d*hr; by+=dy/d*hr; }
+    }
     c.beginPath();
-    c.moveTo(pose[a][0]*mw*dpr, pose[a][1]*mh*dpr);
-    c.lineTo(pose[b][0]*mw*dpr, pose[b][1]*mh*dpr);
+    c.moveTo(ax, ay);
+    c.lineTo(bx, by);
     c.strokeStyle = col;
     c.lineWidth = 1*dpr;
     c.lineCap = 'round';
@@ -1860,7 +1900,7 @@ function resetPlay(){ state.frame = 0; accumMs = 0; }
 function scrubTo(v){ state.frame = parseInt(v); state.playing = false; syncPlayBtn(); }
 function setFps(fps){
   state.fps = fps; accumMs = 0;
-  [6,12,24].forEach(f => {
+  [6,8,12,24].forEach(f => {
     document.getElementById(`fps-${f}`).className = 'fp ' + (f===fps ? 'on' : 'off');
   });
 }
@@ -2186,9 +2226,12 @@ function exportSVG(){
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
     let ax = pose[a][0]*W, ay = pose[a][1]*H;
     let bx = pose[b][0]*W, by = pose[b][1]*H;
-    const headR = jointRadius('XL');
-    if(a==='head'){ const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1; ax+=dx/L*headR; ay+=dy/L*headR; }
-    if(b==='head'){ const dx=ax-bx,dy=ay-by,L=Math.hypot(dx,dy)||1; bx+=dx/L*headR; by+=dy/L*headR; }
+    // 頭に繋がるボーンは頭の縁で止める
+    if(a==='head'||b==='head'){
+      const hr = jointRadius('XL');
+      if(a==='head'){ const dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||1; ax+=dx/d*hr; ay+=dy/d*hr; }
+      else          { const dx=ax-bx,dy=ay-by,d=Math.hypot(dx,dy)||1; bx+=dx/d*hr; by+=dy/d*hr; }
+    }
     const colA = jointColor(jA?.side||'c', 0.9);
     const colB = jointColor(jB?.side||'c', 0.9);
     const gid = `g_${a}_${b}`;
@@ -2203,7 +2246,7 @@ function exportSVG(){
     if(j.k === 'head'){
       svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>`;
       const fs = facingSign(pose);
-      svg += `<circle cx="${x + fs * r*0.30}" cy="${y - r*0.04}" r="${r*0.24}" fill="rgba(255,255,255,0.95)"/>`;
+      svg += `<circle cx="${x + fs * r*0.30}" cy="${y - r*0.04}" r="${r*0.18}" fill="rgba(255,255,255,0.95)"/>`;
     } else {
       const col = jointColor(j.side, 0.9);
       svg += `<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"`;
@@ -2542,10 +2585,56 @@ function tickClock(){
 setInterval(tickClock, 1000); tickClock();
 
 // ══════════════════════════════════════════════════════════════
+// APPLY SAMPLES — クリックでコマ送り（pose to pose）
+// ══════════════════════════════════════════════════════════════
+function renderApply(ba){
+  const app = ba.dataset.app;
+  const s = parseInt(ba.dataset.step);
+  const N = parseInt(ba.dataset.steps);
+  const fc = ba.querySelector('.ba-fc');
+  if(fc) fc.textContent = 'F' + (s+1) + '/' + N;
+
+  if(app==='keys'){
+    const keys = ba.querySelectorAll('.ba-ks-cell.key');
+    keys.forEach((c,i)=>{
+      const on = (i===s);
+      c.classList.toggle('cur', on);
+      c.style.transform = on ? 'translateY(-5px)' : 'translateY(0)';
+    });
+  } else if(app==='emote'){
+    const dots = ba.querySelectorAll('.ba-emote-dot');
+    dots.forEach((d,i)=>{
+      if(i===s){ d.style.transform='scale(1.28) rotate(-8deg)'; d.style.filter='hue-rotate(40deg) brightness(1.3)'; }
+      else      { d.style.transform='scale(1)'; d.style.filter='none'; }
+    });
+  } else if(app==='camera'){
+    const hero = ba.querySelector('.ba-cam-hero');
+    const pos = [0,25,50,75,90];
+    hero.style.left = pos[s] + 'px';
+    hero.style.transform = (s===2) ? 'scale(1.18)' : 'scale(1)';
+    hero.style.boxShadow = (s===2) ? '0 0 16px rgba(255,210,122,0.85)' : '0 0 10px rgba(255,210,122,0.6)';
+  } else if(app==='bullets'){
+    const bs = ba.querySelectorAll('.ba-bullet');
+    bs.forEach((b,i)=>{ b.style.opacity = (i<=s) ? '1' : '0'; });
+  }
+}
+function setupApplySamples(){
+  document.querySelectorAll('.ba.js-step').forEach(ba=>{
+    renderApply(ba);
+    ba.addEventListener('click', ()=>{
+      const N = parseInt(ba.dataset.steps);
+      ba.dataset.step = String((parseInt(ba.dataset.step)+1) % N);
+      renderApply(ba);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 loadPreset('run');
 setupStripScroll();
+setupApplySamples();
 resizeCanvas();
 requestAnimationFrame(loop);
 </script>
