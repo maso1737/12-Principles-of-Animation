@@ -32,7 +32,7 @@ body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(r
 .corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
 .corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
 .corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
-.po{position:absolute;top:12px;right:14px;text-align:right;pointer-events:none;}
+.po{position:absolute;top:6px;right:26px;text-align:right;pointer-events:none;z-index:3;}
 .po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
 #main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
 #main.editing-mode .stage-bignum{color:rgba(136,136,136,0.05);}
@@ -285,9 +285,10 @@ body::after{
   margin-top:5px !important;
 }
 .stage-bignum{
-  font-family:var(--orn) !important;
+  font-family:var(--disp) !important;   /* 右上の数字(po-num)と同じフォントに */
   font-style:italic !important;
-  font-weight:700 !important;
+  font-weight:900 !important;
+  font-size:clamp(150px,22vw,300px) !important;  /* 右端で縦に削れるのを防ぐ */
   background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
   -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
@@ -816,6 +817,29 @@ textarea{
   100% { opacity:0; }
 }
 
+/* "補間は省略" — KEYだけ残し、中割り(✕)を飛ばして再生ヘッドがジャンプ */
+.ba-present{display:flex;gap:5px;align-items:center;justify-content:center;height:34px;}
+.ba-present .ks-key{
+  width:18px;height:30px;border-radius:2px;
+  background:linear-gradient(180deg, #FFD27A, #FF4FA8);
+  box-shadow:0 0 8px rgba(255,79,168,0.45);
+  transition:transform .2s ease, box-shadow .2s ease, outline-color .2s ease;
+  outline:2px solid transparent;outline-offset:2px;
+}
+.ba-present .ks-key.cur{
+  outline-color:var(--ice);
+  transform:translateY(-5px);
+  box-shadow:0 0 14px rgba(90,233,255,0.7);
+}
+.ba-present .ks-skip{
+  width:15px;height:22px;border-radius:2px;
+  border:1px dashed rgba(248,239,255,0.28);
+  display:flex;align-items:center;justify-content:center;
+}
+.ba-present .ks-skip::before{
+  content:'✕';font-size:9px;color:rgba(255,79,168,0.55);font-family:var(--mono);
+}
+
 /* ── click-to-step (12 I APPLY) ── */
 .ba.js-step{cursor:pointer;}
 .ba.js-step:hover{border-color:rgba(90,233,255,0.45);}
@@ -1029,16 +1053,18 @@ textarea{
         </div>
       </div>
 
-      <div class="ba js-step" data-app="bullets" data-steps="3" data-step="0">
+      <div class="ba js-step" data-app="present" data-steps="3" data-step="0">
         <div class="ba-lbl"><span>PRESENTATION</span><em>skip the in-between</em></div>
         <div class="ba-jp">要点だけ残し補間は省略</div>
         <div class="ba-stage" style="align-items:center;padding:0;">
-          <div class="ba-bullets">
-            <div class="ba-bullet"></div>
-            <div class="ba-bullet"></div>
-            <div class="ba-bullet"></div>
+          <div class="ba-present">
+            <div class="ks-key cur"></div>
+            <div class="ks-skip"></div>
+            <div class="ks-key"></div>
+            <div class="ks-skip"></div>
+            <div class="ks-key"></div>
           </div>
-          <div class="ba-fc">F1/3</div>
+          <div class="ba-fc">KEY 1/3</div>
         </div>
       </div>
     </div>
@@ -1301,6 +1327,16 @@ const editCtx = editC.getContext('2d');
 function avEl(){ return document.getElementById('anim-view'); }
 function avW(){ return avEl().offsetWidth; }
 function avH(){ return avEl().offsetHeight; }
+// ── 縦横比を保つ正方形ビューポート（中央寄せ）→ ブラウザ伸縮でも図が歪まない ──
+function viewBox(){
+  const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
+  const S=Math.min(w,h);
+  return { dpr, S, ox:(w-S)/2, oy:(h-S)/2 };
+}
+function MX(px){ const v=viewBox(); return (v.ox + px*v.S)*v.dpr; }
+function MY(py){ const v=viewBox(); return (v.oy + py*v.S)*v.dpr; }
+function invX(cx){ const v=viewBox(); return (cx - v.ox)/v.S; }
+function invY(cy){ const v=viewBox(); return (cy - v.oy)/v.S; }
 function resizeCanvas(){
   const w=avW(), h=avH(), dpr=window.devicePixelRatio||1;
   animC.width=w*dpr; animC.height=h*dpr; animC.style.width=w+'px'; animC.style.height=h+'px';
@@ -1366,8 +1402,8 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
   for(const [a,b] of BONES){
     if(!pose[a] || !pose[b]) continue;
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
-    let ax = pose[a][0]*w*dpr, ay = pose[a][1]*h*dpr;
-    let bx = pose[b][0]*w*dpr, by = pose[b][1]*h*dpr;
+    let ax = MX(pose[a][0]), ay = MY(pose[a][1]);
+    let bx = MX(pose[b][0]), by = MY(pose[b][1]);
     // 頭は円。頭に繋がるボーンは円の縁で止めて貫通させない
     if(a==='head'||b==='head'){
       const hr = jointRadius('XL', dpr);
@@ -1375,7 +1411,7 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
       else          { const dx=ax-bx,dy=ay-by,d=Math.hypot(dx,dy)||1; bx+=dx/d*hr; by+=dy/d*hr; }
     }
     if(ghostMode){
-      c.strokeStyle = 'rgba(255,79,168,0.35)';
+      c.strokeStyle = 'rgba(255,79,168,0.6)';
     } else {
       const grad = c.createLinearGradient(ax,ay,bx,by);
       grad.addColorStop(0, jointColor(jA?.side||'c', 0.9));
@@ -1390,16 +1426,16 @@ function drawPoseOnCtx(c, pose, alpha, ghostMode){
   // joints
   for(const j of JOINTS){
     if(!pose[j.k]) continue;
-    const x = pose[j.k][0]*w*dpr, y = pose[j.k][1]*h*dpr;
+    const x = MX(pose[j.k][0]), y = MY(pose[j.k][1]);
     const r = jointRadius(j.sz, dpr);
-    const col = jointColor(j.side, ghostMode?0.4:0.9);
+    const col = jointColor(j.side, ghostMode?0.7:0.9);
 
     if(j.k === 'head'){
       // head circle (outline)
       c.beginPath(); c.arc(x,y,r,0,Math.PI*2);
-      c.fillStyle = ghostMode?'rgba(255,79,168,0.08)':'rgba(255,255,255,0.05)';
+      c.fillStyle = ghostMode?'rgba(255,79,168,0.14)':'rgba(255,255,255,0.05)';
       c.fill();
-      c.strokeStyle = ghostMode?'rgba(255,79,168,0.4)':'rgba(255,255,255,0.9)';
+      c.strokeStyle = ghostMode?'rgba(255,79,168,0.7)':'rgba(255,255,255,0.9)';
       c.lineWidth = 2*dpr; c.stroke();
       // eye: 顔の向き（head.x vs neck.x）で左右反転
       if(!ghostMode){
@@ -1435,12 +1471,12 @@ function drawFrame(){
   // ground line
   if(state.feat.ground){
     animCtx.save();
-    animCtx.strokeStyle = 'rgba(255,79,168,0.22)';
-    animCtx.lineWidth = 1*dpr;
-    animCtx.setLineDash([4*dpr, 8*dpr]);
+    animCtx.strokeStyle = 'rgba(255,79,168,0.5)';
+    animCtx.lineWidth = 1.4*dpr;
+    animCtx.setLineDash([5*dpr, 7*dpr]);
     animCtx.beginPath();
-    animCtx.moveTo(w*0.05*dpr, h*0.88*dpr);
-    animCtx.lineTo(w*0.95*dpr, h*0.88*dpr);
+    animCtx.moveTo(MX(0.05), MY(0.88));
+    animCtx.lineTo(MX(0.95), MY(0.88));
     animCtx.stroke();
     animCtx.setLineDash([]);
     animCtx.restore();
@@ -1449,16 +1485,16 @@ function drawFrame(){
   // onion skin (隣接KEY)
   if(state.feat.onion && frame.type==='inbet'){
     const ki = frame.keyIdx;
-    if(ki>0)   drawPoseOnCtx(animCtx, state.keyFrames[ki-1].poseData, 0.10, true);
-    if(ki<state.keyFrames.length-1) drawPoseOnCtx(animCtx, state.keyFrames[ki+1].poseData, 0.10, true);
+    if(ki>0)   drawPoseOnCtx(animCtx, state.keyFrames[ki-1].poseData, 0.30, true);
+    if(ki<state.keyFrames.length-1) drawPoseOnCtx(animCtx, state.keyFrames[ki+1].poseData, 0.30, true);
   }
 
   // ghost frames (前後フレーム)
   if(state.feat.ghost && state.frames.length>1){
     const pfi = (fi-1 + state.frames.length) % state.frames.length;
     const nfi = (fi+1) % state.frames.length;
-    drawPoseOnCtx(animCtx, state.frames[pfi].pose, 0.18, true);
-    drawPoseOnCtx(animCtx, state.frames[nfi].pose, 0.10, true);
+    drawPoseOnCtx(animCtx, state.frames[pfi].pose, 0.38, true);
+    drawPoseOnCtx(animCtx, state.frames[nfi].pose, 0.26, true);
   }
 
   // interp line (補間軌道)
@@ -1467,23 +1503,23 @@ function drawFrame(){
     const k1 = state.keyFrames[Math.min(state.keyFrames.length-1, frame.keyIdx+1)];
     if(k0 && k1 && k0.poseData.hip && k1.poseData.hip){
       animCtx.save();
-      animCtx.strokeStyle = 'rgba(90,233,255,0.4)';
-      animCtx.lineWidth = 1*dpr;
-      animCtx.setLineDash([2*dpr, 4*dpr]);
+      animCtx.strokeStyle = 'rgba(90,233,255,0.75)';
+      animCtx.lineWidth = 1.6*dpr;
+      animCtx.setLineDash([3*dpr, 4*dpr]);
       animCtx.beginPath();
-      animCtx.moveTo(k0.poseData.hip[0]*w*dpr, k0.poseData.hip[1]*h*dpr);
-      animCtx.lineTo(k1.poseData.hip[0]*w*dpr, k1.poseData.hip[1]*h*dpr);
+      animCtx.moveTo(MX(k0.poseData.hip[0]), MY(k0.poseData.hip[1]));
+      animCtx.lineTo(MX(k1.poseData.hip[0]), MY(k1.poseData.hip[1]));
       animCtx.stroke();
       animCtx.setLineDash([]);
       const cur = frame.pose;
       if(cur.hip){
         animCtx.beginPath();
-        animCtx.arc(cur.hip[0]*w*dpr, cur.hip[1]*h*dpr, 4*dpr, 0, Math.PI*2);
-        animCtx.fillStyle = 'rgba(90,233,255,0.6)';
+        animCtx.arc(MX(cur.hip[0]), MY(cur.hip[1]), 5*dpr, 0, Math.PI*2);
+        animCtx.fillStyle = 'rgba(90,233,255,0.9)';
         animCtx.fill();
-        animCtx.fillStyle = 'rgba(90,233,255,0.6)';
+        animCtx.fillStyle = 'rgba(90,233,255,0.9)';
         animCtx.font = `${8*dpr}px IBM Plex Mono, monospace`;
-        animCtx.fillText('t='+frame.t.toFixed(2), cur.hip[0]*w*dpr+8*dpr, cur.hip[1]*h*dpr+3*dpr);
+        animCtx.fillText('t='+frame.t.toFixed(2), MX(cur.hip[0])+8*dpr, MY(cur.hip[1])+3*dpr);
       }
       animCtx.restore();
     }
@@ -1497,7 +1533,9 @@ function drawFrame(){
     animCtx.strokeRect(w*0.04*dpr, h*0.04*dpr, w*0.92*dpr, h*0.92*dpr);
     animCtx.fillStyle = 'rgba(255,79,168,0.75)';
     animCtx.font = `700 ${9*dpr}px IBM Plex Mono, monospace`;
-    animCtx.fillText('● KEY: '+frame.label, w*0.06*dpr, h*0.965*dpr);
+    animCtx.textAlign = 'right';   // 左下の #stage-hud との重なりを回避 → 右下へ
+    animCtx.fillText('● KEY: '+frame.label, w*0.94*dpr, h*0.965*dpr);
+    animCtx.textAlign = 'left';
     animCtx.restore();
   }
 
@@ -1512,7 +1550,7 @@ function drawFrame(){
     animCtx.textAlign = 'center';
     for(const j of JOINTS){
       if(!frame.pose[j.k]) continue;
-      const x = frame.pose[j.k][0]*w*dpr, y = frame.pose[j.k][1]*h*dpr;
+      const x = MX(frame.pose[j.k][0]), y = MY(frame.pose[j.k][1]);
       const r = jointRadius(j.sz, dpr);
       animCtx.fillText(j.k, x, y - r - 4*dpr);
     }
@@ -1535,8 +1573,8 @@ function drawEdit(){
   editCtx.lineWidth = 1*dpr;
   editCtx.setLineDash([4*dpr, 8*dpr]);
   editCtx.beginPath();
-  editCtx.moveTo(w*0.05*dpr, h*0.88*dpr);
-  editCtx.lineTo(w*0.95*dpr, h*0.88*dpr);
+  editCtx.moveTo(MX(0.05), MY(0.88));
+  editCtx.lineTo(MX(0.95), MY(0.88));
   editCtx.stroke();
   editCtx.setLineDash([]);
   editCtx.restore();
@@ -1545,8 +1583,8 @@ function drawEdit(){
   for(const [a,b] of BONES){
     if(!editor.poseData[a] || !editor.poseData[b]) continue;
     const jA = JOINTS.find(j=>j.k===a), jB = JOINTS.find(j=>j.k===b);
-    let ax = editor.poseData[a][0]*w*dpr, ay = editor.poseData[a][1]*h*dpr;
-    let bx = editor.poseData[b][0]*w*dpr, by = editor.poseData[b][1]*h*dpr;
+    let ax = MX(editor.poseData[a][0]), ay = MY(editor.poseData[a][1]);
+    let bx = MX(editor.poseData[b][0]), by = MY(editor.poseData[b][1]);
     // 頭は円。頭に繋がるボーンは円の縁で止めて貫通させない（編集表示は半径×1.1）
     if(a==='head'||b==='head'){
       const hr = jointRadius('XL', dpr)*1.1;
@@ -1565,7 +1603,7 @@ function drawEdit(){
   // joints
   for(const j of JOINTS){
     if(!editor.poseData[j.k]) continue;
-    const x = editor.poseData[j.k][0]*w*dpr, y = editor.poseData[j.k][1]*h*dpr;
+    const x = MX(editor.poseData[j.k][0]), y = MY(editor.poseData[j.k][1]);
     const r = jointRadius(j.sz, dpr)*1.1;
     const col = jointColor(j.side, 0.95);
     const isDrag = (editor.dragJoint?.k === j.k);
@@ -2092,7 +2130,7 @@ function addKeyFrame(){
 // ── EDIT canvas interaction ──
 function canvasToNorm(cx, cy){
   const r = editC.getBoundingClientRect();
-  return [(cx-r.left)/avW(), (cy-r.top)/avH()];
+  return [invX(cx-r.left), invY(cy-r.top)];
 }
 function findJointAt(nx, ny){
   const w=avW(), h=avH();
@@ -2592,7 +2630,7 @@ function renderApply(ba){
   const s = parseInt(ba.dataset.step);
   const N = parseInt(ba.dataset.steps);
   const fc = ba.querySelector('.ba-fc');
-  if(fc) fc.textContent = 'F' + (s+1) + '/' + N;
+  if(fc) fc.textContent = (app==='present' ? 'KEY ' : 'F') + (s+1) + '/' + N;
 
   if(app==='keys'){
     const keys = ba.querySelectorAll('.ba-ks-cell.key');
@@ -2616,6 +2654,10 @@ function renderApply(ba){
   } else if(app==='bullets'){
     const bs = ba.querySelectorAll('.ba-bullet');
     bs.forEach((b,i)=>{ b.style.opacity = (i<=s) ? '1' : '0'; });
+  } else if(app==='present'){
+    // KEYだけに再生ヘッドが乗り、中割り(✕)は飛ばす
+    const keys = ba.querySelectorAll('.ks-key');
+    keys.forEach((c,i)=> c.classList.toggle('cur', i===s));
   }
 }
 function setupApplySamples(){
