@@ -423,18 +423,18 @@ html,body{
   width:5px;height:5px;background:var(--ink);
 }
 
-/* hover state — モノクロ・ネガ反転（地=黒, 文字=白。アクセント色なし） */
-.card:not(.disabled):hover{background:var(--ink);color:var(--bg)}
+/* hover state — テーマのアシッドグリーン（地=黄緑, 文字=黒） */
+.card:not(.disabled):hover{background:var(--acc);color:var(--ink)}
 .card:not(.disabled):hover .num,
-.card:not(.disabled):hover .en{color:var(--bg)}
+.card:not(.disabled):hover .en{color:var(--ink)}
 .card:not(.disabled):hover .jp,
 .card:not(.disabled):hover .row-top,
 .card:not(.disabled):hover .row-bot,
 .card:not(.disabled):hover .row-top .id,
-.card:not(.disabled):hover .row-bot .arrow{color:var(--bg)}
-.card:not(.disabled):hover .row-top .stamp{border-color:var(--bg);color:var(--bg)}
-.card:not(.disabled):hover .ghost{color:rgba(255,255,255,0.07)}
-.card:not(.disabled):hover .row-bot .frame .dot{background:var(--bg)}
+.card:not(.disabled):hover .row-bot .arrow{color:var(--ink)}
+.card:not(.disabled):hover .row-top .stamp{border-color:var(--ink);color:var(--ink)}
+.card:not(.disabled):hover .ghost{color:rgba(10,10,10,0.08)}
+.card:not(.disabled):hover .row-bot .frame .dot{background:var(--ink)}
 
 /* disabled */
 .card.disabled .num,
@@ -453,7 +453,7 @@ html,body{
 .card.highlight .ghost{color:rgba(10,10,10,0.08)}
 .card.highlight:hover{background:var(--ink)}
 .card.highlight:hover .num,
-.card.highlight:hover .en{color:var(--bg)}
+.card.highlight:hover .en{color:var(--acc)}
 
 /* card SVG mark */
 .card .mark{
@@ -465,8 +465,8 @@ html,body{
 .card .mark svg .stroke{stroke:var(--ink);stroke-width:1.4;fill:none}
 .card .mark svg .fill{fill:var(--ink)}
 .card .mark svg .acc{fill:var(--acc)}
-.card:hover .mark svg .stroke{stroke:var(--bg)}
-.card:hover .mark svg .fill{fill:var(--bg)}
+.card:hover .mark svg .stroke{stroke:var(--ink)}
+.card:hover .mark svg .fill{fill:var(--ink)}
 .card.disabled .mark svg .stroke{stroke:var(--mute-2)}
 .card.disabled .mark svg .fill{fill:var(--mute-2)}
 .card.highlight .mark svg .stroke{stroke:var(--ink)}
@@ -611,7 +611,20 @@ html,body{
 /* roll-call → card focus */
 @keyframes cardScan{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
 .card.roll-focus{z-index:3;overflow:hidden}
-.card.roll-focus:not(.highlight):not(.disabled){background:rgba(200,255,26,0.22)}
+/* ROLL_CALL テキストホバー → 対応カードを直接ホバーと同じ濃い緑にする */
+.card.roll-focus:not(.highlight):not(.disabled){background:var(--acc);color:var(--ink)}
+.card.roll-focus:not(.highlight):not(.disabled) .num,
+.card.roll-focus:not(.highlight):not(.disabled) .en,
+.card.roll-focus:not(.highlight):not(.disabled) .jp,
+.card.roll-focus:not(.highlight):not(.disabled) .row-top,
+.card.roll-focus:not(.highlight):not(.disabled) .row-bot,
+.card.roll-focus:not(.highlight):not(.disabled) .row-top .id,
+.card.roll-focus:not(.highlight):not(.disabled) .row-bot .arrow{color:var(--ink)}
+.card.roll-focus:not(.highlight):not(.disabled) .row-top .stamp{border-color:var(--ink);color:var(--ink)}
+.card.roll-focus:not(.highlight):not(.disabled) .ghost{color:rgba(10,10,10,0.08)}
+.card.roll-focus:not(.highlight):not(.disabled) .row-bot .frame .dot{background:var(--ink)}
+.card.roll-focus:not(.highlight):not(.disabled) .mark svg .stroke{stroke:var(--ink)}
+.card.roll-focus:not(.highlight):not(.disabled) .mark svg .fill{fill:var(--ink)}
 .card.roll-focus::before{
   content:"";position:absolute;left:0;right:0;height:1.5px;
   background:linear-gradient(90deg,transparent,var(--acc) 30%,var(--acc) 70%,transparent);

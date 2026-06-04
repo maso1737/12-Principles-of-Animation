@@ -29,7 +29,7 @@ body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(r
 .corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
 .corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
 .corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
-.po{position:absolute;top:6px;right:34px;text-align:right;pointer-events:none;z-index:3;}
+.po{position:absolute;top:6px;right:44px;text-align:right;pointer-events:none;z-index:3;}
 .po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
 /* EDITモード中はグレーに */
 #main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
@@ -396,8 +396,10 @@ body::after{
   font-family:var(--disp) !important;   /* 右上の数字(po-num)と同じフォントに */
   font-style:italic !important;
   font-weight:900 !important;
-  font-size:clamp(170px,24vw,330px) !important;
-  left:-34px !important;                 /* 左へ寄せて右端の縦切れを軽減 */
+  font-size:clamp(240px,34vw,480px) !important;
+  left:-40px !important;
+  z-index:6 !important;                  /* 不透明なストリップ/ボトムバーに覆われて切れないよう前面へ */
+  mix-blend-mode:screen;                 /* 重なっても下のUIを潰さず透過発光 */
   background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
   -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;

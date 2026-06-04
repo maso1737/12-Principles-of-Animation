@@ -32,7 +32,7 @@ body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(r
 .corner::before{width:100%;height:1px;} .corner::after{width:1px;height:100%;}
 .corner.tl{top:10px;left:10px;} .corner.tr{top:10px;right:10px;transform:scaleX(-1);}
 .corner.bl{bottom:10px;left:10px;transform:scaleY(-1);} .corner.br{bottom:10px;right:10px;transform:scale(-1);}
-.po{position:absolute;top:6px;right:34px;text-align:right;pointer-events:none;z-index:3;}
+.po{position:absolute;top:6px;right:44px;text-align:right;pointer-events:none;z-index:3;}
 .po-num{font-family:var(--disp);font-weight:900;font-style:italic;font-size:clamp(40px,6vw,80px);color:var(--acid);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
 #main.editing-mode .po-num{color:rgba(136,136,136,0.5);}
 #main.editing-mode .stage-bignum{color:rgba(136,136,136,0.05);}
@@ -49,6 +49,10 @@ body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(r
 #edit-canvas{position:absolute;inset:0;width:100%;height:100%;display:none;touch-action:none;cursor:crosshair;}
 #anim-view.editing #edit-canvas{display:block;}
 #anim-view.editing #anim-canvas{opacity:0.2;}
+/* 編集モードのまま再生プレビュー中 → アニメを前面・編集オーバーレイは隠す */
+#anim-view.editing.previewing #anim-canvas{opacity:1;}
+#anim-view.editing.previewing #edit-canvas{display:none;}
+#anim-view.editing.previewing #edit-hint{display:none;}
 
 #phase-label{position:absolute;top:10px;left:14px;font-size:9px;letter-spacing:0.4em;pointer-events:none;color:var(--acid);}
 #frame-label{position:absolute;top:28px;left:14px;font-size:9px;color:rgba(255,79,168,0.4);letter-spacing:0.3em;pointer-events:none;}
@@ -288,8 +292,10 @@ body::after{
   font-family:var(--disp) !important;   /* 右上の数字(po-num)と同じフォントに */
   font-style:italic !important;
   font-weight:900 !important;
-  font-size:clamp(170px,24vw,330px) !important;
-  left:-34px !important;                 /* 左へ寄せて右端の縦切れを軽減 */
+  font-size:clamp(240px,34vw,480px) !important;
+  left:-40px !important;
+  z-index:6 !important;                  /* 不透明なストリップ/ボトムバーに覆われて切れないよう前面へ */
+  mix-blend-mode:screen;                 /* 重なっても下のUIを潰さず透過発光 */
   background-image:linear-gradient(135deg, rgba(255,233,176,0.22) 0%, rgba(255,79,168,0.17) 48%, rgba(181,142,255,0.13) 100%) !important;
   -webkit-background-clip:text !important;background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
@@ -818,27 +824,27 @@ textarea{
   100% { opacity:0; }
 }
 
-/* "補間は省略" — KEYだけ残し、中割り(✕)を飛ばして再生ヘッドがジャンプ */
-.ba-present{display:flex;gap:5px;align-items:center;justify-content:center;height:34px;}
-.ba-present .ks-key{
-  width:18px;height:30px;border-radius:2px;
-  background:linear-gradient(180deg, #FFD27A, #FF4FA8);
-  box-shadow:0 0 8px rgba(255,79,168,0.45);
-  transition:transform .2s ease, box-shadow .2s ease, outline-color .2s ease;
-  outline:2px solid transparent;outline-offset:2px;
+/* "補間は省略" — 四角マスクの中をクリックでスクロール。三角=キー群(1〜3個)だけが現れ、
+   中割りは飛ばされる（ステップ移動＝補間なしの“ジャンプ”感）。他バナーと違うルック。 */
+.ba-present{
+  position:relative;width:132px;height:34px;margin:0 auto;overflow:hidden;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);
+  mask:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);
 }
-.ba-present .ks-key.cur{
-  outline-color:var(--ice);
-  transform:translateY(-5px);
-  box-shadow:0 0 14px rgba(90,233,255,0.7);
+.ba-tri-track{
+  position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:4px;padding:0 8px;
+  transition:transform .22s steps(3,end);   /* ステップ移動＝補間なしの省略感 */
 }
-.ba-present .ks-skip{
-  width:15px;height:22px;border-radius:2px;
-  border:1px dashed rgba(248,239,255,0.28);
-  display:flex;align-items:center;justify-content:center;
+.ba-tri{
+  flex:0 0 auto;width:18px;height:22px;
+  clip-path:polygon(50% 0, 100% 100%, 0 100%);
+  background:linear-gradient(180deg, #6a2f8f, #3a1a55);
+  opacity:0.5;transition:background .2s, opacity .2s, transform .2s, filter .2s;
 }
-.ba-present .ks-skip::before{
-  content:'✕';font-size:9px;color:rgba(255,79,168,0.55);font-family:var(--mono);
+.ba-tri.on{
+  background:linear-gradient(180deg, #FFD27A 0%, #FF8FB0 55%, #FF4FA8 100%);
+  opacity:1;transform:translateY(-2px);
+  filter:drop-shadow(0 0 7px rgba(255,79,168,0.6));
 }
 
 /* ── click-to-step (12 I APPLY) ── */
@@ -1054,18 +1060,19 @@ textarea{
         </div>
       </div>
 
-      <div class="ba js-step" data-app="present" data-steps="3" data-step="0">
+      <div class="ba js-step" data-app="present" data-steps="4" data-step="0">
         <div class="ba-lbl"><span>PRESENTATION</span><em>skip the in-between</em></div>
         <div class="ba-jp">要点だけ残し補間は省略</div>
         <div class="ba-stage" style="align-items:center;padding:0;">
           <div class="ba-present">
-            <div class="ks-key cur"></div>
-            <div class="ks-skip"></div>
-            <div class="ks-key"></div>
-            <div class="ks-skip"></div>
-            <div class="ks-key"></div>
+            <div class="ba-tri-track">
+              <div class="ba-tri"></div><div class="ba-tri"></div><div class="ba-tri"></div>
+              <div class="ba-tri"></div><div class="ba-tri"></div><div class="ba-tri"></div>
+              <div class="ba-tri"></div><div class="ba-tri"></div><div class="ba-tri"></div>
+              <div class="ba-tri"></div><div class="ba-tri"></div>
+            </div>
           </div>
-          <div class="ba-fc">KEY 1/3</div>
+          <div class="ba-fc">KEY 1/4</div>
         </div>
       </div>
     </div>
@@ -1915,7 +1922,7 @@ function buildKeyList(){
 // PLAYBACK
 // ══════════════════════════════════════════════════════════════
 function loop(now){
-  if(state.playing && state.frames.length>0 && !editor.active){
+  if(state.playing && state.frames.length>0){
     if(lastTime!==null) accumMs += now-lastTime;
     lastTime = now;
     const mspf = 1000/state.fps;
@@ -1932,11 +1939,14 @@ function loop(now){
 }
 
 function togglePlay(){
-  // 編集モード中に再生したら、作業中ポーズを保存してビューモードへ戻ってから再生
+  // 編集モードは維持したまま再生プレビュー（作業を止めない）
   if(editor.active){
-    savePose();
-    toggleEditMode();
-    state.playing = true;
+    if(!state.playing){ savePose(); }   // 再生前に作業ポーズを反映（編集は継続）
+    state.playing = !state.playing;
+    if(!state.playing){                  // 一時停止 → 編集中のKEYへ戻す
+      const fi = state.frames.findIndex(f=>f.type==='key' && f.keyIdx===editor.keyIdx);
+      if(fi>=0) state.frame = fi;
+    }
     syncPlayBtn();
     return;
   }
@@ -1947,6 +1957,9 @@ function syncPlayBtn(){
   const b = document.getElementById('btn-play');
   b.textContent = state.playing ? '⏸' : '▶';
   b.classList.toggle('active', state.playing);
+  // 編集モード中の再生 → アニメを前面表示（編集オーバーレイは隠す）
+  const av = document.getElementById('anim-view');
+  if(av) av.classList.toggle('previewing', state.playing && editor.active);
 }
 function stepFrame(n){
   if(state.frames.length===0) return;
@@ -2683,9 +2696,13 @@ function renderApply(ba){
     const bs = ba.querySelectorAll('.ba-bullet');
     bs.forEach((b,i)=>{ b.style.opacity = (i<=s) ? '1' : '0'; });
   } else if(app==='present'){
-    // KEYだけに再生ヘッドが乗り、中割り(✕)は飛ばす
-    const keys = ba.querySelectorAll('.ks-key');
-    keys.forEach((c,i)=> c.classList.toggle('cur', i===s));
+    // 四角マスクの中をクリックでスクロール → キー群(1〜3個)だけが現れる
+    const track = ba.querySelector('.ba-tri-track');
+    const tris = [...ba.querySelectorAll('.ba-tri')];
+    const groups  = [[1],[3,4],[6,7,8],[10]];   // 1,2,3,1 個のキー群
+    const scrollX = [4,-36,-92,-150];           // ステップごとにスクロール
+    if(track) track.style.transform = `translateX(${scrollX[s]}px)`;
+    tris.forEach((t,i)=> t.classList.toggle('on', groups[s].includes(i)));
   }
 }
 function setupApplySamples(){
