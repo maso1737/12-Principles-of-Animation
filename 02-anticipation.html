@@ -377,6 +377,8 @@ body::after{
   -webkit-text-fill-color:transparent !important;
   color:transparent !important;
   filter:drop-shadow(0 0 18px rgba(255,79,168,0.35));
+  display:inline-block;
+  padding-right:0.14em !important;   /* イタリックの右はみ出しが縦線で切れるのを防ぐ */
 }
 .po-en{
   font-family:var(--orn) !important;
@@ -406,6 +408,7 @@ body::after{
   color:transparent !important;
   -webkit-text-stroke:1px rgba(255,210,122,0.10);
   letter-spacing:0.01em !important;      /* 1 と 2 の重なりを解消 */
+  padding-right:0.12em !important;       /* イタリックの右はみ出しが縦線で切れるのを防ぐ */
 }
 #main.editing-mode .stage-bignum{
   background-image:linear-gradient(135deg, rgba(157,141,179,0.12) 0%, rgba(157,141,179,0.06) 100%) !important;
