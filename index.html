@@ -343,13 +343,13 @@ body::after{
 }
 .inc-set .bar::before{
   content:"";position:absolute;top:0;left:0;height:100%;
-  width:0%;background:var(--grad-btn);box-shadow:0 0 12px rgba(255,79,168,0.5);
-  transition:width 800ms var(--ez);
+  width:var(--fill,0%);background:var(--grad-btn);box-shadow:0 0 12px rgba(255,79,168,0.5);
+  transition:width 900ms var(--ez);
 }
-.inc-set .bar.live::before{width:58%}
 .inc-set .bar::after{
-  content:"";position:absolute;top:0;left:58%;height:100%;width:14%;
+  content:"";position:absolute;top:0;left:var(--fill,0%);height:100%;width:14%;
   background:repeating-linear-gradient(90deg,rgba(255,210,122,0.7) 0 2px,transparent 2px 5px);
+  transition:left 900ms var(--ez);
 }
 .inc-set .frac{
   font-family:var(--mono);font-size:9px;letter-spacing:0.12em;color:rgba(181,142,255,0.6);
@@ -539,6 +539,26 @@ body::after{
 .card.highlight .mark svg .fill{fill:var(--ink)}
 .card.highlight .mark svg .acc{fill:var(--ink)}
 
+/* ── RGB WAVE (ESC-button light toy) ── */
+@keyframes waveGlow{
+  0%  {box-shadow:inset 0 0 0 rgba(184,80,255,0), 0 0 0 rgba(184,80,255,0);}
+  28% {box-shadow:inset 0 0 26px rgba(184,80,255,0.6), 0 0 28px rgba(184,80,255,0.85);}
+  100%{box-shadow:inset 0 0 0 rgba(184,80,255,0), 0 0 0 rgba(184,80,255,0);}
+}
+.card.wave-lit:not(:hover):not(.disabled){animation:waveGlow 760ms ease-out;}
+.card.wave-lit:not(:hover):not(.disabled)::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(circle at 50% 38%,rgba(184,80,255,0.28),rgba(255,79,168,0.10) 55%,transparent 72%);
+  animation:waveWash 760ms ease-out;
+}
+@keyframes waveWash{0%{opacity:0}28%{opacity:1}100%{opacity:0}}
+#btn-esc .pat{color:var(--ice);font-weight:600}
+#btn-esc:hover{border-color:rgba(184,80,255,0.55)!important;color:var(--white)}
+
+/* visited marker in roll-call */
+.roll .ro.visited .b{color:var(--ice);text-shadow:0 0 6px rgba(90,233,255,0.7)}
+.roll .ro.visited:hover .b{color:var(--ink);text-shadow:none}
+
 /* BOTTOM STRIP */
 .bottom-strip{
   display:grid;
@@ -552,7 +572,8 @@ body::after{
 .bottom-strip .bar2{height:5px;position:relative;background:var(--mute-3);border-radius:3px;overflow:hidden}
 .bottom-strip .bar2::before{
   content:"";position:absolute;top:0;left:0;height:100%;
-  width:58%;background:var(--grad-btn);box-shadow:0 0 10px rgba(255,79,168,0.4);
+  width:var(--fill,0%);background:var(--grad-btn);box-shadow:0 0 10px rgba(255,79,168,0.4);
+  transition:width 900ms var(--ez);
 }
 .bottom-strip .frame{color:var(--white);font-weight:600;letter-spacing:0.06em;font-size:10px}
 .bottom-strip .frame .acc{color:#fff;background:var(--grad-btn);padding:1px 6px;margin:0 4px;border-radius:var(--r-xs);box-shadow:0 0 10px rgba(255,79,168,0.4)}
@@ -766,7 +787,7 @@ body::after{
       <button id="btn-tweaks" class="tool-acc"><span class="dot"></span>TWEAKS</button>
       <button id="btn-fit"><span class="dot"></span>FIT</button>
       <button id="btn-resume"><span class="dot"></span>RESUME · 08</button>
-      <a id="btn-esc" href="#"><span class="dot"></span>[ESC] EXIT</a>
+      <a id="btn-esc" href="#" title="hover: light wave / click: change pattern"><span class="dot"></span>WAVE · <span class="pat">DIAG</span></a>
     </div>
   </header>
 
@@ -829,8 +850,8 @@ body::after{
 
         <div class="inc-set">
           <span class="lbl">INC_SET</span>
-          <div class="bar live"></div>
-          <span class="frac">[ 07 ⁄ 12 · 7114453 ⁄ 25565899 ]</span>
+          <div class="bar"></div>
+          <span class="frac" id="inc-frac">[ 00 ⁄ 12 · 0% VISITED ]</span>
         </div>
 
         <div class="plate">
@@ -847,7 +868,7 @@ body::after{
         <div class="bottom-strip">
           <span class="id">SET&nbsp;·&nbsp;KINETIC-STAGE-2026-VLS.00 ⁄ INDEX</span>
           <div class="bar2"></div>
-          <span class="frame">LEC<span class="acc">07</span>⁄&nbsp;12</span>
+          <span class="frame">SEEN<span class="acc" id="strip-seen">00</span>⁄&nbsp;12</span>
         </div>
 
       </div>
@@ -883,10 +904,10 @@ body::after{
 
         <div class="psec">
           <div class="sec-lbl"><span class="sq"></span> D · PROGRESS <span class="num">RT</span></div>
-          <div class="row"><span class="k">SHIPPED</span><span class="v acc" id="lv-shipped">07 ⁄ 12</span></div>
-          <div class="row"><span class="k">IN_REVIEW</span><span class="v" id="lv-review">01</span></div>
-          <div class="row"><span class="k">LOCKED</span><span class="v" id="lv-locked">04</span></div>
-          <div class="row"><span class="k">RATIO</span><span class="v">0.5833</span></div>
+          <div class="row"><span class="k">VISITED</span><span class="v acc" id="lv-shipped">00 ⁄ 12</span></div>
+          <div class="row"><span class="k">REMAINING</span><span class="v" id="lv-review">12</span></div>
+          <div class="row"><span class="k">LAST</span><span class="v" id="lv-last">—</span></div>
+          <div class="row"><span class="k">RATIO</span><span class="v" id="lv-ratio">0.0000</span></div>
           <div class="row"><span class="k">RELEASE</span><span class="v">2026.Q3</span></div>
         </div>
 
@@ -915,9 +936,9 @@ body::after{
       <span>INDEX · LIVE</span>
     </div>
     <div>
-      <span>SERIES_RATIO · 0.5833</span>
+      <span>SERIES_RATIO · <span id="ft-ratio">0.0000</span></span>
       <span style="margin-left:18px">FRAME_RATE · VARIABLE</span>
-      <span style="margin-left:18px">LEC&nbsp;<span class="v">07</span>&nbsp;⁄&nbsp;<span class="v">12</span></span>
+      <span style="margin-left:18px">SEEN&nbsp;<span class="v" id="ft-seen">00</span>&nbsp;⁄&nbsp;<span class="v">12</span></span>
       <span class="lecture-dots" id="lecture-dots" style="margin-left:14px"></span>
     </div>
     <div>
@@ -1026,6 +1047,7 @@ PRINCIPLES.forEach((p,i) => {
     if(gh){gh.textContent='12';gh.style.webkitTextStroke='1.5px rgba(255,210,122,0.16)';}
     document.querySelectorAll('#lecture-dots .ld.roll-ping').forEach(d=>d.classList.remove('roll-ping'));
   });
+  if(p.href){ a.addEventListener('click',()=>markVisited(p.n)); }
   grid.appendChild(a);
 });
 
@@ -1071,20 +1093,72 @@ const ldots = document.getElementById('lecture-dots');
 PRINCIPLES.forEach(p => {
   const d = document.createElement('span');
   d.className = 'ld';
-  if(p.status === 'live') d.classList.add('on');
-  if(p.status === 'current') d.classList.add('cur');
+  d.dataset.n = p.n;
   ldots.appendChild(d);
 });
 
 // ════════════════════════════════════════════════════════════
-// PROGRESS COUNTS (computed)
+// PROGRESS — real, persisted via localStorage
+//   visit = opened from this index (card / 1-9 / RESUME), then returned.
 // ════════════════════════════════════════════════════════════
-const counts = PRINCIPLES.reduce((acc,p)=>{ acc[p.status]=(acc[p.status]||0)+1; return acc; },{});
-const shipped = (counts.live||0) + (counts.current||0);
-document.getElementById('lv-shipped').textContent =
-  String(shipped).padStart(2,'0') + ' ⁄ 12';
-document.getElementById('lv-review').textContent = String(counts.next||0).padStart(2,'0');
-document.getElementById('lv-locked').textContent = String(counts.locked||0).padStart(2,'0');
+const VKEY='kinetic.visited', LKEY='kinetic.last';
+let VISITED = new Set(), LAST = null;
+const pad2 = n => String(n).padStart(2,'0');
+
+function loadProgress(){
+  try{ VISITED = new Set(JSON.parse(localStorage.getItem(VKEY)||'[]')); }
+  catch(e){ VISITED = new Set(); }
+  // keep only valid principle numbers
+  const valid = new Set(PRINCIPLES.map(p=>p.n));
+  VISITED = new Set([...VISITED].filter(n=>valid.has(n)));
+  LAST = localStorage.getItem(LKEY);
+  if(!valid.has(LAST)) LAST = null;
+}
+function markVisited(n){
+  loadProgress();
+  VISITED.add(n);
+  localStorage.setItem(VKEY, JSON.stringify([...VISITED]));
+  localStorage.setItem(LKEY, n);
+}
+
+function renderProgress(){
+  loadProgress();
+  const n = VISITED.size;
+  const ratio = n/12;
+  const pct = Math.round(ratio*100);
+  const ratioStr = ratio.toFixed(4);
+
+  // gauges
+  document.querySelector('.inc-set .bar').style.setProperty('--fill', pct+'%');
+  document.querySelector('.bottom-strip .bar2').style.setProperty('--fill', pct+'%');
+  document.getElementById('inc-frac').textContent = `[ ${pad2(n)} ⁄ 12 · ${pct}% VISITED ]`;
+  document.getElementById('strip-seen').textContent = pad2(n);
+
+  // D · PROGRESS panel
+  document.getElementById('lv-shipped').textContent = pad2(n) + ' ⁄ 12';
+  document.getElementById('lv-review').textContent  = pad2(12-n);
+  document.getElementById('lv-last').textContent    = LAST ? LAST : '—';
+  document.getElementById('lv-ratio').textContent   = ratioStr;
+
+  // footer
+  document.getElementById('ft-ratio').textContent = ratioStr;
+  document.getElementById('ft-seen').textContent  = pad2(n);
+
+  // lecture dots + roll-call markers
+  PRINCIPLES.forEach(p=>{
+    const seen = VISITED.has(p.n), last = (p.n===LAST);
+    const ld = document.querySelector(`#lecture-dots .ld[data-n="${p.n}"]`);
+    if(ld){ ld.classList.toggle('on', seen && !last); ld.classList.toggle('cur', last); }
+    const ro = document.querySelector(`.roll .ro[data-n="${p.n}"]`);
+    if(ro) ro.classList.toggle('visited', seen);
+  });
+
+  // RESUME button label → last visited (fallback 01)
+  const rb = document.getElementById('btn-resume');
+  if(rb){ rb.innerHTML = `<span class="dot"></span>RESUME · ${LAST || '01'}`; }
+
+  renderMini();
+}
 
 // ════════════════════════════════════════════════════════════
 // MINI SHIP GRAPH
@@ -1110,8 +1184,8 @@ function renderMini(){
     ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
   }
 
-  // step values per principle (live=3, current=2, next=1, locked=0)
-  const vals = PRINCIPLES.map(p => p.status==='live'?3 : p.status==='current'?2 : p.status==='next'?1 : 0);
+  // step values per principle: visited high, last = peak, unvisited low
+  const vals = PRINCIPLES.map(p => p.n===LAST ? 3 : VISITED.has(p.n) ? 2.4 : 0.5);
   const PAD = 6*dpr;
 
   // shaded area under
@@ -1151,7 +1225,7 @@ function renderMini(){
   vals.forEach((v,i)=>{
     const x = PAD + (i/(vals.length-1)) * (W-2*PAD);
     const y = H - PAD - (v/3) * (H-2*PAD);
-    const isCurrent = PRINCIPLES[i].status === 'current';
+    const isCurrent = PRINCIPLES[i].n === LAST;
     ctx.beginPath();
     ctx.arc(x,y, (isCurrent?3.4:2.2)*dpr, 0, Math.PI*2);
     ctx.fillStyle = isCurrent ? '#5AE9FF' : '#FFD27A';
@@ -1165,8 +1239,11 @@ function renderMini(){
     }
   });
 }
-renderMini();
+renderProgress();
 window.addEventListener('resize', renderMini);
+// re-sync if user returns via back-button (bfcache) or another tab updates it
+window.addEventListener('pageshow', renderProgress);
+window.addEventListener('storage', e=>{ if(e.key===VKEY||e.key===LKEY) renderProgress(); });
 
 // ════════════════════════════════════════════════════════════
 // TC TICKER
@@ -1192,14 +1269,83 @@ document.addEventListener('keydown', e => {
     const idx = (n === 0 ? 10 : n) - 1;
     if(idx >= 0 && idx < PRINCIPLES.length){
       const p = PRINCIPLES[idx];
-      if(p.href) window.location.href = p.href;
+      if(p.href){ markVisited(p.n); window.location.href = p.href; }
     }
   }
 });
 
-// RESUME button → 08
+// RESUME button → last visited principle (fallback 01)
 document.getElementById('btn-resume').addEventListener('click', () => {
-  window.location.href = '08-timing.html';
+  loadProgress();
+  const n = LAST || '01';
+  const p = PRINCIPLES.find(x => x.n === n) || PRINCIPLES[0];
+  if(p.href){ markVisited(p.n); window.location.href = p.href; }
+});
+
+// ════════════════════════════════════════════════════════════
+// FIT → fullscreen toggle
+// ════════════════════════════════════════════════════════════
+const fitBtn = document.getElementById('btn-fit');
+fitBtn.addEventListener('click', () => {
+  if(!document.fullscreenElement){
+    (document.documentElement.requestFullscreen?.() || Promise.reject()).catch(()=>{});
+  } else {
+    document.exitFullscreen?.();
+  }
+});
+document.addEventListener('fullscreenchange', () => {
+  fitBtn.innerHTML = `<span class="dot"></span>${document.fullscreenElement ? 'EXIT FIT' : 'FIT'}`;
+});
+
+// ════════════════════════════════════════════════════════════
+// WAVE — RGB light toy on the cards (hover the WAVE button)
+//   hover: run wave · click: cycle pattern
+// ════════════════════════════════════════════════════════════
+const COLS = 4;
+const WAVE_PATTERNS = [
+  { name:'DIAG',   fn:(r,c)=> (r+c)*95 },                                   // top-left → bottom-right
+  { name:'ROWS',   fn:(r,c)=> r*150 + c*35 },                              // line by line
+  { name:'RIPPLE', fn:(r,c)=> Math.hypot(r-1, c-1.5)*120 },               // out from centre
+  { name:'SNAKE',  fn:(r,c)=> (r*COLS + (r%2 ? COLS-1-c : c))*70 },        // serpentine
+  { name:'RAIN',   fn:(r,c)=> c*120 + r*60 + (c%2)*40 },                   // column cascade
+];
+let patIdx = 0;
+let waveTimer = null;
+const escBtn = document.getElementById('btn-esc');
+const cardEls = () => [...grid.querySelectorAll('.card')];
+
+// auto-clear each card when its glow finishes (so it can re-fire)
+grid.addEventListener('animationend', e => {
+  if(e.animationName === 'waveGlow') e.target.classList.remove('wave-lit');
+});
+
+function fireWave(){
+  const fn = WAVE_PATTERNS[patIdx].fn;
+  cardEls().forEach((card, i) => {
+    if(card.classList.contains('disabled')) return;
+    const r = Math.floor(i / COLS), c = i % COLS;
+    setTimeout(() => {
+      card.classList.remove('wave-lit');
+      void card.offsetWidth;            // restart animation
+      card.classList.add('wave-lit');
+    }, fn(r, c));
+  });
+}
+escBtn.addEventListener('mouseenter', () => {
+  clearInterval(waveTimer);   // guard against stacked intervals on rapid re-hover
+  fireWave();
+  waveTimer = setInterval(fireWave, 1500);
+});
+escBtn.addEventListener('mouseleave', () => {
+  clearInterval(waveTimer); waveTimer = null;
+  cardEls().forEach(c => c.classList.remove('wave-lit'));
+});
+escBtn.addEventListener('click', e => {
+  e.preventDefault();
+  patIdx = (patIdx + 1) % WAVE_PATTERNS.length;
+  const lbl = escBtn.querySelector('.pat');
+  if(lbl) lbl.textContent = WAVE_PATTERNS[patIdx].name;
+  fireWave();
 });
 </script>
 
