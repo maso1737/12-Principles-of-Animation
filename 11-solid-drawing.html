@@ -6,7 +6,7 @@
 <title>KINETIC GEOMETRY — 11 SOLID DRAWING</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 @font-face{
   font-family:'Bank Gothic';
@@ -62,10 +62,13 @@ body{
 
 #stage{position:relative;overflow:hidden;background:transparent;display:flex;flex-direction:column}
 .stage-bignum{
-  position:absolute;font-family:var(--bank);font-weight:700;
-  font-size:clamp(200px,26vw,360px);color:transparent;
-  -webkit-text-stroke:1px rgba(194,139,255,0.06);
-  line-height:1;bottom:-40px;left:-10px;pointer-events:none;user-select:none;letter-spacing:0.02em;z-index:1;
+  position:absolute;font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:900;
+  font-size:clamp(220px,30vw,400px);line-height:0.72;padding-right:0.12em;
+  color:transparent;-webkit-text-fill-color:transparent;
+  background-image:linear-gradient(176deg, rgba(125,232,255,0.16) 2%, rgba(194,139,255,0.12) 50%, rgba(255,92,138,0.07) 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-stroke:1.8px rgba(194,139,255,0.17);
+  bottom:-2.5%;left:-2%;pointer-events:none;user-select:none;letter-spacing:0.06em;z-index:1;
 }
 .corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3}
 .corner::before,.corner::after{content:'';position:absolute;background:var(--acid)}
@@ -73,9 +76,17 @@ body{
 .corner.tl{top:12px;left:12px}.corner.tr{top:12px;right:12px;transform:scaleX(-1)}
 .corner.bl{bottom:12px;left:12px;transform:scaleY(-1)}.corner.br{bottom:12px;right:12px;transform:scale(-1)}
 .po{position:absolute;top:16px;right:16px;text-align:right;font-family:var(--mono);pointer-events:none;z-index:3}
-.po-num{font-size:9px;color:var(--dim);letter-spacing:0.1em}
-.po-en{font-size:13px;color:var(--acid);font-weight:400;letter-spacing:0.22em;font-family:var(--bank);text-shadow:var(--glow-acid)}
-.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp)}
+.po-ghost{position:absolute;top:-18px;right:-6px;z-index:-1;pointer-events:none;
+  font-family:var(--bank);font-weight:700;font-size:122px;line-height:0.8;letter-spacing:0.02em;
+  color:transparent;-webkit-text-fill-color:transparent;
+  background-image:linear-gradient(176deg, rgba(125,232,255,0.24) 2%, rgba(194,139,255,0.15) 52%, rgba(255,92,138,0.08) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-stroke:1.4px rgba(194,139,255,0.22)}
+.po-num{font-size:9px;color:var(--warm);letter-spacing:0.32em;text-transform:uppercase}
+.po-en{font-size:21px;font-weight:700;letter-spacing:0.14em;font-family:var(--bank);margin-top:2px;
+  background-image:linear-gradient(118deg,#7FE8FF 0%,#C28BFF 50%,#FF5C8A 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  filter:drop-shadow(0 0 12px rgba(194,139,255,0.42))}
+.po-jp{font-size:10px;color:var(--dim);font-family:var(--jp);letter-spacing:0.18em;margin-top:3px}
 .checker{position:absolute;pointer-events:none;background:repeating-conic-gradient(rgba(194,139,255,0.07) 0% 25%,transparent 0% 50%) 0 0/8px 8px;z-index:2}
 .checker.c1{bottom:56px;right:0;width:48px;height:48px}.checker.c2{top:0;left:0;width:24px;height:80px}
 
@@ -252,6 +263,7 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
     <div class="checker c1"></div><div class="checker c2"></div>
 
     <div class="po">
+      <div class="po-ghost">11</div>
       <div class="po-num">PRINCIPLE // 11</div>
       <div class="po-en">SOLID DRAWING</div>
       <div class="po-jp">立体感</div>
@@ -315,6 +327,8 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
       <span style="color:var(--acid)">SCROLL UP</span> &nbsp;→ converge<br>
       &nbsp;&nbsp;<span style="color:var(--dim2)">POINT → EDGE → FACE → AMBIG. → VOL.</span><br>
       <span style="color:var(--acid)">SCROLL DOWN</span> → disperse<br>
+      <span style="color:var(--acid)">ALT + WHEEL</span> → dolly 寄り/引き<br>
+      <span style="color:var(--acid)">SHIFT + WHEEL</span> → pan<br>
       <span style="color:var(--acid)">DRAG</span> &nbsp;→ rotate volume<br>
       <span style="color:var(--acid)">[A]</span> auto &nbsp;&nbsp;<span style="color:var(--acid)">[R]</span> reset
     </div>
@@ -404,6 +418,26 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
   </div>
 
   <div class="psec">
+    <div class="sec-label">JFIELD — 空間演出</div>
+    <button class="btn active" id="btnRings" onclick="toggleRings()">◎ ORBITAL RINGS</button>
+    <button class="btn active" id="btnHud" onclick="toggleHud()">✚ SCAN FIELD</button>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.7">
+      <strong style="color:var(--acid)">RINGS</strong> → VOLUMEで輪が出現 / formに追従<br>
+      <strong style="color:var(--ice)">SCAN</strong> → 認識中のHUD / lockで退く
+    </div>
+  </div>
+
+  <div class="psec">
+    <div class="sec-label">KAUDIO — 効果音</div>
+    <button class="btn" id="btnSound" onclick="toggleSound()">♪ SOUND : OFF</button>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.7">
+      <strong style="color:var(--acid)">WHEEL</strong> → ギューン⤴ 抵抗音 (resistance)<br>
+      <strong style="color:var(--ice)">FORM LOCK</strong> → カシーン✦ ピカピカ 結晶音<br>
+      &nbsp;&nbsp;<span style="color:var(--dim2)">音はホイール操作に同期</span>
+    </div>
+  </div>
+
+  <div class="psec">
     <div class="sec-label">IINSIGHT</div>
     <div class="insight">
       <strong>// SPATIAL COGNITION</strong>
@@ -426,6 +460,8 @@ input[type=range]{width:100%;accent-color:var(--acid);cursor:pointer}
   <div class="bc" id="bb-state">RECOGNITION ACTIVE</div>
   <div class="br">
     <span class="kbd">WHEEL</span>RECOG
+    <span class="kbd">⌥WHEEL</span>ZOOM
+    <span class="kbd">⇧WHEEL</span>PAN
     <span class="kbd">DRAG</span>ROTATE
     <span class="kbd">A</span>AUTO
     <span class="kbd">R</span>RESET
@@ -447,6 +483,14 @@ let rotSpeed = 0.30;
 let occlusionStrength = 0.85;
 let topoMode = 'good';
 let autoPlay = false;
+let ringsOn = true;       // Saturn orbital ring system
+let hudOn = true;         // FUI scan field
+const RING_TILT = -0.46;  // fixed extra tilt so the ring disk never sits perfectly edge-on
+const moons = [
+  { R:1.66, ang:0.0, spd:0.20,  size:3.0 },
+  { R:2.16, ang:2.2, spd:-0.13, size:4.4 },
+  { R:1.90, ang:4.1, spd:0.16,  size:2.4 },
+];
 
 let zoom = 0;
 let targetZoom = 0;
@@ -456,16 +500,24 @@ let dragging = false;
 let dragX = 0, dragY = 0;
 let autoT = 0;
 
+// ── camera: ALT-wheel dolly (寄り/引き) + SHIFT-wheel pan ──
+let camScale = 1, targetCamScale = 1;
+let camPanX = 0, camPanY = 0, targetPanX = 0, targetPanY = 0;
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
 let formLocked = false;
 let formLockT = 0;
 let formLockTrigger = -9999;
 let lastInLockZone = false;
+let lastInAmbZone = false;
 
 // ── FORM-LOCK flourish: graphical ripples (波紋) + sparkle crackle (パチパチ) ──
 let ripples = [];          // expanding rings
 let sparkles = [];         // tiny crackling flashes
 let kiras = [];            // kira-silhouette sparkles that bloom on entering VOLUME
 let sparkleEmitUntil = -9999;
+let axisBeams = [];        // ピキュン vertical light pillars shot from the poles (outside the form)
+let lastAxisPulse = -9999;
 
 // 4-point kira silhouette (from kirakira.svg): vertical, concave-pinched.
 // width/height ≈ 0.678. s = half-height in px. No rotation (always upright).
@@ -481,7 +533,7 @@ function kiraPath(ctx, x, y, s){
 }
 
 function spawnFormLockFX(){
-  const cx = W*0.5, cy = H*0.5;
+  const cx = W*0.5 + camPanX, cy = H*0.5 + camPanY;
   const maxR = Math.min(W,H) * 0.62;
   for (let i=0;i<3;i++){
     ripples.push({ t0: frameTime + i*0.13, x:cx, y:cy, max: maxR*(0.66+i*0.2), dur: 0.95 + i*0.18, hue: 274 - i*22 });
@@ -506,6 +558,17 @@ function spawnFormLockFX(){
     });
   }
   sparkleEmitUntil = frameTime + 0.75;   // ~0.75s of staccato face flashes
+}
+
+// ── ピキュン axis beams: at the decided moment, a thin rainbow light pillar (土星の輪の虹)
+// shoots out from the top pole (up) and bottom pole (down). It races out in an instant,
+// leaves a slim vertical afterglow, then thins to nothing and slips away (スッと消える).
+// It is born at the silhouette rim and travels outward only — never crossing the form.
+function spawnAxisBeams(wide){
+  lastAxisPulse = frameTime;
+  const s = Math.random();
+  axisBeams.push({ dir:-1, t0:frameTime, seed:s,         wide:!!wide }); // up
+  axisBeams.push({ dir: 1, t0:frameTime, seed:(s+0.5)%1, wide:!!wide }); // down
 }
 
 let frameTime = 0;
@@ -537,6 +600,89 @@ function generatePoints(n) {
 }
 generatePoints(pointCount);
 
+// ── distant satellite starfield, co-planar with the rings (far outer orbit) ──
+// they spread across deep space and DON'T converge — ambient, not part of the form.
+const orbitStars = [];
+(function(){
+  for (let i=0;i<74;i++){
+    const R = 3.0 + Math.pow(Math.random(),0.6)*4.4;        // far, wide outer orbit
+    orbitStars.push({
+      R, ang: Math.random()*Math.PI*2,
+      spd: (Math.random()<0.5?-1:1)*(0.008+Math.random()*0.045),
+      size: 0.5 + Math.random()*1.5,
+      hue: 198 + Math.random()*142,
+      twF: 1.4 + Math.random()*3.2, twP: Math.random()*Math.PI*2,
+    });
+  }
+})();
+
+// ══ AUDIO — wheel-synced crystallization SFX (ギューン⤴ カシーン✦ ピカピカ) ══
+// Synth-only, no assets. Toggled by the KAUDIO button (a user gesture, which also
+// unlocks the AudioContext). Swap for real samples later in Claude Code if wanted.
+const Sfx = (function(){
+  let actx=null, master=null, on=false, lastWheel=0;
+  function ensure(){
+    if (!actx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      actx = new AC();
+      master = actx.createGain(); master.gain.value = 0.42; master.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') actx.resume();
+  }
+  function setOn(v){ on = v; if (on) ensure(); }
+  // ギューン⤴ — a short filtered saw that glides in pitch with the scroll: resistance.
+  function wheel(dir, level){
+    if (!on || !actx) return;
+    const now = performance.now(); if (now - lastWheel < 42) return; lastWheel = now;
+    const t = actx.currentTime;
+    const o = actx.createOscillator(), g = actx.createGain(), f = actx.createBiquadFilter();
+    o.type = 'sawtooth';
+    const base = 150 + clamp(level,0,1)*560;
+    o.frequency.setValueAtTime(base, t);
+    o.frequency.exponentialRampToValueAtTime(base*(dir>=0?1.14:0.88), t+0.10);
+    o.detune.value = (Math.random()-0.5)*26;
+    f.type='lowpass'; f.frequency.setValueAtTime(800 + clamp(level,0,1)*2400, t); f.Q.value = 7;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.15, t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.14);
+    o.connect(f); f.connect(g); g.connect(master);
+    o.start(t); o.stop(t+0.17);
+  }
+  // カシーン✦ + ピカピカ — metallic bell cluster, a noise 'ka' transient, then a high twinkle arp.
+  function crystallize(){
+    if (!on || !actx) return;
+    const t = actx.currentTime;
+    [1, 2.01, 2.99, 4.21, 5.47].forEach((p,i)=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'triangle'; o.frequency.value = 540*p;
+      const peak = 0.13/(i+1);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+1.05+i*0.10);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t+1.25+i*0.10);
+    });
+    const len = (actx.sampleRate*0.11)|0;
+    const nb = actx.createBuffer(1, len, actx.sampleRate);
+    const d = nb.getChannelData(0);
+    for (let i=0;i<len;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/len,3);
+    const ns = actx.createBufferSource(); ns.buffer = nb;
+    const nf = actx.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=2600;
+    const ng = actx.createGain(); ng.gain.value=0.16;
+    ns.connect(nf); nf.connect(ng); ng.connect(master); ns.start(t);
+    [1568, 1976, 2349, 3136].forEach((fr,i)=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type='sine'; o.frequency.value=fr;
+      const ts = t+0.16+i*0.07;
+      g.gain.setValueAtTime(0.0001, ts);
+      g.gain.exponentialRampToValueAtTime(0.085, ts+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ts+0.26);
+      o.connect(g); g.connect(master); o.start(ts); o.stop(ts+0.3);
+    });
+  }
+  return { setOn, wheel, crystallize };
+})();
+
 const stage = document.getElementById('main-zone');
 const canvas = document.getElementById('main-canvas');
 const ctx = canvas.getContext('2d');
@@ -552,9 +698,25 @@ resize();
 
 stage.addEventListener('wheel', (e)=>{
   e.preventDefault();
+  // ALT → dolly (寄り/引き)
+  if (e.altKey){
+    targetCamScale = clamp(targetCamScale * (1 - e.deltaY*0.0013), 0.45, 3.6);
+    Sfx.wheel(-e.deltaY, (targetCamScale-0.45)/3.15);
+    return;
+  }
+  // SHIFT → pan
+  if (e.shiftKey){
+    const d = (e.deltaX || e.deltaY);
+    targetPanX = clamp(targetPanX - d*0.85, -W*0.65, W*0.65);
+    if (e.deltaX) targetPanY = clamp(targetPanY - e.deltaY*0.85, -H*0.65, H*0.65);
+    Sfx.wheel(-d, Math.min(1, Math.abs(d)/120));
+    return;
+  }
+  // default → recognition converge/disperse
   autoPlay = false;
   document.getElementById('btnAuto').classList.remove('active');
   targetZoom = Math.max(0, Math.min(1, targetZoom + (-e.deltaY*0.0014)));
+  Sfx.wheel(-e.deltaY, targetZoom);
 }, { passive:false });
 
 stage.addEventListener('mousedown', (e)=>{
@@ -580,8 +742,25 @@ function toggleAuto(){
   autoPlay = !autoPlay;
   document.getElementById('btnAuto').classList.toggle('active', autoPlay);
 }
+function toggleRings(){
+  ringsOn = !ringsOn;
+  document.getElementById('btnRings').classList.toggle('active', ringsOn);
+}
+function toggleHud(){
+  hudOn = !hudOn;
+  document.getElementById('btnHud').classList.toggle('active', hudOn);
+}
+let soundOn = false;
+function toggleSound(){
+  soundOn = !soundOn;
+  Sfx.setOn(soundOn);
+  const b = document.getElementById('btnSound');
+  b.classList.toggle('active', soundOn);
+  b.textContent = soundOn ? '♪ SOUND : ON' : '♪ SOUND : OFF';
+}
 function resetView(){
   targetZoom = 0; rotY = 0; rotX = 0; velRotY = 0; velRotX = 0;
+  targetCamScale = 1; targetPanX = 0; targetPanY = 0;
   autoPlay = false;
   document.getElementById('btnAuto').classList.remove('active');
 }
@@ -646,6 +825,9 @@ function topologyState(z){
 
 function step(dt){
   zoom += (targetZoom - zoom) * Math.min(1, dt*6);
+  camScale += (targetCamScale - camScale) * Math.min(1, dt*8);
+  camPanX  += (targetPanX  - camPanX)  * Math.min(1, dt*8);
+  camPanY  += (targetPanY  - camPanY)  * Math.min(1, dt*8);
   if (autoPlay) {
     autoT += dt * 0.22;
     targetZoom = 0.5 + 0.5 * Math.sin(autoT);
@@ -673,9 +855,18 @@ function step(dt){
     formLocked = true;
     showBigForm('FORM LOCK');
     spawnFormLockFX();
+    Sfx.crystallize();
+    spawnAxisBeams();
   }
   if (!inLockZone) formLocked = false;
   lastInLockZone = inLockZone;
+  // AMBIG. precursor: on first crossing into the ambiguity band, a wider Saturn-
+  // gradient flash blooms from the poles — colourful & fantasy, almost instant.
+  const inAmbZone = zoom >= 0.74 && zoom < 0.88 && topoMode === 'good';
+  if (inAmbZone && !lastInAmbZone) spawnAxisBeams(true);
+  lastInAmbZone = inAmbZone;
+  // slow heartbeat re-pulse while the form stays locked
+  if (formLocked && frameTime - lastAxisPulse > 3.4) spawnAxisBeams();
 
   if (formLocked) formLockT = Math.min(1, (frameTime - formLockTrigger) / 0.5);
   else { formLockT *= Math.pow(0.85, dt*60); if (formLockT < 0.01) formLockT = 0; }
@@ -721,11 +912,11 @@ function project(x,y,z){
   const y2 = y*cosX - z1*sinX;
   const z2 = y*sinX + z1*cosX;
   const fov = 5, distance = 4;
-  const scale = Math.min(W,H) * 0.30;
+  const scale = Math.min(W,H) * 0.30 * camScale;
   const persp = fov / (fov + z2 + distance);
   return {
-    sx: W*0.5 + x1 * scale * persp,
-    sy: H*0.5 + y2 * scale * persp,
+    sx: W*0.5 + camPanX + x1 * scale * persp,
+    sy: H*0.5 + camPanY + y2 * scale * persp,
     z: z2, persp,
   };
 }
@@ -749,8 +940,314 @@ function convexHull2D(pts){
   return lower.concat(upper);
 }
 
+// ── ring-plane projection: shares the form's rotation + a fixed extra tilt ──
+function projectRing(x,y,z){
+  const cosY=Math.cos(rotY), sinY=Math.sin(rotY);
+  const x1 = x*cosY - z*sinY;
+  const z1 = x*sinY + z*cosY;
+  const rx = rotX + RING_TILT;
+  const cosX=Math.cos(rx), sinX=Math.sin(rx);
+  const y2 = y*cosX - z1*sinX;
+  const z2 = y*sinX + z1*cosX;
+  const fov=5, distance=4;
+  const scale=Math.min(W,H)*0.30*camScale;
+  const persp=fov/(fov+z2+distance);
+  return { sx:W*0.5 + camPanX + x1*scale*persp, sy:H*0.5 + camPanY + y2*scale*persp, z:z2, persp };
+}
+
+// spectral ramp for the ring disk: cyan → neon → violet → pink → gold
+function ringSpectral(f){
+  const stops=[[0,[125,232,255]],[0.30,[157,156,255]],[0.55,[194,139,255]],[0.80,[255,92,138]],[1,[255,203,87]]];
+  for (let i=0;i<stops.length-1;i++){
+    const a=stops[i], b=stops[i+1];
+    if (f<=b[0]){
+      const t=(f-a[0])/(b[0]-a[0]);
+      return [Math.round(a[1][0]+(b[1][0]-a[1][0])*t),
+              Math.round(a[1][1]+(b[1][1]-a[1][1])*t),
+              Math.round(a[1][2]+(b[1][2]-a[1][2])*t)];
+    }
+  }
+  return [255,203,87];
+}
+
+// ── distant satellite stars on the ring plane (far outer orbit, don't converge) ──
+function drawOrbitField(pass, intensity){
+  if (!ringsOn) return;
+  const baseI = Math.max(0.14, intensity);     // faintly present even when rings are dim
+  const inner=1.5, outer=2.55;
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  for (const s of orbitStars){
+    const ang = s.ang + frameTime*s.spd;
+    const p = projectRing(Math.cos(ang)*s.R, 0, Math.sin(ang)*s.R);
+    if (p.persp<=0.12 || p.persp>3) continue;   // cull points near/behind the camera plane
+    const front = p.z<0;
+    if (pass==='back' && front) continue;
+    if (pass==='front' && !front) continue;
+    const tw = 0.55 + 0.45*Math.sin(frameTime*s.twF + s.twP);
+    const a = Math.min(1, baseI*0.85) * tw * Math.max(0.22, p.persp);
+    if (a<0.012) continue;
+    const col = ringSpectral(clamp((s.R-inner)/(outer-inner), 0, 1));
+    const sz = s.size*(0.55+Math.max(0,p.persp-0.3)*1.0);
+    ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${a})`;
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,sz,0,Math.PI*2); ctx.fill();
+    if (tw>0.86){
+      ctx.fillStyle=`rgba(255,255,255,${a*0.7})`;
+      ctx.beginPath(); ctx.arc(p.sx,p.sy,sz*0.5,0,Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// ── Saturn-like banded ring disk, drawn in two passes (back behind form, front over) ──
+function drawSaturnRings(pass, intensity){
+  if (!ringsOn || intensity <= 0.012) return;
+  const bad = (topoMode==='bad' && zoom>0.4);
+  const inner=1.5, outer=2.55, NR=58, segs=110;
+  const scale=Math.min(W,H)*0.30;
+  const ringW = (outer-inner)*scale/NR + 1.5;
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';   // additive → the rings read as luminous, not dusty
+  ctx.lineCap='butt';
+  // draw exactly one half (front: z<0, or back: z>=0) of a ring, clipped at the
+  // precise z=0 crossing so back and front meet with no gap and no overlap.
+  const wantFront = (pass==='front');
+  const strokeArc = (R,colStr,lw) => {
+    ctx.strokeStyle=colStr; ctx.lineWidth=lw;
+    const pts=[];
+    for (let i=0;i<=segs;i++){
+      const t=(i/segs)*Math.PI*2;
+      pts.push(projectRing(Math.cos(t)*R,0,Math.sin(t)*R));
+    }
+    ctx.beginPath();
+    let drawing=false;
+    for (let i=0;i<pts.length;i++){
+      const p=pts[i], isFront=p.z<0;
+      if (isFront===wantFront){
+        if (!drawing){
+          if (i>0){
+            const q=pts[i-1], tt=q.z/(q.z-p.z);   // interpolate to z=0
+            ctx.moveTo(q.sx+(p.sx-q.sx)*tt, q.sy+(p.sy-q.sy)*tt);
+            ctx.lineTo(p.sx,p.sy);
+          } else ctx.moveTo(p.sx,p.sy);
+          drawing=true;
+        } else ctx.lineTo(p.sx,p.sy);
+      } else if (drawing){
+        const q=pts[i-1], tt=q.z/(q.z-p.z);        // same crossing as the other half
+        ctx.lineTo(q.sx+(p.sx-q.sx)*tt, q.sy+(p.sy-q.sy)*tt);
+        drawing=false;
+      }
+    }
+    ctx.stroke();
+  };
+  for (let ri=0; ri<NR; ri++){
+    const f=ri/(NR-1);
+    let R=inner+(outer-inner)*f;
+    let bandA=Math.max(0, 0.55+0.45*Math.sin(f*26.0));   // fine dusty banding
+    if (f>0.50 && f<0.585) bandA*=0.10;                    // Cassini division
+    if (f>0.82 && f<0.86)  bandA*=0.28;                    // outer hairline gap
+    if (bad) R += Math.sin(frameTime*3+f*30)*0.045;        // perspective-break glitch
+    let col=bad?[255,92,138]:ringSpectral(f);
+    const a=intensity*bandA*0.088;
+    if (a<0.003) continue;
+    strokeArc(R, `rgba(${col[0]},${col[1]},${col[2]},${a})`, ringW);
+  }
+  // crisp rim highlights
+  strokeArc(inner, `rgba(214,178,255,${intensity*0.34})`, 1.1);
+  strokeArc(outer, `rgba(214,178,255,${intensity*0.28})`, 1.1);
+  strokeArc(1.97,  `rgba(125,232,255,${intensity*0.26})`, 0.9);
+  // orbiting moons
+  for (const m of moons){
+    const ang=m.ang+frameTime*m.spd;
+    const p=projectRing(Math.cos(ang)*m.R,0,Math.sin(ang)*m.R);
+    const front=p.z<0;
+    if (pass==='back' && front) continue;    // back moons drawn behind the planet
+    if (pass==='front' && !front) continue;  // front moons drawn over the planet
+    const col=ringSpectral((m.R-inner)/(outer-inner));
+    const sz=m.size*(0.7+Math.max(0,p.persp-0.4)*1.4)*(1+formLockT*0.5);
+    const a=Math.min(1,intensity*1.1);
+    ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${a})`;
+    ctx.shadowColor=`rgba(${col[0]},${col[1]},${col[2]},${a})`;
+    ctx.shadowBlur=sz*2.4;
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,sz,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=`rgba(255,255,255,${a*0.85})`;
+    ctx.beginPath(); ctx.arc(p.sx-sz*0.25,p.sy-sz*0.25,sz*0.4,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ── delicate screen-fixed FUI instrument field (behind the form) ──
+function drawInstrumentField(base){
+  if (!hudOn || base<=0.02) return;
+  const cx=W*0.5+camPanX, cy=H*0.5+camPanY, m=Math.min(W,H);
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for (const [rf,al,dash] of [[0.205,0.10,false],[0.30,0.12,false],[0.425,0.085,true]]){
+    ctx.strokeStyle=`rgba(157,156,255,${base*al})`; ctx.lineWidth=1;
+    ctx.setLineDash(dash?[2,6]:[]);
+    ctx.beginPath(); ctx.arc(cx,cy,m*rf,0,Math.PI*2); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  const rT=m*0.30;
+  ctx.font='7px IBM Plex Mono, monospace';
+  for (let d=0; d<360; d+=5){
+    const a=(d-90)*Math.PI/180, major=d%30===0, l=major?9:4;
+    ctx.strokeStyle=`rgba(194,139,255,${base*(major?0.5:0.22)})`;
+    ctx.lineWidth=major?1:0.6;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*rT, cy+Math.sin(a)*rT);
+    ctx.lineTo(cx+Math.cos(a)*(rT+l), cy+Math.sin(a)*(rT+l));
+    ctx.stroke();
+    if (d%90===0){
+      ctx.fillStyle=`rgba(255,203,87,${base*0.55})`;
+      ctx.fillText(String(d).padStart(3,'0'), cx+Math.cos(a)*(rT+20), cy+Math.sin(a)*(rT+20));
+    }
+  }
+  // registration dot ring
+  const rR=m*0.46;
+  for (let d=0; d<360; d+=12){
+    const a=d*Math.PI/180;
+    ctx.fillStyle=`rgba(125,232,255,${base*0.30})`;
+    ctx.beginPath(); ctx.arc(cx+Math.cos(a)*rR, cy+Math.sin(a)*rR, 0.9,0,Math.PI*2); ctx.fill();
+  }
+  // corner brackets of an inscribed square
+  const sq=m*0.355*0.707;
+  ctx.strokeStyle=`rgba(157,156,255,${base*0.38})`; ctx.lineWidth=1;
+  for (const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
+    const x=cx+sx*sq, y=cy+sy*sq, bl=9;
+    ctx.beginPath(); ctx.moveTo(x-sx*bl,y); ctx.lineTo(x,y); ctx.lineTo(x,y-sy*bl); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ── foreground reticle: radar sweep + crosshair (recedes as VOLUME locks) ──
+function drawReticle(base){
+  if (!hudOn || base<=0.02) return;
+  const cx=W*0.5+camPanX, cy=H*0.5+camPanY, m=Math.min(W,H), sweepR=m*0.30;
+  ctx.save();
+  const sweep=frameTime*0.45, trail=14;
+  for (let i=trail;i>=1;i--){
+    const a=sweep-i*0.04, al=base*0.22*(1-i/trail);
+    ctx.strokeStyle=`rgba(125,232,255,${al})`; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*sweepR, cy+Math.sin(a)*sweepR); ctx.stroke();
+  }
+  ctx.strokeStyle=`rgba(125,232,255,${base*0.55})`; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  ctx.lineTo(cx+Math.cos(sweep)*sweepR, cy+Math.sin(sweep)*sweepR); ctx.stroke();
+  ctx.fillStyle=`rgba(125,232,255,${base*0.8})`;
+  ctx.beginPath(); ctx.arc(cx+Math.cos(sweep)*sweepR, cy+Math.sin(sweep)*sweepR, 2,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=`rgba(236,228,255,${base*0.5})`; ctx.lineWidth=1;
+  for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+    ctx.beginPath();
+    ctx.moveTo(cx+dx*5, cy+dy*5); ctx.lineTo(cx+dx*17, cy+dy*17); ctx.stroke();
+  }
+  ctx.strokeStyle=`rgba(236,228,255,${base*0.4})`;
+  ctx.beginPath(); ctx.arc(cx,cy,3,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+// ── thin rainbow light pillars from the top/bottom poles (ピキュン) ──
+// topY / botY are the sphere silhouette's top & bottom in screen space; the beams
+// start there and travel outward only, so they never bleed into the form.
+function drawAxisBeams(topY, botY, cx){
+  if (!axisBeams.length) return;
+  const GAP = Math.min(W, H) * 0.024;                 // atmosphere gap (大気圏の間)
+  axisBeams = axisBeams.filter(b => (frameTime - b.t0) < ((b.wide ? 0.20 : 0.13) + (b.wide ? 0.52 : 0.62)));
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.lineCap = 'round';
+  for (const b of axisBeams){
+    const wide = !!b.wide;
+    const SHOOT = wide ? 0.20 : 0.13, FADE = wide ? 0.52 : 0.62;
+    const age = frameTime - b.t0;
+    if (age > SHOOT + FADE) continue;
+    const up = b.dir < 0;
+    const rimY = up ? topY : botY;                    // sphere silhouette edge
+    const originY = rimY + (up ? -GAP : GAP);         // beam starts past the atmosphere gap
+    const endY = up ? 10 : H - 10;
+    const span = endY - originY;                      // signed reach
+    const reach = wide ? 0.60 : 1;                     // precursor is shorter
+    const shoot = clamp(age / SHOOT, 0, 1);
+    const tipEase = 1 - Math.pow(1 - shoot, 3);       // fast easeOut → ピキュン snap
+    const tipY = originY + span * reach * tipEase;
+    let fade = age <= SHOOT ? 1 : 1 - (age - SHOOT) / FADE;
+    fade = Math.max(0, fade);
+    const fadeEase = wide ? fade : fade * fade;       // スッと消える
+    if (fadeEase <= 0.001) continue;
+    // チカチカ flicker — the line may break up so it never reads as a hard spike
+    const flick = 0.5 + 0.5 * Math.sin(frameTime * (wide ? 24 : 46) + b.seed * 40);
+    const aF = fadeEase * (0.42 + 0.58 * flick);
+    // Saturn rainbow gradient. wide → full cyan→gold ramp packed into the short beam.
+    const gEnd = wide ? (originY + span * reach) : endY;
+    const off = wide ? 0 : b.seed;
+    const grad = (alpha) => {
+      const g = ctx.createLinearGradient(cx, originY, cx, gEnd);
+      const N = 6;
+      for (let i = 0; i <= N; i++){
+        const f = i / N;
+        const c = ringSpectral((f + off) % 1);
+        g.addColorStop(f, `rgba(${c[0]},${c[1]},${c[2]},${alpha})`);
+      }
+      return g;
+    };
+    const w = (wide ? 1.5 : 0.6) + (wide ? 3.0 : 1.4) * fadeEase;
+    const line = (a, b2) => { ctx.beginPath(); ctx.moveTo(cx, a); ctx.lineTo(cx, b2); ctx.stroke(); };
+    // soft wide bloom (continuous — the glow body)
+    ctx.setLineDash([]);
+    ctx.strokeStyle = grad((wide ? 0.30 : 0.15) * fadeEase);
+    ctx.lineWidth = w * (wide ? 7.0 : 5.5);
+    line(originY, tipY);
+    // mid body — the Saturn band, dashed so it twinkles & breaks
+    ctx.setLineDash(wide ? [15, 7] : [10, 8]);
+    ctx.lineDashOffset = -frameTime * (wide ? 80 : 150);
+    ctx.strokeStyle = grad((wide ? 0.75 : 0.5) * aF);
+    ctx.lineWidth = w * (wide ? 2.6 : 1.9);
+    line(originY, tipY);
+    // core — thin & broken; for sharp beams a hot white thread, for wide it stays colour
+    ctx.setLineDash(wide ? [9, 10] : [7, 9]);
+    ctx.lineDashOffset = -frameTime * 190;
+    ctx.strokeStyle = wide ? grad(0.6 * aF) : `rgba(255,255,255,${0.85 * aF})`;
+    ctx.lineWidth = w * 0.7;
+    line(originY, tipY);
+    ctx.setLineDash([]);
+    // base swell (基点の膛らみ) — a small bulge where the beam is born
+    const bc = ringSpectral((b.seed + 0.1) % 1);
+    const bulgeR = (wide ? 17 : 12) * (0.7 + 0.5 * fadeEase) * (0.88 + 0.18 * flick);
+    const bg = ctx.createRadialGradient(cx, originY, 0, cx, originY, bulgeR);
+    bg.addColorStop(0, `rgba(255,255,255,${(wide ? 0.5 : 0.7) * fadeEase})`);
+    bg.addColorStop(0.4, `rgba(${bc[0]},${bc[1]},${bc[2]},${0.5 * fadeEase})`);
+    bg.addColorStop(1, `rgba(${bc[0]},${bc[1]},${bc[2]},0)`);
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.arc(cx, originY, bulgeR, 0, Math.PI * 2); ctx.fill();
+    // racing head (sharp beams only)
+    if (!wide){
+      const headA = fadeEase * (0.3 + 0.7 * (1 - shoot));
+      if (headA > 0.01){
+        const hr = 4 + 8 * (1 - shoot);
+        const hc = ringSpectral((shoot + b.seed) % 1);
+        const hg = ctx.createRadialGradient(cx, tipY, 0, cx, tipY, hr);
+        hg.addColorStop(0, `rgba(255,255,255,${headA})`);
+        hg.addColorStop(0.45, `rgba(${hc[0]},${hc[1]},${hc[2]},${headA * 0.7})`);
+        hg.addColorStop(1, `rgba(${hc[0]},${hc[1]},${hc[2]},0)`);
+        ctx.fillStyle = hg;
+        ctx.beginPath(); ctx.arc(cx, tipY, hr, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
 function draw(){
   ctx.clearRect(0,0,W,H);
+
+  // overlay intensities: scan-field recedes as VOLUME locks, rings ramp up
+  const _vis = layerVis(zoom);
+  const instrumentBase = (hudOn ? (0.55 + zoom*0.25 + _vis.fc*0.6) * (1 - _vis.vol*0.5) : 0);
+  const reticleBase = instrumentBase * (1 - _vis.vol);
+  const ringI = Math.min(1, _vis.eg*0.25 + _vis.fc*0.65 + _vis.amb*0.6 + _vis.vol*1.0) * (1 + formLockT*0.4);
+  drawInstrumentField(instrumentBase);
 
   const vis = layerVis(zoom);
   const tensionLevel = vis.fc * 0.5 + vis.vol * 1.0;
@@ -775,13 +1272,17 @@ function draw(){
   if (guidanceLevel > 0.05 && topoMode === 'good') {
     const gAlpha = Math.min(1, guidanceLevel) * 0.18;
     const pulseR = 60 + Math.sin(frameTime * 1.5) * 8;
-    const grad = ctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, 200 + pulseR);
+    const grad = ctx.createRadialGradient(W*0.5+camPanX, H*0.5+camPanY, 0, W*0.5+camPanX, H*0.5+camPanY, 200 + pulseR);
     grad.addColorStop(0, `rgba(194,139,255,${gAlpha})`);
     grad.addColorStop(0.5, `rgba(194,139,255,${gAlpha * 0.3})`);
     grad.addColorStop(1, 'rgba(194,139,255,0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0,0,W,H);
   }
+
+  // distant satellite starfield (co-planar with rings) + SATURN RINGS — back half
+  drawOrbitField('back', ringI);
+  drawSaturnRings('back', ringI);
 
   // EDGES via k-NN
   const maxDist3D = 0.55;
@@ -959,6 +1460,33 @@ function draw(){
       ctx.stroke();
       ctx.restore();
 
+      // ── round-line "decided" flash: luminous glow blooming OUTWARD from the rim ──
+      // (clipped to the region OUTSIDE the hull — the glow never bleeds inward)
+      const rimFlash = Math.max(0, 1 - (frameTime - formLockTrigger) / 0.7);
+      if (rimFlash > 0.01) {
+        const ef = rimFlash*rimFlash*(3-2*rimFlash);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0,0,W,H);
+        hull.forEach((pt,i)=> i===0 ? ctx.moveTo(pt.sx,pt.sy) : ctx.lineTo(pt.sx,pt.sy));
+        ctx.closePath();
+        ctx.clip('evenodd');                 // keep only the outside of the round line
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineJoin = 'round';
+        for (const [blur,wid,col] of [[38,9,'214,178,255'],[18,4.2,'125,232,255'],[7,2,'255,255,255']]){
+          ctx.shadowColor = `rgba(${col},${ef})`;
+          ctx.shadowBlur = blur*ef;
+          ctx.strokeStyle = `rgba(${col},${ef*0.82})`;
+          ctx.lineWidth = wid;
+          ctx.beginPath();
+          hull.forEach((pt,i)=> i===0 ? ctx.moveTo(pt.sx,pt.sy) : ctx.lineTo(pt.sx,pt.sy));
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+
       // FORM LOCK corner brackets
       if (formLockT > 0.3) {
         let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
@@ -1060,6 +1588,23 @@ function draw(){
     }
   }
   ctx.restore();
+
+  // SATURN RINGS — front half (over the form) + distant stars + foreground reticle
+  drawSaturnRings('front', ringI);
+  drawOrbitField('front', ringI);
+  drawReticle(reticleBase);
+
+  // ピキュン axis beams — from the sphere's silhouette top & bottom, outward only
+  {
+    const cyc = H * 0.5 + camPanY, cxc = W * 0.5 + camPanX;
+    let up = 0, dn = 0;
+    for (const pr of proj){
+      const dy = pr.sy - cyc;
+      if (dy < 0){ if (-dy > up) up = -dy; }
+      else if (dy > dn) dn = dy;
+    }
+    drawAxisBeams(cyc - up, cyc + dn, cxc);
+  }
 
   // ── FORM-LOCK FLOURISH ────────────────────────────────────────────
   // gentle ongoing twinkle while the form stays locked (upright, no rotation)
