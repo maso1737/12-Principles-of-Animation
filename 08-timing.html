@@ -394,7 +394,8 @@ html,body{
       <canvas id="stage"></canvas>
       <div class="hud hud-tl">
         <span class="chip">VIEWPORT — INFINITE FOLLOW</span><br>
-        <span class="chip">SUBJECT : FIXED&nbsp;&nbsp;·&nbsp;&nbsp;BACKGROUND : PAN ↓</span>
+        <span class="chip" id="hudPan">SUBJECT : FIXED&nbsp;&nbsp;·&nbsp;&nbsp;BACKGROUND : PAN ↓</span><br>
+        <span class="chip" style="margin-top:4px">▲ / ▼ CLICK — REVERSE FOLLOW</span>
       </div>
       <div class="hud hud-bl">
         <span class="chip" id="hudV">VEL 0.00</span>
@@ -469,12 +470,16 @@ html,body{
     <div class="mid">SPACING IS NOT SPEED — <b>IT IS MASS</b></div>
     <div class="r">
       <span>FPS <b id="fpsOut">--</b></span>
-      <span>SPACE PLAY · 1/2/3 FRAMES · R RESET</span>
+      <span>SPACE PLAY · ←→ STEP · ↑↓ PRESET · 1/2/3 FPS · R RESET</span>
     </div>
   </footer>
 </div>
 
 <script>
+
+
+
+
 /* ============================================================
    KG·08 — TIMING & SPACING / INFINITE FOLLOW ENGINE
    subject fixed · background pans · spacing → mass
@@ -490,9 +495,12 @@ const mod=(n,m)=>((n%m)+m)%m;
 const N=12, DUR=2.4;                  // 12 frames, fixed duration (no speed knob — spacing only)
 let spacing=[];                       // monotonic positions 0..1
 let simT=0, prevQ=-1, prevAbs=0;
-let heldV=0, prevHeldV=0, aSm=0, jerkE=0;
+let heldV=0, prevHeldV=0, aSm=0, jerkE=0, velSm=0, travelAbs=null;
 let worldY=0;
-let playing=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// This is a tool *about* motion — it must move on load. Reduced-motion users still get
+// the core scroll (the lesson), we only damp decorative idle jitter elsewhere.
+const REDUCE_MOTION=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playing=true;
 let frameMode=1;                      // 1F/2F/3F → 24/12/8 fps
 let scaleYcur=1, scaleYvel=0;
 let overtakers=[];
@@ -513,6 +521,8 @@ function resync(){
   const stepLen=frameMode/24;
   prevQ=Math.floor(simT/stepLen);
   prevAbs=absPos(prevQ*stepLen);
+  velSm=velAt(mod(simT/DUR,1));   // snap smoothed velocity to avoid lag after jumps
+  travelAbs=absPos(simT);          // re-baseline continuous travel accumulator
 }
 
 /* ── PRESETS ──────────────────────────────── */
@@ -637,6 +647,9 @@ function sizeStage(){
 
 /* world layers */
 const FAR={p:.28,ch:620}, MID={p:.6,ch:700}, NEAR={p:1.25,ch:760}, APR={p:1.7};
+const OVR={p:1.55,ch:540};   // overlay rectangles — float ABOVE near type, faster parallax
+const HERO={p:2.2,ch:1700};  // foreground giant arrow — recurring, fastest parallax
+let scrollDir=1;             // +1 = world moves down (subject rises) / -1 = reversed
 const FARW=['Δt','SEC','FR-24','CONST','LOOP','±0.00','CAM-LOCK','BG/PAN','y++','24 EXP'];
 const MIDW=['VELOCITY','INERTIA','MOMENTUM','FRICTION','SAME BALL','SAME DISTANCE','ONLY SPACING','CHANGES','EQUAL TIME','UNEQUAL DIST.','Δ INTERVAL','ANIMA','HOLD','CRAM'];
 const MIDJP=['タメ','ツメ'];
@@ -665,12 +678,11 @@ function chunk(layerId,k){
         jp,sz:26+rnd()*46,outline:rnd()<.4});
     }
     if(rnd()<.75)items.push({t:'ticks',y:rnd()*MID.ch,xn:rnd()*.8+.05,n:3+(rnd()*4|0)});
-  }else{ // NEAR
+  }else if(layerId===2){ // NEAR
     const jp=rnd()<.09;
     const it={t:'nw',y:rnd()*NEAR.ch,xn:rnd()*.9-.18,
       w:jp?NEARJP[0]:NEARW[rnd()*NEARW.length|0],jp,
       sz:120+rnd()*170,pink:rnd()<.07};
-    if(rnd()<.6)it.red={rx:.1+rnd()*.3,rw:.25+rnd()*.35,ry:.18+rnd()*.5,rh:.18+rnd()*.2};
     items.push(it);
     if(rnd()<.45)items.push({t:'mw',y:rnd()*NEAR.ch,xn:rnd()*.85-.05,
       w:NEARW[rnd()*NEARW.length|0],jp:false,sz:80+rnd()*50,outline:rnd()<.5});
@@ -678,6 +690,23 @@ function chunk(layerId,k){
       let xn=rnd()*.75+.04; if(xn>.40&&xn<.60)xn+=.25;
       items.push({t:'streak',y:rnd()*NEAR.ch,xn,len:30+rnd()*70,w:2+(rnd()*3|0)});
     }
+  }else if(layerId===3){ // OVERLAY — floating patterned bars across the type
+    const n=1+(rnd()<.55?1:0);
+    for(let i=0;i<n;i++){
+      const styles=['mask','solid','hatch','dots','checker','hatch','dots'];
+      const st=styles[rnd()*styles.length|0];
+      const wide=rnd()<.5;
+      items.push({t:'bar',y:rnd()*OVR.ch,
+        xn:rnd()*.7-.05,
+        w:(wide?.28+rnd()*.42:.10+rnd()*.16)*1,
+        h:8+rnd()*(wide?22:46),
+        st, pink: st!=='mask' && rnd()<.12,
+        rot: rnd()<.12?(rnd()<.5?-1:1):0});
+    }
+    if(rnd()<.35)items.push({t:'cap',y:rnd()*OVR.ch,xn:rnd()*.7+.02,
+      lbl:['REDACTED','BG/PAN','OVERLAY','MASK 01','LAYER ▲','+ + +','◼◻◼'][rnd()*7|0]});
+  }else if(layerId===4){ // HERO — giant foreground arrow, recurring
+    if(rnd()<.62) items.push({t:'hero',y:rnd()*HERO.ch,pink:rnd()<.6});
   }
   chunkCache.set(key,items);
   if(chunkCache.size>400)chunkCache.delete(chunkCache.keys().next().value);
@@ -686,6 +715,55 @@ function chunk(layerId,k){
 
 function fontD(sz,jp){return '900 '+sz+'px '+(jp?'"IBM Plex Sans JP"':'"Inter Tight"')}
 function fontM(sz){return '500 '+sz+'px "JetBrains Mono"'}
+
+/* fill a rect with a pattern (clipped) */
+function patternRect(rx,ry,rw,rh,st,pink){
+  const col=pink?PINK:INK;
+  if(st==='mask'){               // white redaction with hairline frame
+    sx.fillStyle=BG;sx.fillRect(rx,ry,rw,rh);
+    sx.strokeStyle=INK;sx.lineWidth=1;sx.strokeRect(rx+.5,ry+.5,rw-1,rh-1);
+    return;
+  }
+  if(st==='solid'){sx.fillStyle=col;sx.fillRect(rx,ry,rw,rh);return;}
+  sx.save();
+  sx.beginPath();sx.rect(rx,ry,rw,rh);sx.clip();
+  if(st==='hatch'){
+    sx.strokeStyle=col;sx.lineWidth=2;
+    for(let d=-rh;d<rw+rh;d+=7){sx.beginPath();sx.moveTo(rx+d,ry+rh);sx.lineTo(rx+d+rh,ry);sx.stroke();}
+  }else if(st==='dots'){
+    sx.fillStyle=col;
+    for(let yy=ry+3;yy<ry+rh;yy+=7)for(let xx=rx+3;xx<rx+rw;xx+=7){
+      sx.beginPath();sx.arc(xx,yy,1.4,0,Math.PI*2);sx.fill();}
+  }else if(st==='checker'){
+    sx.fillStyle=col;const c=Math.max(5,rh/3);
+    for(let yy=ry,r=0;yy<ry+rh;yy+=c,r++)for(let xx=rx+((r&1)?c:0);xx<rx+rw;xx+=c*2)
+      sx.fillRect(xx,yy,c,c);
+  }
+  sx.restore();
+  sx.strokeStyle=col;sx.lineWidth=1;sx.strokeRect(rx+.5,ry+.5,rw-1,rh-1);
+}
+
+/* big chevron arrow (two stacked Vs) — points in `dir` (+1 down / -1 up) */
+function chevronPath(cx,cy,w,h,dir){
+  const hw=w/2, t=h*.42;       // arm thickness
+  sx.beginPath();
+  if(dir>0){ // ▼
+    sx.moveTo(cx-hw,cy-h*.5);
+    sx.lineTo(cx,cy+h*.5);
+    sx.lineTo(cx+hw,cy-h*.5);
+    sx.lineTo(cx+hw-t,cy-h*.5);
+    sx.lineTo(cx,cy+h*.5-t*1.15);
+    sx.lineTo(cx-hw+t,cy-h*.5);
+  }else{ // ▲
+    sx.moveTo(cx-hw,cy+h*.5);
+    sx.lineTo(cx,cy-h*.5);
+    sx.lineTo(cx+hw,cy+h*.5);
+    sx.lineTo(cx+hw-t,cy+h*.5);
+    sx.lineTo(cx,cy-h*.5+t*1.15);
+    sx.lineTo(cx-hw+t,cy+h*.5);
+  }
+  sx.closePath();
+}
 
 function drawLayer(layerId,L,vpx){
   const scroll=worldY*L.p, ch=L.ch;
@@ -716,17 +794,30 @@ function drawLayer(layerId,L,vpx){
         sx.font=fontD(it.sz,it.jp);sx.textBaseline='alphabetic';sx.textAlign='left';
         sx.fillStyle=it.pink?PINK:INK;
         sx.fillText(it.w,x,y);
-        if(it.red){
-          const tw=sx.measureText(it.w).width;
-          const rx=x+tw*it.red.rx, rw=tw*it.red.rw;
-          const ry=y-it.sz*.74+it.sz*.74*it.red.ry, rh=it.sz*.74*it.red.rh;
-          sx.fillStyle=BG;sx.fillRect(rx,ry,rw,rh);
-          sx.strokeStyle=INK;sx.lineWidth=1;sx.strokeRect(rx+.5,ry+.5,rw,rh);
-        }
       }else if(it.t==='streak'){
         const ln=it.len+vpx*.12;
         sx.fillStyle=INK;
         sx.fillRect(x,y-ln,it.w,ln);
+      }else if(it.t==='bar'){
+        const rw=it.w*SW, rh=it.h, rx=x, ry=y;
+        if(it.rot){
+          sx.save();sx.translate(rx+rw/2,ry+rh/2);sx.rotate(it.rot*.04);
+          patternRect(-rw/2,-rh/2,rw,rh,it.st,it.pink);sx.restore();
+        }else patternRect(rx,ry,rw,rh,it.st,it.pink);
+      }else if(it.t==='cap'){
+        sx.fillStyle=G2;sx.font=fontM(8);sx.textBaseline='alphabetic';sx.textAlign='left';
+        sx.fillText(it.lbl,x,y);
+      }else if(it.t==='hero'){
+        // SAME proportions as the direction buttons (h = w*0.62) — fixed size, no zoom.
+        // (Scaling read as a curving/warping illusion; a constant chevron is cleaner & chicer.)
+        const w=Math.min(SW*1.02,SH*1.7), h=w*.62;
+        const cx=SW*.5;
+        if(y>-h*.5 && y<SH+h*.5) heroOnScreen=true;
+        const col=it.pink?PINK:INK;
+        sx.globalAlpha=.94;
+        chevronPath(cx,y,w,h,scrollDir);
+        sx.fillStyle=col;sx.fill();
+        sx.globalAlpha=1;
       }
     }
   }
@@ -745,6 +836,83 @@ function drawRuler(){
     sx.beginPath();sx.moveTo(X,y+.5);sx.lineTo(X+(major?14:7),y+.5);sx.stroke();
     if(major){sx.fillStyle=G2;sx.fillText(String(Math.abs(yl/12)|0).padStart(4,'0'),X+17,y);}
   }
+}
+
+/* ── STAGE CLICK → direction toggle ── */
+let heroOnScreen=false;
+let hoverDir=0, hoverPulse=0;       // which chevron is hovered (+1 down / -1 up)
+stage.addEventListener('pointerdown',e=>{
+  const r=stage.getBoundingClientRect();
+  const d=dirHit(e.clientX-r.left, e.clientY-r.top);
+  if(d===0)return;
+  // when a hero arrow is sweeping the foreground, the bottom button is locked
+  if(d>0 && heroOnScreen)return;
+  setDir(d);
+});
+let ballHover=false, ballHoverAmt=0, ballPoke=0;
+stage.addEventListener('pointermove',e=>{
+  const r=stage.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  hoverDir=dirHit(mx,my);
+  // ball hover test (radius around center)
+  const br=clamp(Math.min(SW,SH)*.055,22,40)+12;
+  const wasHover=ballHover;
+  ballHover=Math.hypot(mx-SW/2,my-SH/2)<br*1.4;
+  if(ballHover&&!wasHover)ballPoke=1;          // entering pokes a wobble
+  stage.style.cursor=hoverDir?'pointer':(ballHover?'grab':'default');
+});
+stage.addEventListener('pointerleave',()=>{hoverDir=0;ballHover=false;stage.style.cursor='default';});
+function setDir(d){
+  if(d===scrollDir)return;
+  scrollDir=d; resync();
+}
+
+/* ── DIRECTION CHEVRON (clickable, top ▲ / bottom ▼) ── */
+let dirZones={up:null,down:null};
+let hUp=0, hDn=0;                 // smoothed hover amounts 0..1
+function drawDirChevron(){
+  const cx=SW/2, m=Math.min(SW,SH);
+  const bw=clamp(m*.07,34,64), bh=bw*.62, pad=clamp(SH*.05,18,46);
+  const upY=pad+bh/2, dnY=SH-pad-bh/2;
+  dirZones.up  ={x:cx-bw/2-12,y:upY-bh/2-12,w:bw+24,h:bh+24};   // generous hit pad
+  dirZones.down={x:cx-bw/2-12,y:dnY-bh/2-12,w:bw+24,h:bh+24};
+  // ease hover toward target
+  hUp+=((hoverDir<0?1:0)-hUp)*.25;
+  hDn+=((hoverDir>0?1:0)-hDn)*.25;
+  const lockDn=heroOnScreen;       // bottom locked while a giant arrow sweeps
+
+  chevButton(cx,upY,bw,bh,-1, scrollDir<0, hUp, false);
+  chevButton(cx,dnY,bw,bh, 1, scrollDir>0, hDn, lockDn);
+
+  // FWD tag beside the active one
+  sx.fillStyle=PINK;sx.font=fontM(7.5);sx.textBaseline='middle';sx.textAlign='left';
+  sx.fillText('▸ FWD',cx+bw/2+10,scrollDir>0?dnY:upY);
+}
+function chevButton(cx,cy,bw,bh,dir,active,hov,locked){
+  const grow=active?1:(1+hov*0.26);          // inactive grows on hover
+  const w=bw*grow, h=bh*grow;
+  // hover hit-frame — corner ticks that say "pressable"
+  if(hov>0.04 && !active){
+    const z=dirZones[dir<0?'up':'down'];
+    sx.save();sx.globalAlpha=hov*.9;
+    sx.strokeStyle=locked?G3:INK;sx.lineWidth=1;
+    const L=8, x0=cx-w/2-7,y0=cy-h/2-6,x1=cx+w/2+7,y1=cy+h/2+6;
+    [[x0,y0,1,1],[x1,y0,-1,1],[x0,y1,1,-1],[x1,y1,-1,-1]].forEach(([px,py,sxd,syd])=>{
+      sx.beginPath();sx.moveTo(px+sxd*L,py);sx.lineTo(px,py);sx.lineTo(px,py+syd*L);sx.stroke();
+    });
+    sx.restore();
+  }
+  sx.save();
+  sx.globalAlpha=active?1:(locked?.12:(.22+hov*.34));
+  chevronPath(cx,cy,w,h,dir);
+  sx.fillStyle=active?PINK:INK;sx.fill();
+  sx.restore();
+}
+function dirHit(mx,my){
+  const inb=(z)=>z&&mx>=z.x&&mx<=z.x+z.w&&my>=z.y&&my<=z.y+z.h;
+  if(inb(dirZones.up))return -1;
+  if(inb(dirZones.down))return 1;
+  return 0;
 }
 
 function drawAperture(){
@@ -774,36 +942,58 @@ function drawAperture(){
 }
 
 /* ── BALL ─────────────────────────────────── */
+let ballOff=0, ballOffVel=0;     // vertical inertial offset (px), spring-centered
 function drawBall(dt){
   const cx=SW/2, cy=SH/2;
   const soft=1-hardBlend;
+
+  // ---- hover "prupru" : entering pokes a strong decaying oscillation ----
+  ballHoverAmt+=((ballHover?1:0)-ballHoverAmt)*clamp(dt*12,0,1);
+  ballPoke*=Math.exp(-dt*3.4);                       // slower decay → lingers longer
+  const pru=(ballPoke*1.5*Math.sin(simT*34)          // big poke ring-down on entry
+            + ballHoverAmt*1.0*Math.sin(simT*11))     // lively idle quiver while hovered
+            *0.30;                                    // overall depth (was 0.16)
+
+  // ---- scale (squash & stretch) ----
   const target=1
-    +clamp(Math.sign(aSm)*Math.sqrt(Math.abs(aSm))*.13,-.42,.85)*soft
-    +clamp(heldV*.05,0,.20)*soft*.6;
-  // spring (underdamped when soft)
+    +clamp(Math.sign(aSm)*Math.sqrt(Math.abs(aSm))*.11,-.40,.80)*soft
+    +clamp(heldV*.05,0,.20)*soft*.6
+    +pru;
   const stiff=lerp(170,420,hardBlend), damp=lerp(7.5,30,hardBlend);
   scaleYvel+=((target-scaleYcur)*stiff-scaleYvel*damp)*dt;
   scaleYcur+=scaleYvel*dt;
   scaleYcur=clamp(scaleYcur,.45,2.1);
-  if(hardBlend>.92){scaleYcur=1;scaleYvel=0;}     // rigid: 0 px deform
+  if(hardBlend>.92){scaleYcur=1;scaleYvel=0;}     // rigid: 0 px deform (but still translates)
   const sxs=1/scaleYcur;
 
+  // ---- directional inertial offset (self-energy) ----
+  // travel sign: rising (scrollDir>0) means the subject climbs ⇒ "up" is negative Y.
+  // During acceleration the ball leads (pushes toward travel); during deceleration it
+  // trails (lags opposite travel). At rest the spring snaps it back to dead-center.
+  const travelUp=scrollDir>0?-1:1;                 // screen-Y direction of "forward"
+  const lead=clamp(aSm*1.1,-11,11);                // +accel leads forward, −accel trails back
+  const offTarget=travelUp*lead*3.0;               // px — stronger, clearly readable (was 1.6)
+  const offStiff=120, offDamp=13;
+  ballOffVel+=((offTarget-ballOff)*offStiff-ballOffVel*offDamp)*dt;
+  ballOff+=ballOffVel*dt;
+  ballOff=clamp(ballOff,-58,58);
+
   jerkE*=Math.exp(-dt*3.2);
-  const wob=clamp(jerkE,0,1)*soft*.10;
+  const wob=clamp(jerkE,0,1)*soft*.10 + (Math.abs(ballPoke)+ballHoverAmt*.4)*.12;
 
   const breath=1+0.013*Math.sin(simT*2.0)*soft;
-  const bob=1.6*Math.sin(simT*1.3)*soft;
+  const bob=1.6*Math.sin(simT*1.3)*soft;           // tiny idle breath-bob
   const r=clamp(Math.min(SW,SH)*.055,22,40)*breath;
 
   sx.save();
-  sx.translate(cx,cy+bob);
+  sx.translate(cx,cy+bob+ballOff);
   sx.scale(sxs,scaleYcur);
   // white halo (separation from black world-type)
   sx.fillStyle=BG;
   sx.beginPath();sx.arc(0,0,r+8,0,Math.PI*2);sx.fill();
   sx.strokeStyle=INK;sx.lineWidth=1;
   sx.beginPath();sx.arc(0,0,r+8,0,Math.PI*2);sx.stroke();
-  // body (wobbly rim when soft & excited)
+  // body (wobbly rim when soft & excited, or poked)
   sx.fillStyle=INK;
   sx.beginPath();
   if(wob>0.004){
@@ -955,11 +1145,74 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Digit1')setFrameMode(1);
   if(e.code==='Digit2')setFrameMode(2);
   if(e.code==='Digit3')setFrameMode(3);
+  if(e.code==='ArrowRight'){e.preventDefault();stepFrame(1);}
+  if(e.code==='ArrowLeft'){e.preventDefault();stepFrame(-1);}
+  if(e.code==='ArrowUp'){e.preventDefault();cyclePreset(-1);}
+  if(e.code==='ArrowDown'){e.preventDefault();cyclePreset(1);}
   if(e.code==='KeyR'){worldY=0;overtakers=[];}
   if(e.code==='Escape')window.location.href='index.html';
 });
 
+/* paused: advance the playhead one spacing-frame & scroll the world one interval */
+function stepFrame(d){
+  setPlay(false);
+  const stepLen=frameMode/24;
+  // current frame index within cycle
+  const before=absPos(simT);
+  simT=Math.max(0,simT+d*stepLen);
+  const after=absPos(simT);
+  worldY+=(after-before)*SH*1.4*scrollDir;
+  resync();
+  // refresh HUD-ish velocity reading from this interval
+  prevHeldV=heldV;
+  heldV=Math.abs(after-before)/stepLen;
+}
+function cyclePreset(d){
+  let idx=PRESETS.findIndex(p=>p.id===activePreset);
+  if(idx<0)idx=0;
+  idx=mod(idx+d,PRESETS.length);
+  applyPreset(PRESETS[idx]);
+}
+
 /* ── MAIN LOOP ────────────────────────────── */
+/* ── MOTION INTEGRATION ───────────────────── */
+// instantaneous normalized velocity (×mean) from the spacing curve at phase ph 0..1
+function velAt(ph){
+  const f=ph*(N-1), i=clamp(Math.floor(f),0,N-2);
+  return (spacing[i+1]-spacing[i])*(N-1);   // segment slope = local speed (1 = mean)
+}
+function advanceMotion(dt){
+  simT+=dt;
+  const stepLen=frameMode/24;
+  const meanPx=(SH*1.4);
+  if(travelAbs===null) travelAbs=absPos(simT);
+  const absNow=absPos(simT);
+  worldY+=(absNow-travelAbs)*meanPx*scrollDir;   // always integrate continuously
+  travelAbs=absNow;
+
+  // velocity / acceleration (sampled at quantized phase so HUD matches stutter)
+  const phS=frameMode>1 ? mod(Math.floor(simT/stepLen)*stepLen/DUR,1) : mod(simT/DUR,1);
+  const vNorm=velAt(phS);
+  const prevV=velSm;
+  velSm+=(vNorm-velSm)*clamp(dt*18,0,1);
+  heldV=velSm;
+  const aInst=(velSm-prevV)/Math.max(dt,1e-3);
+  const aPrev=aSm;
+  aSm+=(aInst-aSm)*clamp(dt*12,0,1);
+  jerkE+=Math.abs(aSm-aPrev)*dt*1.4;
+  spawnCool-=dt;
+  if(aSm<-2.2 && spawnCool<=0){spawnOvertakers();spawnCool=.18;}
+}
+// the value used for rendering — snapped to frame grid for 2F/3F (limited-animation hold)
+function renderWorldY(){
+  if(frameMode<=1 || !playing) return worldY;
+  // quantize worldY to the position it had at the current held frame
+  const stepLen=frameMode/24;
+  const qPhase=Math.floor(simT/stepLen)*stepLen;
+  const cont=absPos(simT), held=absPos(qPhase);
+  return worldY-(cont-held)*(SH*1.4)*scrollDir;   // back off to the held frame's position
+}
+
 let lastTs=0, fpsN=0, fpsT=0;
 function loop(ts){
   requestAnimationFrame(loop);
@@ -968,43 +1221,32 @@ function loop(ts){
   fpsN++;fpsT+=dt;
   if(fpsT>=.5){$('fpsOut').textContent=Math.round(fpsN/fpsT);fpsN=0;fpsT=0;}
 
-  if(playing){
-    simT+=dt;
-    const stepLen=frameMode/24;
-    const q=Math.floor(simT/stepLen);
-    if(q!==prevQ){
-      const tq=q*stepLen, dtq=(q-prevQ)*stepLen;
-      const abs=absPos(tq);
-      const dAbs=prevQ<0?0:abs-prevAbs;
-      prevAbs=abs;prevQ=q;
-      const SCALE=SH*1.4;
-      worldY+=dAbs*SCALE;
-      prevHeldV=heldV;
-      heldV=dtq>0?dAbs/dtq:0;
-      const a=dtq>0?(heldV-prevHeldV)/dtq:0;
-      const aPrev=aSm;
-      aSm+=(a-aSm)*.45;
-      jerkE+=Math.abs(aSm-aPrev)*.06;
-      spawnCool-=dtq;
-      if(aSm<-5.5&&spawnCool<=0){spawnOvertakers();spawnCool=.14;}
-    }
-  }
+  if(playing) advanceMotion(dt);
 
-  /* draw stage */
+  /* draw stage — for 2F/3F the WORLD position snaps to the held frame (limited animation),
+     while the ball's own physics keep running on the continuous signal */
+  const wyReal=worldY;
+  worldY=renderWorldY();
   sx.clearRect(0,0,SW,SH);
+  heroOnScreen=false;
   const vpx=heldV*SH*1.4*NEAR.p;
   drawLayer(0,FAR,0);
   drawLayer(1,MID,0);
   drawRuler();
   drawLayer(2,NEAR,vpx);
+  drawLayer(3,OVR,0);          // floating patterned bars
   drawAperture();
+  drawLayer(4,HERO,0);         // rare giant arrow — sweeps the foreground, behind subject
+  drawDirChevron();            // persistent direction indicator (clickable)
   drawOvertakers(dt);
-  drawBall(dt);
+  drawBall(dt);                // subject always reads on top — it is the protagonist
+  worldY=wyReal;               // restore continuous accumulator
 
   /* HUD */
   $('hudV').textContent='VEL '+heldV.toFixed(2);
   $('hudA').textContent='ACC '+(aSm>=0?'+':'')+aSm.toFixed(1);
   $('hudY').textContent='Y '+String(Math.min(Math.abs(worldY)|0,999999)).padStart(6,'0');
+  $('hudPan').innerHTML='SUBJECT : '+(scrollDir>0?'RISING ↑':'FALLING ↓')+'&nbsp;&nbsp;·&nbsp;&nbsp;BG : PAN '+(scrollDir>0?'↓':'↑');
 
   drawEditor();
 }
@@ -1013,8 +1255,11 @@ function loop(ts){
 function sizeAll(){sizeStage();sizeEditor();}
 window.addEventListener('resize',()=>setTimeout(sizeAll,60));
 applyPreset(PRESETS[3]);   // P04 ease-in-out → BALLOON neighbourhood
+sizeAll();                 // establish SW/SH BEFORE using them
+simT=DUR*0.30;             // start where the curve is already moving (visible motion on load)
+worldY=SH*1.2;             // pre-scroll so the world is already populated above & below
+resync();
 setPlay(playing);
-sizeAll();
 Promise.race([
   Promise.all([
     document.fonts.load('900 100px "Inter Tight"'),
@@ -1023,6 +1268,10 @@ Promise.race([
   ]),
   new Promise(r=>setTimeout(r,1600))
 ]).then(()=>{chunkCache.clear();requestAnimationFrame(loop);});
+
+
+
+
 </script>
 </body>
 </html>
