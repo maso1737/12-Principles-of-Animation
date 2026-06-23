@@ -977,9 +977,9 @@ function bodyMarkup(){
       + (hi ? `<ellipse cx="${ex-rx*0.34}" cy="${ey-ry*0.42}" rx="${(rx*0.34).toFixed(1)}" ry="${(ry*0.34).toFixed(1)}" fill="#fff" opacity="0.92"/>`
             + `<circle cx="${ex+rx*0.22}" cy="${ey+ry*0.3}" r="${(rx*0.16).toFixed(1)}" fill="#fff" opacity="0.35"/>` : '');
     if(mood==='shock'){
-      // round wide eyes + small "o" mouth
-      parts.push(eye(-23,-7,11,13));
-      parts.push(eye(23,-7,11,13));
+      // round wide eyes + small "o" mouth（目を半径分ほど外へ → 中央に詰まりすぎないよう）
+      parts.push(eye(-29,-7,11,13));
+      parts.push(eye(29,-7,11,13));
       parts.push(`<ellipse cx="0" cy="26" rx="6.5" ry="8.5" fill="${fl}"/>`);
     } else if(mood==='joy'){
       // ^ ^ happy squint + open smile (slightly smaller)
@@ -987,9 +987,9 @@ function bodyMarkup(){
       parts.push(`<path d="M12 -10 Q23 -22 34 -10" stroke="${fl}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`);
       parts.push(`<path d="M-18 18 Q0 40 18 18 Q9 24 0 24 Q-9 24 -18 18 Z" fill="${fl}"/>`);
     } else {
-      // calm — glossy oval eyes (ref position: closer + a touch lower), small gentle smile
-      parts.push(eye(-23,-6,8,10));
-      parts.push(eye(23,-6,8,10));
+      // calm — glossy oval eyes（目を半径分ほど外へ → 中央に詰まりすぎないよう）, small gentle smile
+      parts.push(eye(-27,-6,8,10));
+      parts.push(eye(27,-6,8,10));
       parts.push(`<path d="M-8 17 Q0 24 8 17" stroke="${fl}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`);
     }
   } else { // ball

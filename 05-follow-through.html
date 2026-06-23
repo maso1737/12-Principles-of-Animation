@@ -89,6 +89,7 @@ body::before{
   background:linear-gradient(180deg,rgba(255,183,218,0.07),rgba(255,183,218,0));
   -webkit-background-clip:text;background-clip:text;color:transparent;
   line-height:0.85;bottom:-50px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.04em;font-style:italic;
+  padding-right:0.24em;   /* イタリックの右はみ出しが background-clip:text の塗り範囲で切れるのを防ぐ */
 }
 
 .corner-deco{position:absolute;width:18px;height:18px;pointer-events:none;color:var(--pink);opacity:0.55}
@@ -97,7 +98,9 @@ body::before{
 .corner-deco.bl{bottom:14px;left:14px}
 .corner-deco.br{bottom:14px;right:14px}
 
-.principle-overlay{position:absolute;top:18px;right:20px;text-align:right;pointer-events:none;z-index:2}
+.principle-overlay{position:absolute;top:18px;right:20px;display:flex;align-items:center;gap:14px;text-align:left;pointer-events:none;z-index:2}
+.po-bignum{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(40px,6vw,72px);color:var(--pink);line-height:0.9;letter-spacing:-0.02em;text-shadow:0 0 22px rgba(255,143,200,0.45);padding-right:0.06em}
+.po-text{text-align:left}
 .po-num{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.18em}
 .po-en{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--pink);letter-spacing:0.02em;line-height:1;margin-top:2px;
   text-shadow:0 0 18px rgba(255,143,200,0.4);}
@@ -298,9 +301,12 @@ input[type=range]::-moz-range-thumb{
   <svg class="corner-deco br" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
 
   <div class="principle-overlay">
-    <div class="po-num">PRINCIPLE 05</div>
-    <div class="po-en">FOLLOW THROUGH</div>
-    <div class="po-jp">後ろから付いてくるよ</div>
+    <div class="po-bignum">05</div>
+    <div class="po-text">
+      <div class="po-num">PRINCIPLE 05</div>
+      <div class="po-en">FOLLOW THROUGH</div>
+      <div class="po-jp">後ろから付いてくるよ</div>
+    </div>
   </div>
 
   <!-- MAIN ZONE -->
@@ -901,16 +907,30 @@ function applyPreset(name){
 }
 
 // CONTROLS
-document.getElementById('btnPlay').onclick=()=>{
+// 手動でleadを動かして止めた状態から再生する場合、現在のlead位置に対応する
+// masterFrameへ同期してから手動保持を解除する → 再生時に位置が飛ばない。
+function syncFrameToManualLead(){
+  if(leadManualX===null) return;
+  const {w}=mainZoneSize();
+  const PAD=90, travel=Math.max(1,w-PAD*2);
+  const e=Math.max(0,Math.min(1,(leadManualX-PAD)/travel));   // 進捗 0..1（easeInOutQuad の出力）
+  const t=e<0.5 ? Math.sqrt(e/2) : 1-Math.sqrt((1-e)/2);       // ease の逆関数 → 時間 0..1
+  masterFrame=LEAD_START_FR + t*(LEAD_END_FR-LEAD_START_FR);
+  leadManualX=null;
+}
+function startPlay(){
+  syncFrameToManualLead();
   playing=true;
   document.getElementById('btnPlay').classList.add('active');
   document.getElementById('btnPause').classList.remove('active');
-};
-document.getElementById('btnPause').onclick=()=>{
+}
+function stopPlay(){
   playing=false;
   document.getElementById('btnPause').classList.add('active');
   document.getElementById('btnPlay').classList.remove('active');
-};
+}
+document.getElementById('btnPlay').onclick=startPlay;
+document.getElementById('btnPause').onclick=stopPlay;
 document.getElementById('btnReset').onclick=()=>{initSegs(90);};
 document.getElementById('btnTrail').onclick=function(){
   showTrail=!showTrail;this.classList.toggle('active',showTrail);
@@ -973,10 +993,9 @@ mainC.addEventListener('pointerup', e => {
   if (!leadDragging) return;
   leadDragging = false;
   mainC.style.cursor = 'default';
-  playing = true;
-  document.getElementById('btnPlay').classList.add('active');
-  document.getElementById('btnPause').classList.remove('active');
-  setTimeout(() => { leadManualX = null; }, 2000);
+  // 離しても自動再生しない：その場で保持（trailがそこへ追従＝フォロースルー）。
+  // 再生は▶ボタン or Spaceで。位置が勝手に飛ばないよう leadManualX も保持したまま。
+  stopPlay();
 });
 
 // NUMBER SCRUBBER
@@ -1018,9 +1037,7 @@ document.querySelectorAll('.dv.scrub').forEach(el => {
 
 document.addEventListener('keydown', e => {
   if(e.code==='Space'){e.preventDefault();
-    playing=!playing;
-    document.getElementById('btnPlay').classList.toggle('active',playing);
-    document.getElementById('btnPause').classList.toggle('active',!playing);
+    if(playing) stopPlay(); else startPlay();
   }
   if(e.code==='ArrowRight'){masterFrame=Math.min(TOTAL,masterFrame+1);}
   if(e.code==='ArrowLeft') {masterFrame=Math.max(0,masterFrame-1);}

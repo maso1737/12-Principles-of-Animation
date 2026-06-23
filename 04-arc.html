@@ -98,6 +98,7 @@ body::before{
   background:linear-gradient(180deg,rgba(255,183,218,0.07),rgba(255,183,218,0));
   -webkit-background-clip:text;background-clip:text;color:transparent;
   line-height:0.85;bottom:-50px;left:-10px;pointer-events:none;user-select:none;letter-spacing:-0.04em;font-style:italic;
+  padding-right:0.24em;   /* イタリックの右はみ出しが background-clip:text の塗り範囲で切れるのを防ぐ */
 }
 
 /* 角の装飾(ハート) */
@@ -107,7 +108,9 @@ body::before{
 .corner-deco.bl{bottom:14px;left:14px}
 .corner-deco.br{bottom:14px;right:14px}
 
-.principle-overlay{position:absolute;top:18px;right:20px;text-align:right;pointer-events:none;z-index:2}
+.principle-overlay{position:absolute;top:18px;right:20px;display:flex;align-items:center;gap:14px;text-align:left;pointer-events:none;z-index:2}
+.po-bignum{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(40px,6vw,72px);color:var(--pink);line-height:0.9;letter-spacing:-0.02em;text-shadow:0 0 22px rgba(255,143,200,0.45);padding-right:0.06em}
+.po-text{text-align:left}
 .po-num{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.18em}
 .po-en{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--pink);letter-spacing:0.02em;line-height:1;margin-top:2px;
   text-shadow:0 0 18px rgba(255,143,200,0.4);}
@@ -310,9 +313,12 @@ input[type=range]::-moz-range-thumb{
   <svg class="corner-deco br" viewBox="0 0 18 18" fill="currentColor"><path d="M9 16s-7-4.35-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 16 7c0 4.65-7 9-7 9z"/></svg>
 
   <div class="principle-overlay">
-    <div class="po-num">PRINCIPLE 04</div>
-    <div class="po-en">THE ARC</div>
-    <div class="po-jp">弧をえがいて動くよ</div>
+    <div class="po-bignum">04</div>
+    <div class="po-text">
+      <div class="po-num">PRINCIPLE 04</div>
+      <div class="po-en">THE ARC</div>
+      <div class="po-jp">弧をえがいて動くよ</div>
+    </div>
   </div>
 
   <!-- ARC ZONE -->

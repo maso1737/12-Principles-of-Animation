@@ -1406,21 +1406,26 @@ function drawCross(ctx, cx, cy, size, angle, color, lineWidth) {
   ctx.restore();
 }
 
-function drawHalftoneSpot(ctx, cx, cy, r, color) {
+// halftone-orb と同じ作法：グリッド配置・放射状縮小・縁の外に小点を残して丸を締める。
+function drawHalftoneSpot(ctx, cx, cy, r, color, opts) {
+  opts = opts || {};
   ctx.save();
   ctx.fillStyle = color;
-  const stepSize = 6;
-  for (let yy = -r; yy <= r; yy += stepSize) {
-    for (let xx = -r; xx <= r; xx += stepSize) {
-      const d = Math.sqrt(xx*xx + yy*yy);
-      if (d > r) continue;
+  const gap    = opts.gap    || 6;          // 間隔
+  const maxDot = opts.maxDot || 2;          // 中心ドットの大きさ
+  const reach  = r * 1.12;
+  for (let yy = -reach; yy <= reach; yy += gap) {
+    for (let xx = -reach; xx <= reach; xx += gap) {
+      const d = Math.hypot(xx, yy);
+      if (d > reach) continue;
       const t = d / r;
-      const dotR = (1 - t * 0.8) * 2;
-      if (dotR > 0.2) {
-        ctx.beginPath();
-        ctx.arc(cx + xx, cy + yy, dotR, 0, Math.PI*2);
-        ctx.fill();
-      }
+      let dotR = maxDot * (1 - Math.min(t, 1) * 0.8);
+      if (t > 1) dotR = maxDot * 0.18;       // 縁の外はごく小さな点々
+      if (dotR < 0.3) continue;
+      ctx.globalAlpha = Math.max(0.12, 1 - t * 0.62);
+      ctx.beginPath();
+      ctx.arc(cx + xx, cy + yy, dotR, 0, Math.PI*2);
+      ctx.fill();
     }
   }
   ctx.restore();
@@ -1527,23 +1532,30 @@ function drawGlowOrb(ctx, cx, cy, r, color) {
 }
 
 // ── HALFTONE ORB — gradient halftone sphere (like purple reference) ──
-function drawHalftoneOrb(ctx, cx, cy, r, color) {
+// グリッド配置のまま、中心が大きく → 縁～外は小さな点々へ放射状に縮小。
+// 端まで点が残るので「丸」としてきれいに締まる。
+// opts.gap    : 点の間隔（グリッドの目）大きいほどスカスカ
+// opts.maxDot : 中心の最大ドット半径（大きさ）
+function drawHalftoneOrb(ctx, cx, cy, r, color, opts) {
+  opts = opts || {};
   ctx.save();
-  const stepSize = 5;
   ctx.fillStyle = color;
-  for (let yy = -r; yy <= r; yy += stepSize) {
-    for (let xx = -r; xx <= r; xx += stepSize) {
-      const d = Math.sqrt(xx*xx + yy*yy);
-      if (d > r) continue;
-      // Gradient: dense at one edge, sparse opposite
-      const t = (xx + r) / (2 * r); // 0 at left, 1 at right
-      const dotR = (1 - Math.abs(t - 0.4) * 1.4) * 2.4;
-      if (dotR > 0.2) {
-        ctx.globalAlpha = Math.max(0, 1 - d / r * 0.6) * Math.max(0.1, dotR / 2.4);
-        ctx.beginPath();
-        ctx.arc(cx + xx, cy + yy, Math.max(0.3, dotR), 0, Math.PI*2);
-        ctx.fill();
-      }
+  const gap    = opts.gap    || Math.max(4, Math.min(12, r * 0.06)); // 間隔
+  const maxDot = opts.maxDot || gap * 0.46;                          // 中心ドットの大きさ
+  const reach  = r * 1.12;        // 円の少し外までグリッドを回す → 縁に小さな点々を残す
+  for (let yy = -reach; yy <= reach; yy += gap) {
+    for (let xx = -reach; xx <= reach; xx += gap) {
+      const d = Math.hypot(xx, yy);
+      if (d > reach) continue;
+      const t = d / r;            // 0=中心, 1=円縁, >1=縁の外
+      // 半径方向に縮小：中心が大きく、縁へ向かって小さく
+      let dotR = maxDot * (1 - Math.min(t, 1) * 0.85);
+      if (t > 1) dotR = maxDot * 0.15;   // 縁の外はごく小さな点々で締める
+      if (dotR < 0.35) continue;
+      ctx.globalAlpha = Math.max(0.1, 1 - t * 0.62);
+      ctx.beginPath();
+      ctx.arc(cx + xx, cy + yy, dotR, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   ctx.restore();
@@ -2096,7 +2108,7 @@ function renderElement(el, t) {
   } else if (shape === 'glow-orb') {
     drawGlowOrb(ctx, x, y, size * 0.7, c1);
   } else if (shape === 'halftone-orb') {
-    drawHalftoneOrb(ctx, x, y, size * 0.55, c1);
+    drawHalftoneOrb(ctx, x, y, size * 0.55, c1, { gap: el.dotGap, maxDot: el.dotSize });
   } else if (shape === 'small-star') {
     ctx.save();
     ctx.translate(x, y);
@@ -2113,7 +2125,7 @@ function renderElement(el, t) {
   } else if (shape === 'cross') {
     drawCross(ctx, x, y, size, ang, c1, Math.max(1.5, size*0.08));
   } else if (shape === 'halftone-patch') {
-    drawHalftoneSpot(ctx, x, y, size*0.6, c1);
+    drawHalftoneSpot(ctx, x, y, size*0.6, c1, { gap: el.dotGap, maxDot: el.dotSize });
   } else if (shape === 'dot-grid') {
     drawDotGrid(ctx, x, y, wid, hgt, ang, c1);
   } else if (shape === 'checker-strip') {

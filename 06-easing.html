@@ -92,6 +92,7 @@ body::before{
   background:linear-gradient(180deg,rgba(255,183,218,0.07),rgba(255,183,218,0));
   -webkit-background-clip:text;background-clip:text;color:transparent;
   top:-60px;left:-10px;letter-spacing:-0.04em;line-height:0.85;pointer-events:none;user-select:none;
+  padding-right:0.24em;   /* イタリックの右はみ出しが background-clip:text の塗り範囲で切れるのを防ぐ */
 }
 .corner-deco{position:absolute;width:18px;height:18px;pointer-events:none;color:var(--pink);opacity:0.55}
 .corner-deco.tl{top:14px;left:14px}
@@ -324,6 +325,14 @@ input[type=range]::-moz-range-thumb{
   background:rgba(155,227,255,0.06);padding:7px 10px;border-radius:8px;
   border:1px solid rgba(155,227,255,0.18);
 }
+.bz-reset{
+  margin-top:8px;width:100%;font-family:var(--jp);font-weight:500;font-size:11px;
+  color:var(--blue);background:rgba(155,227,255,0.06);
+  border:1px solid rgba(155,227,255,0.22);border-radius:8px;
+  padding:6px 10px;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s;
+}
+.bz-reset:hover{background:rgba(155,227,255,0.14);border-color:var(--blue);transform:translateY(-1px)}
+.bz-reset:active{transform:translateY(0)}
 
 /* break button */
 .break-btn{
@@ -482,6 +491,7 @@ input[type=range]::-moz-range-thumb{
         <div class="handle-dot handle-p2" id="h-p2"></div>
       </div>
       <div id="bezier-readout">cubic-bezier(0.42, 0.00, 0.58, 1.00)</div>
+      <button id="bezier-reset" class="bz-reset" type="button">↺ ハンドルを初めに戻す</button>
     </div>
 
     <div class="sp-section">
@@ -866,6 +876,16 @@ function initBezierEditor() {
   }
   makeDraggable(hp1, 'p1');
   makeDraggable(hp2, 'p2');
+
+  // ハンドルが枠外に出て掴めなくなったとき用：既定値に戻す
+  const resetBtn = document.getElementById('bezier-reset');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    state.bezier.x1 = 0.42; state.bezier.y1 = 0.00;
+    state.bezier.x2 = 0.58; state.bezier.y2 = 1.00;
+    updateHandlePos();
+    for (let i=0; i<TOTAL; i++) trails.user[i] = null;
+  });
+
   updateHandlePos();
 }
 
