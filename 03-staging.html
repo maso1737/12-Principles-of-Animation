@@ -92,16 +92,17 @@
     flex:0 0 auto;background:var(--panel-solid);
     border-top:1px solid var(--line);
     padding:14px 16px calc(14px + env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;gap:12px;
+    display:flex;flex-direction:column;gap:0;
   }
 
-  /* editor (collapsible) */
+  /* editor (collapsible) — grid-row animation (no scrollHeight clipping) */
   #editor{
-    display:grid;grid-template-columns:1fr;gap:12px;
-    max-height:0;opacity:0;overflow:hidden;
-    transition:max-height .32s ease,opacity .25s ease;
+    display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .32s ease,opacity .25s ease;
   }
-  #editor.open{opacity:1;overflow:hidden}
+  #editor.open{grid-template-rows:1fr;opacity:1}
+  #editor > .editor-inner{overflow:hidden;display:grid;gap:12px}
+  #editor.open > .editor-inner{margin-bottom:12px}
   .edit-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .edit-label{
     font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;
@@ -214,7 +215,7 @@
   @keyframes flash{0%{filter:brightness(2.4)}100%{filter:brightness(1)}}
 
   /* toolbar mini */
-  #tools{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  #tools{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:12px}
   #tools .left{display:flex;align-items:center;gap:8px}
   .tbtn{
     font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
@@ -234,6 +235,16 @@
   @media (prefers-reduced-motion:reduce){
     #editor{transition:none}
   }
+
+  /* ESC → INDEX link (top overlay is pointer-events:none) */
+  #escLink{
+    pointer-events:auto;text-decoration:none;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;
+    color:var(--muted-2);border:1px solid var(--line-soft);border-radius:6px;
+    padding:4px 9px;margin-bottom:6px;transition:.15s;text-transform:uppercase;
+  }
+  #escLink:hover{color:var(--ink);border-color:var(--line)}
+  #escLink b{color:var(--cyan);font-weight:500}
 </style>
 </head>
 <body>
@@ -246,6 +257,7 @@
         <div class="sub">Diagonal Light · Direct the screen</div>
       </div>
       <div id="phase">
+        <a href="index.html" id="escLink"><b>[ESC]</b> INDEX</a>
         <div class="role-en" id="roleEn">Still</div>
         <div class="role-jp" id="roleJp">静</div>
         <div class="idx" id="roleIdx">CUE 01 / 06</div>
@@ -256,21 +268,23 @@
 
   <div id="console">
     <div id="editor">
-      <div class="edit-row">
-        <div class="edit-label">Pattern</div>
-        <div class="patbtns" id="patbtns"></div>
-      </div>
-      <div class="edit-row">
-        <div class="edit-label">Control</div>
-        <div class="sliders">
-          <label class="slider"><span>INT <b id="vInt">—</b></span><input type="range" id="sInt" min="0" max="100"></label>
-          <label class="slider"><span>SPD <b id="vSpd">—</b></span><input type="range" id="sSpd" min="0" max="100"></label>
-          <label class="slider rot"><span>ROT <b id="vRot">—</b></span><input type="range" id="sRot" min="-180" max="180" step="15" title="ダブルクリックで既定 -30° に戻す"><button class="mini" id="rotAll" title="全CUEをこの角度にそろえる">ALL</button></label>
+      <div class="editor-inner">
+        <div class="edit-row">
+          <div class="edit-label">Pattern</div>
+          <div class="patbtns" id="patbtns"></div>
         </div>
-      </div>
-      <div class="edit-row">
-        <div class="edit-label">Color</div>
-        <div class="colors" id="colors"></div>
+        <div class="edit-row">
+          <div class="edit-label">Control</div>
+          <div class="sliders">
+            <label class="slider"><span>INT <b id="vInt">—</b></span><input type="range" id="sInt" min="0" max="100"></label>
+            <label class="slider"><span>SPD <b id="vSpd">—</b></span><input type="range" id="sSpd" min="0" max="100"></label>
+            <label class="slider rot"><span>ROT <b id="vRot">—</b></span><input type="range" id="sRot" min="-180" max="180" step="15" title="ダブルクリックで既定 -30° に戻す"><button class="mini" id="rotAll" title="全CUEをこの角度にそろえる">ALL</button></label>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-label">Color</div>
+          <div class="colors" id="colors"></div>
+        </div>
       </div>
     </div>
 
@@ -351,7 +365,7 @@ let loop = true;
 let editorOpen = false;
 
 /* transition between cues */
-let trans = { active:false, from:0, to:0, t:0, dur:720, blast:0 };
+let trans = { active:false, from:0, to:0, start:0, dur:720, blast:0 };
 
 /* ============================================================
    RESIZE
@@ -367,6 +381,8 @@ function resize(){
   SPREAD = Math.min(W,H)*0.42;
 }
 window.addEventListener('resize', resize);
+// follow #stage-wrap size changes (editor open/close, transition, layout shifts)
+new ResizeObserver(()=>resize()).observe(document.getElementById('stage-wrap'));
 
 /* ============================================================
    DRAW PRIMITIVES (rotated diagonal frame, additive)
@@ -526,8 +542,8 @@ function frame(now){
   ctx.globalCompositeOperation='lighter';
 
   if(trans.active){
-    trans.t += 16/trans.dur;
-    let k = Math.min(1, trans.t);
+    // frame-rate independent: derive progress from elapsed wall-clock time
+    let k = Math.min(1, (now - trans.start)/trans.dur);
     const e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2; // easeInOut
     const cFrom = cues[trans.from], cTo = cues[trans.to];
     if(cFrom) RENDER[cFrom.pattern](cFrom, t, (1-e));
@@ -555,7 +571,7 @@ function goTo(idx, instant){
   playhead=idx;
   if(instant){ trans.active=false; }
   else{
-    trans.from=from; trans.to=idx; trans.t=0; trans.active=true;
+    trans.from=from; trans.to=idx; trans.start=performance.now(); trans.active=true;
     trans.blast = (cues[idx].pattern==='WIDE') ? (cues[idx].int/100)*0.9 : 0;
   }
   syncPhase(); syncStack();
@@ -675,22 +691,15 @@ document.getElementById('rotAll').addEventListener('click',e=>{
   b.blur();
 });
 
-/* size the editor to its actual content (no viewport-height clipping) */
-function sizeEditor(){
-  if(editorOpen) editor.style.maxHeight = editor.scrollHeight + 'px';
-}
-window.addEventListener('resize', sizeEditor);
-
 function selectCue(i){
   selected=i; editorOpen=true; editor.classList.add('open');
   const et=document.getElementById('editToggle');
   et.classList.add('active'); et.textContent='DONE';
   document.getElementById('hint').style.opacity=0;
   renderEditor();
-  sizeEditor();
 }
 function closeEditor(){
-  editorOpen=false; editor.classList.remove('open'); editor.style.maxHeight=''; selected=-1;
+  editorOpen=false; editor.classList.remove('open'); selected=-1;
   const et=document.getElementById('editToggle');
   et.classList.remove('active'); et.textContent='EDIT';
   document.getElementById('hint').style.opacity='';
@@ -721,17 +730,33 @@ document.getElementById('editToggle').addEventListener('click',()=>{
   else selectCue(playhead);
 });
 
-/* keyboard: SPACE = GO */
+/* keyboard */
 window.addEventListener('keydown',e=>{
+  const ae=document.activeElement;
+  const onInput = ae && ae.tagName==='INPUT';
+
+  // ESC: 1) close editor if open  2) otherwise go back to index
+  if(e.code==='Escape'){
+    if(onInput){ ae.blur(); }
+    if(editorOpen){ closeEditor(); }
+    else{ window.location.href='index.html'; }
+    return;
+  }
+
+  // SPACE always advances; if a slider has focus, blur it first so the
+  // keypress doesn't also nudge the range value
   if(e.code==='Space'){
     e.preventDefault();
-    const ae=document.activeElement;
-    if(ae && ae.tagName==='BUTTON') ae.blur();
+    if(ae && (ae.tagName==='BUTTON' || ae.tagName==='INPUT')) ae.blur();
     advance();
+    return;
   }
-  else if(e.code==='ArrowRight'){ goTo(playhead+1,true); }
+
+  // while editing a slider, let ←/→ and digits belong to the control (no CUE moves)
+  if(onInput) return;
+
+  if(e.code==='ArrowRight'){ goTo(playhead+1,true); }
   else if(e.code==='ArrowLeft'){ goTo(playhead-1,true); }
-  else if(e.code==='Escape'){ closeEditor(); }
   else if(/Digit[1-6]/.test(e.code)){ const n=+e.code.slice(5)-1; if(n<cues.length){selectCue(n);goTo(n,true);} }
 });
 
