@@ -274,6 +274,10 @@
           <div class="patbtns" id="patbtns"></div>
         </div>
         <div class="edit-row">
+          <div class="edit-label">Order</div>
+          <div class="patbtns" id="ordbtns"></div>
+        </div>
+        <div class="edit-row">
           <div class="edit-label">Control</div>
           <div class="sliders">
             <label class="slider"><span>INT <b id="vInt">—</b></span><input type="range" id="sInt" min="0" max="100"></label>
@@ -308,7 +312,8 @@
 
 <script>
 "use strict";
-/* ============================================================
+/* P1-1 SEQ (firing order) implemented on top of P0.
+   ============================================================
    03 STAGING — Diagonal Light System (2D)
    画面そのものを演出する。ライトは配置済み、
    ユーザーは「点灯順・強度・速度(+回転)」だけを操る。
@@ -335,6 +340,38 @@ const mix=(a,b,t)=>({r:a.r+(b.r-a.r)*t,g:a.g+(b.g-a.g)*t,b:a.b+(b.b-a.b)*t});
 const PATTERNS = ['THIN','BAR','GRADATION','DOT','DEPTHBAR','WIDE'];
 const PATTERN_LABEL = {THIN:'THIN',BAR:'BAR',GRADATION:'GRAD',DOT:'DOT',DEPTHBAR:'DEPTH',WIDE:'WIDE'};
 
+/* ---- firing ORDER (点灯順) — the heart of "1本の対角線から100の可能性" ----
+   Each fixture i (of N) gets a normalized position p∈[0,1] in the lighting
+   sequence. Changing the order re-times WHEN each fixture fires without
+   moving it — same diagonal, different reading. */
+const ORDERS = ['sweep','reverse','center','edges','random','pingpong'];
+const ORDER_LABEL = {sweep:'SWEEP',reverse:'REVERSE',center:'CENTER',edges:'EDGES',random:'RANDOM',pingpong:'PING-PONG'};
+// THIN is a single fixture — order shifts the breathe start phase instead.
+const ORDER_THIN = {sweep:0,reverse:Math.PI,center:Math.PI/2,edges:-Math.PI/2,random:2.3,pingpong:Math.PI*1.5};
+
+// per-cue fixed random ordering (stable within a session, re-seeded on RESET)
+function randPhase(cue,i,N){
+  if(!cue._rand || cue._rand.length!==N){
+    const arr=Array.from({length:N},(_,k)=>N>1?k/(N-1):0);
+    let s=(cue._seed ?? (cue._seed=(Math.random()*1e9)|0));
+    for(let k=N-1;k>0;k--){ s=(s*1103515245+12345)&0x7fffffff; const j=s%(k+1); const tmp=arr[k]; arr[k]=arr[j]; arr[j]=tmp; }
+    cue._rand=arr;
+  }
+  return cue._rand[i];
+}
+function phaseOf(i,N,order,cue){
+  const f = N>1 ? i/(N-1) : 0;
+  switch(order){
+    case 'reverse':  return 1-f;
+    case 'center':   return Math.abs(f-0.5)*2;      // center fires first
+    case 'edges':    return 1-Math.abs(f-0.5)*2;    // edges fire first
+    case 'pingpong': return f<0.5 ? f*2 : (1-f)*2;  // triangle wave
+    case 'random':   return randPhase(cue,i,N);
+    case 'sweep':
+    default:         return f;                       // original behaviour
+  }
+}
+
 /* ---- dramatic roles per slot index (the lesson) ---- */
 const ROLES = [
   {en:'Still',  jp:'静',  c:'#7A6690'},
@@ -348,12 +385,12 @@ const ROLES = [
 /* ---- default arc (静→予兆→流れ→蓄積→寄せ→解放) ---- */
 function defaultCues(){
   return [
-    {pattern:'THIN',     color:'purple', int:22, spd:14, rot:-30},
-    {pattern:'DOT',      color:'cyan',   int:34, spd:28, rot:-30},
-    {pattern:'BAR',      color:'amber',  int:54, spd:46, rot:-30},
-    {pattern:'GRADATION',color:'amber',  int:68, spd:60, rot:-30},
-    {pattern:'DEPTHBAR', color:'pink',   int:80, spd:78, rot:-30},
-    {pattern:'WIDE',     color:'pink',   int:100,spd:40, rot:-30},
+    {pattern:'THIN',     color:'purple', int:22, spd:14, rot:-30, order:'sweep'},
+    {pattern:'DOT',      color:'cyan',   int:34, spd:28, rot:-30, order:'sweep'},
+    {pattern:'BAR',      color:'amber',  int:54, spd:46, rot:-30, order:'sweep'},
+    {pattern:'GRADATION',color:'amber',  int:68, spd:60, rot:-30, order:'sweep'},
+    {pattern:'DEPTHBAR', color:'pink',   int:80, spd:78, rot:-30, order:'sweep'},
+    {pattern:'WIDE',     color:'pink',   int:100,spd:40, rot:-30, order:'sweep'},
   ];
 }
 
@@ -443,7 +480,8 @@ function spd(cue){ return 0.0006 + (cue.spd/100)*0.004; }
 const RENDER = {
   THIN(cue,t,m){
     const col=COLORS[cue.color], a=intA(cue)*m;
-    const breathe = 0.72 + 0.28*Math.sin(t*spd(cue)*0.6);
+    const off = ORDER_THIN[cue.order]||0;
+    const breathe = 0.72 + 0.28*Math.sin(t*spd(cue)*0.6 + off);
     withRot(cue.rot, ()=>{
       beam(0, 5, col, a*breathe);
       source(0, srcY(), 70, col, a*breathe);
@@ -457,7 +495,8 @@ const RENDER = {
     withRot(cue.rot, ()=>{
       for(let i=0;i<N;i++){
         const x=x0+gap*i;
-        const w = 0.6 + 0.4*Math.sin(flow - i*0.7); // travelling brightness => direction/speed
+        // firing order re-times each fixture (SPAN 4.2 keeps sweep == old i*0.7)
+        const w = 0.6 + 0.4*Math.sin(flow - phaseOf(i,N,cue.order,cue)*4.2);
         beam(x, 4, col, a*(0.45+0.55*w));
         source(x, srcY(), 34, col, a*(0.45+0.55*w));
       }
@@ -471,11 +510,12 @@ const RENDER = {
     withRot(cue.rot, ()=>{
       for(let i=0;i<N;i++){
         const f=i/(N-1);
-        // density rises toward right (perspective / acceleration)
+        // density rises toward right (perspective / acceleration) — SPATIAL, stays
         const x = -SPREAD + (SPREAD*2)*Math.pow(f,1.7);
         const dens = 0.35 + 0.65*f;
-        // light sweeping outward
-        const sweep = 0.5 + 0.5*Math.sin((f - rush)*Math.PI*2);
+        // timing follows firing order (p), decoupled from spatial position
+        const p = phaseOf(i,N,cue.order,cue);
+        const sweep = 0.5 + 0.5*Math.sin((p - rush)*Math.PI*2);
         beam(x, 3.4, col, a*dens*(0.5+0.5*sweep));
         source(x, srcY(), 26*(0.6+0.6*f), col, a*dens*0.9);
       }
@@ -491,7 +531,8 @@ const RENDER = {
       beam(0, 1.4, col, a*0.10);
       for(let i=0;i<N;i++){
         const y=y0+step*i;
-        const w = 0.5 + 0.5*Math.sin(wave - i*0.55); // size/intensity wave => 波を送る
+        // firing order re-times the wave (SPAN 8.25 keeps sweep == old i*0.55)
+        const w = 0.5 + 0.5*Math.sin(wave - phaseOf(i,N,cue.order,cue)*8.25);
         const r = 5 + 16*w;
         dot(0, y, r, col, a*(0.25+0.75*w));
       }
@@ -505,7 +546,8 @@ const RENDER = {
     withRot(cue.rot, ()=>{
       for(let i=0;i<N;i++){
         const x=x0+step*i;
-        let d = ((i/N) - sweep); d-=Math.round(d); // wrap distance
+        // fixture's slot in the firing order (was i/N; now respects cue.order)
+        let d = (phaseOf(i,N,cue.order,cue) - sweep); d-=Math.round(d); // wrap distance
         const band = Math.max(0, 1 - Math.abs(d)*7);
         const base = 0.18;
         beam(x, 2.4, col, a*(base + band*0.95));
@@ -658,6 +700,7 @@ function addDrag(el){
    ============================================================ */
 const editor=document.getElementById('editor');
 const patWrap=document.getElementById('patbtns');
+const ordWrap=document.getElementById('ordbtns');
 const colWrap=document.getElementById('colors');
 const sInt=document.getElementById('sInt'),sSpd=document.getElementById('sSpd'),sRot=document.getElementById('sRot');
 const vInt=document.getElementById('vInt'),vSpd=document.getElementById('vSpd'),vRot=document.getElementById('vRot');
@@ -667,6 +710,12 @@ PATTERNS.forEach(p=>{
   b.className='patbtn'; b.dataset.p=p; b.textContent=PATTERN_LABEL[p];
   b.addEventListener('click',()=>{ if(selected<0)return; cues[selected].pattern=p; renderEditor(); syncStack(); });
   patWrap.appendChild(b);
+});
+ORDERS.forEach(o=>{
+  const b=document.createElement('button');
+  b.className='patbtn'; b.dataset.o=o; b.textContent=ORDER_LABEL[o];
+  b.addEventListener('click',()=>{ if(selected<0)return; cues[selected].order=o; renderEditor(); });
+  ordWrap.appendChild(b);
 });
 COLOR_KEYS.forEach(k=>{
   const s=document.createElement('div');
@@ -708,6 +757,7 @@ function renderEditor(){
   if(selected<0) return;
   const c=cues[selected];
   patWrap.querySelectorAll('.patbtn').forEach(b=>b.classList.toggle('on',b.dataset.p===c.pattern));
+  ordWrap.querySelectorAll('.patbtn').forEach(b=>b.classList.toggle('on',b.dataset.o===(c.order||'sweep')));
   colWrap.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('on',s.dataset.c===c.color));
   sInt.value=c.int; vInt.textContent=c.int;
   sSpd.value=c.spd; vSpd.textContent=c.spd;
