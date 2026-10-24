@@ -744,6 +744,8 @@ body.solo #fail-overlay,body.solo .stage-bignum,body.solo #big-status{display:no
 </footer>
 </div>
 
+<!-- FOLEY CORE — shared procedural SFX runtime (canonical source: Gen-EX / SE Foley Stage) -->
+<script src="foley-core.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // EXAGGERATION — COMPRESSION ENGINE v2
@@ -846,6 +848,7 @@ stage.addEventListener('mousedown', (e) => {
   instr.style.opacity = 0;
   inputModeEl.classList.add('show');
   logEvent('CHARGE', 'compression begin');
+  if (window.Foley) Foley.chargeStart();   // 溜め音「ギューん」開始
 });
 
 let lastMoveT = performance.now();
@@ -996,6 +999,7 @@ function spawnSmear(cx, cy, intensity) {
 
 // ── BOOM RELEASE ──
 function releaseBoom() {
+  if (window.Foley) Foley.chargeStop();    // 溜め音を止める（爆散するしないに関わらず）
   const power = drive;
   lastReleaseDrive = power;
   if (power < 0.05) { drive = 0; dragDist = 0; return; }
@@ -1003,6 +1007,7 @@ function releaseBoom() {
     color: power > 0.95 ? '#FF4FA8' : power > 0.75 ? '#B58EFF' : '#5AE9FF' });
   if (power > 0.6) shockwaves.push({ x: mouseX, y: mouseY, r: 0, maxR: 150 + power * 400, life: 1.0, power: power*0.7, color: '#FFD27A' });
   spawnBoomBurst(mouseX, mouseY, power);
+  if (window.Foley) Foley.burst(Math.min(1, power));   // 爆散「パーン→キラキラ」
 
   // Recovery phase length scales with how much was charged
   recoveryUntil = frameTime + 0.6 + power * 1.4;
@@ -1182,6 +1187,8 @@ function step(dt) {
       }
     }
     drive = Math.min(1.15, drive);
+    // 溜め音を毎フレーム更新：音程は drive、警戒ビープは danger（やりすぎ度）に連動
+    if (window.Foley) Foley.chargeSet(Math.min(1, drive), dangerInfo().level);
   } else {
     drive *= Math.pow(decayRate, dt * 60);
     if (drive < 0.001) drive = 0;

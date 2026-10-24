@@ -475,6 +475,8 @@ html,body{
   </footer>
 </div>
 
+<!-- FOLEY CORE — shared procedural SFX runtime (canonical source: Gen-EX / SE Foley Stage) -->
+<script src="foley-core.js"></script>
 <script>
 
 
@@ -858,14 +860,21 @@ stage.addEventListener('pointermove',e=>{
   const br=clamp(Math.min(SW,SH)*.055,22,40)+12;
   const wasHover=ballHover;
   ballHover=Math.hypot(mx-SW/2,my-SH/2)<br*1.4;
-  if(ballHover&&!wasHover)ballPoke=1;          // entering pokes a wobble
+  if(ballHover&&!wasHover){ ballPoke=1; if(window.Foley) Foley.play('wobble',{gain:0.5}); }  // entering pokes a wobble → ぽわわん
   stage.style.cursor=hoverDir?'pointer':(ballHover?'grab':'default');
 });
 stage.addEventListener('pointerleave',()=>{hoverDir=0;ballHover=false;stage.style.cursor='default';});
 function setDir(d){
   if(d===scrollDir)return;
   scrollDir=d; resync();
+  if(window.Foley) Foley.play('squeak',{gain:0.5});   // 反転＝ボールが抵抗する「キュッ」
 }
+
+// FOLEY: start the continuous motion tone on the first user gesture (autoplay policy)
+let _foleyMotion=false;
+function foleyMotionStart(){ if(_foleyMotion||!window.Foley) return; _foleyMotion=true; Foley.glideStart(); }
+window.addEventListener('pointerdown', foleyMotionStart);
+window.addEventListener('keydown', foleyMotionStart);
 
 /* ── DIRECTION CHEVRON (clickable, top ▲ / bottom ▼) ── */
 let dirZones={up:null,down:null};
@@ -1222,6 +1231,9 @@ function loop(ts){
   if(fpsT>=.5){$('fpsOut').textContent=Math.round(fpsN/fpsT);fpsN=0;fpsT=0;}
 
   if(playing) advanceMotion(dt);
+
+  // FOLEY: sonify velocity → 上昇=ピッチ上「ギューん」/ 落下=ピッチ下「ぴゅーん」、速度で息継ぎ（停止中は無音）
+  if(window.Foley && _foleyMotion) Foley.glideSet(playing ? (velSm*scrollDir/1.8) : 0);
 
   /* draw stage — for 2F/3F the WORLD position snaps to the held frame (limited animation),
      while the ball's own physics keep running on the continuous signal */

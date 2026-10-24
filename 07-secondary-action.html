@@ -782,6 +782,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:14px;background:var(--ink)
 </footer>
 </div>
 
+<!-- FOLEY CORE — shared procedural SFX runtime (canonical source: Gen-EX / SE Foley Stage) -->
+<script src="foley-core.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // SECONDARY ACTION v2 — Causal Propagation Engine
@@ -889,7 +891,18 @@ function fire() {
   bladeProgress = 0;
   simSeed = BASE_SEED;   // deterministic world response per fire
   primaryGlow = 1;       // primary is the loudest thing on screen, now
+  if (window.Foley) Foley.play('boing', { gain: 0.5, reverb: 0.55 });   // ブレード発射＝デジタルboing＋リバーブで世界に広がる
 }
+
+// FOLEY: start the low ambient drone bed on the first user gesture (autoplay policy)
+let _foleyAmbient = false;
+function foleyAmbientStart() {
+  if (_foleyAmbient || !window.Foley) return;
+  _foleyAmbient = true;
+  Foley.droneStart();
+}
+window.addEventListener('pointerdown', foleyAmbientStart);
+window.addEventListener('keydown', foleyAmbientStart);
 
 // ── CANVAS ──
 const mainC = document.getElementById('main-canvas');
@@ -1805,6 +1818,10 @@ function updateGlitch() {
       glitchInvertActive = Math.random() < (mode === 'sync' ? 0.34 : (mode === 'only' ? 0.07 : 0.025));
       glitchSeed = Math.random() * 100000;
       buildGlitchFrame(layer, intensity);
+      if (window.Foley) {
+        Foley.glitch(intensity, { mode: mode });                       // 統一音色・モード別カラー
+        if (glitchInvertActive) Foley.flash(0.55 + intensity * 0.45);  // パ（全画面反転フラッシュ）
+      }
     } else {
       // Quiet frame between bursts — clear the layer
       if (layer.children.length > 0) layer.innerHTML = '';
@@ -2165,6 +2182,12 @@ function loop() {
   updateGlitch();
   updateHUD();
   updateInstruments(false);
+  // FOLEY: ambient drone — mode sets the bed (sync=heavy / only=hollow / mute=near-dead),
+  // then it swells with world energy (louder just after a fire)
+  if (window.Foley && _foleyAmbient) {
+    const dBase = mode === 'sync' ? 0.62 : mode === 'mute' ? 0.16 : mode === 'only' ? 0.42 : 0.35;
+    Foley.droneSet(Math.min(1, dBase + worldEHud * 1.6));
+  }
   if (!paused){
     scrubFrame = Math.min(TIMELINE_LEN, Math.max(0, frameCount - firedAt));
     scrubRange.value = Math.round(scrubFrame / TIMELINE_LEN * 1000);
