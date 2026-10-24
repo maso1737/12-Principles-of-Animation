@@ -50,6 +50,14 @@
 **git管理外（commit 不要）:**
 - `_済/`, `.claude/`, `svg-export-test.html`, `run.svg`, `KINETIC GEOMETRY concept.txt`
 
+## 特設ページ（LP）— 2026-10-24 Codex から引継ぎ
+
+- `scroll-manifesto.html` … **「ONE MARK. TWELVE WAYS TO THINK.」**（KINETIC GEOMETRY）。1つの印で12原則を読むスクロール LP。
+  各章の EXPLORE STUDY から `01〜12` へ相対リンクするので**このフォルダ直下から動かさない**。
+- `index.html` のタイトル横の **【特設ページ公開中！】**（`.lp-badge`）からリンク。
+- 申し送り＝`HANDOFF_LP_20261024.md`（v1.3・実機タッチ/Safari/Firefox 未検証）。
+- `_qa/` … Codex の検証記録（v1.1〜v1.3・screenshots・GPT レビュー依頼）。**git 管理外**（115MB）。最新は `_qa/v1.3/report.md`。
+
 ## 全ページ共通の構造
 
 各ページは原則ごとに**色とトーンが異なる**（統一は意図的に保留中）。ただし以下は概ね共通：
